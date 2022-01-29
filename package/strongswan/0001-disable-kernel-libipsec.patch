@@ -1,0 +1,13 @@
+diff --git a/conf/plugins/kernel-libipsec.conf b/conf/plugins/kernel-libipsec.conf
+index 3411be2..6352003 100644
+--- a/conf/plugins/kernel-libipsec.conf
++++ b/conf/plugins/kernel-libipsec.conf
+@@ -5,7 +5,7 @@ kernel-libipsec {
+ 
+     # Whether to load the plugin. Can also be an integer to increase the
+     # priority of this plugin.
+-    load = yes
++    load = no
+ 
+ }
+ 

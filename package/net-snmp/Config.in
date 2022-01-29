@@ -1,0 +1,13 @@
+config BR2_PACKAGE_NET_SNMP
+	bool "net-snmp"
+	select BR2_PACKAGE_OPENSSL
+
+if BR2_PACKAGE_NET_SNMP
+
+config BR2_PACKAGE_NET_SNMP_SUPPORT_READ_WRITE
+	bool "Support rw mibs"
+
+config BR2_PACKAGE_NET_SNMP_DLINK_VERSION_CONFIG_MIBS
+	bool "dlink-version-config-mibs"
+
+endif

@@ -1,0 +1,130 @@
+From 6575a70f624069562361a5fb9647da707921d5fa Mon Sep 17 00:00:00 2001
+From: Dmitriy Karaman <dkaraman@dlink.ru>
+Date: Fri, 19 Jul 2019 16:57:04 +0300
+Subject: [PATCH] bgp: add new option -M
+
+Add a new option -M that allows to mark each packet sent through socket.
+---
+ bgpd/bgp_main.c    |  6 +++++-
+ bgpd/bgp_network.c | 36 ++++++++++++++++++++++++++++++++++++
+ bgpd/bgpd.h        |  5 +++++
+ 3 files changed, 46 insertions(+), 1 deletion(-)
+
+diff --git a/bgpd/bgp_main.c b/bgpd/bgp_main.c
+index 7fe49e0..0967103 100644
+--- a/bgpd/bgp_main.c
++++ b/bgpd/bgp_main.c
+@@ -78,6 +78,7 @@ static const struct option longopts[] =
+ #ifdef DLINK_SOFTWARE
+   { "service_id",  required_argument, NULL, 'I'},
+   { "listen",      required_argument, NULL, 'L'},
++  { "mark",        required_argument, NULL, 'M'},
+ #endif
+   { 0 }
+ };
+@@ -378,7 +379,7 @@ main (int argc, char **argv)
+   while (1) 
+     {
+ #ifdef DLINK_SOFTWARE
+-      opt = getopt_long (argc, argv, "df:i:z:hp:l:A:P:rnu:g:vCSI:L:", longopts, 0);
++      opt = getopt_long (argc, argv, "df:i:z:hp:l:A:P:rnu:g:vCSI:L:M:", longopts, 0);
+ #else
+       opt = getopt_long (argc, argv, "df:i:z:hp:l:A:P:rnu:g:vCS", longopts, 0);
+ #endif
+@@ -459,6 +460,9 @@ main (int argc, char **argv)
+   case 'L':
+     bm->address = optarg;
+     break;
++  case 'M':
++    bm->mark = optarg ? atoi(optarg) : 0;
++    break;
+ #endif
+ 	default:
+ 	  usage (progname, 1);
+diff --git a/bgpd/bgp_network.c b/bgpd/bgp_network.c
+index 51a6f60..0274bed 100644
+--- a/bgpd/bgp_network.c
++++ b/bgpd/bgp_network.c
+@@ -189,6 +189,30 @@ bgp_set_socket_ttl (struct peer *peer, int bgp_sock)
+     }
+ }
+ 
++#ifdef DLINK_SOFTWARE
++static int bgp_set_socket_mark(int sock)
++{
++  if (bm->mark <= 0)
++    return -1;
++
++  zlog_debug ("sock=%d; SO_MARK=%d;", sock, bm->mark);
++
++  if (bgpd_privs.change(ZPRIVS_RAISE))
++    zlog_err ("bgp_set_socket_mark: could not raise privs");
++
++  int ret = setsockopt(sock, SOL_SOCKET, SO_MARK, &bm->mark, sizeof(bm->mark));
++  int myerrno = errno;
++
++  if (bgpd_privs.change(ZPRIVS_LOWER))
++    zlog_err ("bgp_set_socket_mark: could not lower privs");
++
++  if (ret == -1)
++    zlog_err ("bgp_set_socket_mark: %d (%s)", ret, strerror(myerrno));
++
++  return ret;
++}
++#endif /* DLINK_SOFTWARE */
++
+ /* Accept bgp connection. */
+ static int
+ bgp_accept (struct thread *thread)
+@@ -244,6 +268,10 @@ bgp_accept (struct thread *thread)
+ 
+   bgp_set_socket_ttl (peer1, bgp_sock);
+ 
++#ifdef DLINK_SOFTWARE
++  bgp_set_socket_mark(bgp_sock);
++#endif /* DLINK_SOFTWARE */
++
+   /* Make dummy peer until read Open packet. */
+   if (BGP_DEBUG (events, EVENTS))
+     zlog_debug ("[Event] Make dummy peer structure until read Open packet");
+@@ -379,6 +407,10 @@ bgp_connect (struct peer *peer)
+ 
+   bgp_set_socket_ttl (peer, peer->fd);
+ 
++#ifdef DLINK_SOFTWARE
++  bgp_set_socket_mark(peer->fd);
++#endif /* DLINK_SOFTWARE */
++
+   sockopt_reuseaddr (peer->fd);
+   sockopt_reuseport (peer->fd);
+   
+@@ -526,6 +558,10 @@ bgp_socket (unsigned short port, const char *address)
+       /* if we intend to implement ttl-security, this socket needs ttl=255 */
+       sockopt_ttl (ainfo->ai_family, sock, MAXTTL);
+       
++#ifdef DLINK_SOFTWARE
++      bgp_set_socket_mark(sock);
++#endif /* DLINK_SOFTWARE */
++
+       ret = bgp_listener (sock, ainfo->ai_addr, ainfo->ai_addrlen);
+       if (ret == 0)
+ 	++count;
+diff --git a/bgpd/bgpd.h b/bgpd/bgpd.h
+index af49f21..61ade26 100644
+--- a/bgpd/bgpd.h
++++ b/bgpd/bgpd.h
+@@ -51,6 +51,11 @@ struct bgp_master
+   /* Listener address */
+   char *address;
+ 
++#ifdef DLINK_SOFTWARE
++  /* Mark number */
++  int mark;
++#endif /* DLINK_SOFTWARE */
++
+   /* BGP start time.  */
+   time_t start_time;
+ 
+-- 
+2.1.4
+

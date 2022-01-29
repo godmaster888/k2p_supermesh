@@ -1,0 +1,1 @@
+"use strict";!function(){angular.module("app").controllerProvider.register("VlanSwitchCtrl",["$scope",function(){}])}();

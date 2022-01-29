@@ -1,0 +1,75 @@
+config BR2_TARGET_ROOTFS_SQUASHFS
+	bool "squashfs root filesystem"
+	help
+	  Build a squashfs root filesystem
+
+if BR2_TARGET_ROOTFS_SQUASHFS
+choice
+	prompt "SquashFS version"
+	default BR2_TARGET_ROOTFS_SQUASHFS4
+	help
+	  Select the Squash filesystem version to use to generate the
+	  root filesystem.
+
+config BR2_TARGET_ROOTFS_SQUASHFS4
+       bool "4.x"
+
+config BR2_TARGET_ROOTFS_SQUASHFS3
+       bool "3.x"
+
+endchoice
+
+choice
+	prompt "Compression algorithm"
+	default BR2_TARGET_ROOTFS_SQUASHFS4_GZIP
+	depends on BR2_TARGET_ROOTFS_SQUASHFS4
+	help
+	  Select the squashfs compression algorithm to use when
+	  generating the filesystem.
+
+config BR2_TARGET_ROOTFS_SQUASHFS4_GZIP
+       bool "gzip"
+
+config BR2_TARGET_ROOTFS_SQUASHFS4_LZMA
+       bool "lzma"
+
+config BR2_TARGET_ROOTFS_SQUASHFS4_LZO
+       bool "lzo"
+
+config BR2_TARGET_ROOTFS_SQUASHFS4_XZ
+       bool "xz"
+
+endchoice
+
+
+choice
+	prompt "Compression blocksize"
+	default BR2_TARGET_ROOTFS_SQUASHFS_BS_64K  if BR2_TARGET_ROOTFS_SQUASHFS3
+	default BR2_TARGET_ROOTFS_SQUASHFS_BS_256K if BR2_ralink
+	default BR2_TARGET_ROOTFS_SQUASHFS_BS_128K
+	help
+	  Greater value => better compression but increases mem usage while working
+	  You can decrease SQUASHFS_FRAGMENT_CACHE_SIZE to free memory.
+
+config BR2_TARGET_ROOTFS_SQUASHFS_BS_64K
+	bool "64k"
+config BR2_TARGET_ROOTFS_SQUASHFS_BS_128K
+	bool "128k"
+config BR2_TARGET_ROOTFS_SQUASHFS_BS_256K
+	bool "256k"
+config BR2_TARGET_ROOTFS_SQUASHFS_BS_512K
+	bool "512k"
+config BR2_TARGET_ROOTFS_SQUASHFS_BS_1024K
+	bool "1024k"
+
+endchoice
+
+config BR2_TARGET_ROOTFS_SQUASHFS_BS
+	string
+	default "64k"   if BR2_TARGET_ROOTFS_SQUASHFS_BS_64K
+	default "128k"  if BR2_TARGET_ROOTFS_SQUASHFS_BS_128K
+	default "256k"  if BR2_TARGET_ROOTFS_SQUASHFS_BS_256K
+	default "512k"  if BR2_TARGET_ROOTFS_SQUASHFS_BS_512K
+	default "1024k" if BR2_TARGET_ROOTFS_SQUASHFS_BS_1024K
+
+endif

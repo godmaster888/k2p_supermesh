@@ -1,0 +1,155 @@
+menuconfig BR2_PACKAGE_IPROUTE2
+	bool "iproute2"
+	help
+	  Kernel routing and traffic control utilities.  Provides things
+	  like ip and tc.
+
+	  http://www.linuxfoundation.org/collaborate/workgroups/networking/iproute2
+
+if BR2_PACKAGE_IPROUTE2
+
+choice
+	prompt "iproute2 kernel version"
+	config BR2_IPROUTE2_2_6_22
+		bool "2.6.22"
+		select BR2_IPROUTE2_LOCAL_SITE
+
+	config BR2_IPROUTE2_3_10_0
+		bool "3.10.0"
+
+	config BR2_IPROUTE2_4_11_0
+		bool "4.11.0"
+
+	config BR2_IPROUTE2_4_18_0
+		bool "4.18.0"
+
+endchoice
+
+config BR2_IPROUTE2_VERSION
+	string
+	default "2.6.22"  if BR2_IPROUTE2_2_6_22
+	default "3.10.0"  if BR2_IPROUTE2_3_10_0
+	default "4.11.0"  if BR2_IPROUTE2_4_11_0
+	default "4.18.0"  if BR2_IPROUTE2_4_18_0
+
+
+config BR2_IPROUTE2_MODULE_IP
+	bool "Enable ip modules"
+	depends on !BR2_BUSYBOX_IP_UTILS
+	help
+		IP modules: ip link, ip addr, ip neighbor, ip rule, ip route, ip tunnel, ip maddr, ip mroute, ip monitor.
+
+# if BR2_IPROUTE2_MODULE_IP
+
+# 	config BR2_IPROUTE2_MODULE_IP_ADDR
+# 		bool"ip addr"
+# 		help
+# 			Enable module "ip addr": allows users to look at addresses and their properties, add new addresses, and delete old ones
+# 	config BR2_IPROUTE2_MODULE_IP_LINK
+# 		bool"ip link"
+# 		help
+# 			Enable module "ip link": allows users to look at the state of devices and to make changes
+# 	config BR2_IPROUTE2_MODULE_IP_MADDR
+# 		bool"ip maddr"
+# 		help
+# 			Enable module "ip maddr": allows users to look at the multicast addresses and their properties, and change them
+# 	config BR2_IPROUTE2_MODULE_IP_MROUTE
+# 		bool"ip mroute"
+# 		help
+# 			Enable module "ip mroute": allows users to set, change, or delete the multicast routing
+# 	config BR2_IPROUTE2_MODULE_IP_MONITOR
+# 		bool"ip monitor"
+# 		help
+# 			Enable module "ip monitor": allows users to continuously monitor the state of devices, addresses and routes
+
+# 	config BR2_IPROUTE2_MODULE_IP_NEIGH
+# 		bool"ip neighbor"
+# 		help
+# 			Enable module "ip neighbor": allows users to look at neighbor bindings and their properties, add new neighbor entries, and delete old ones
+# 	config BR2_IPROUTE2_MODULE_IP_RULE
+# 		bool"ip rule"
+# 		help
+# 			Enable module "ip rule": allows users to look at the routing policies and change them
+# 	config BR2_IPROUTE2_MODULE_IP_ROUTE
+# 		bool"ip route"
+# 		help
+# 			Enable module "ip route": allows users to look at the routing table and change routing table rules
+# 	config BR2_IPROUTE2_MODULE_IP_TUNNEL
+# 		bool"ip tunnel"
+# 		help
+# 			Enable module "ip tunnel": allows users to look at the IP tunnels and their properties, and change them
+
+# endif #BR2_IPROUTE2_MODULE_IP
+
+config BR2_IPROUTE2_MODULE_BRIDGE
+	bool "bridge"
+	# mb depends on !brctl in busybox
+	help
+		Enable module "bridge": configures network bridges.
+
+config BR2_IPROUTE2_MODULE_LNSTAT
+	bool "lnstat"
+	help
+		Enable module "lnstat": Provides Linux network statistics. It is a generalized and replacement old rtstat program.
+
+# if BR2_IPROUTE2_MODULE_LNSTAT
+# 	config BR2_IPROUTE2_MODULE_CTSTAT
+# 		bool "ctstat"
+# 		help
+# 			Enable module "ctstat": connection status utility.
+
+# 	config BR2_IPROUTE2_MODULE_RTSTAT
+# 		bool "rtstat"
+# 		help
+# 			Enable module "rtstat": route status utility.
+# endif #BR2_IPROUTE2_MODULE_LNSTAT
+
+config BR2_IPROUTE2_MODULE_GENL
+	bool "genl"
+	help
+		Enable module "genl": simple frontend to the generic netlink library. Now only the ctrl object is available, which is used to query the generic netlink controller.
+
+
+config BR2_IPROUTE2_MODULE_IFCFG
+	bool "ifcfg"
+	# depends on arping and rdisk
+	help
+		Enable script "ifcfg": script wrapper for the ip command. Requires the arping and rdisk programs from the 'iputils' package found at.
+
+config BR2_IPROUTE2_MODULE_IFSTAT
+	bool "ifstat"
+	help
+		Enable module "ifstat": shows the interface statistics, including the amount of transmitted and received packets by interface.
+
+config BR2_IPROUTE2_MODULE_IFSTAT
+	bool "ifstat"
+	help
+		Enable module "ifstat": shows the interface statistics, including the amount of transmitted and received packets by interface.
+
+config BR2_IPROUTE2_MODULE_NSTAT
+	bool "nstat"
+	help
+		Enable module "nstat": shows network statistics.
+
+config BR2_IPROUTE2_MODULE_RT
+	bool "rtacct, rtmon"
+	help
+		Enable module "rtacct, rtmon": rtactt - displays the contents of /proc/net/rt_acct, rtmon - route monitoring utility.
+
+config BR2_IPROUTE2_MODULE_ROUT_TABLE
+	bool "routef,routel"
+	depends on BR2_IPROUTE2_MODULE_IP
+	help
+		Enable scripts "routef,routel": routel - listing the routing tables, routef -  flushing the routing tables.
+
+config BR2_IPROUTE2_MODULE_SS
+	bool "ss"
+	help
+		Enable module "ss": similar to the netstat command - shows active connections.
+
+config BR2_IPROUTE2_MODULE_TC
+	bool "tc"
+	help
+		Enable module "tc": traffic controlling Executable. This is for Quality Of Service (QOS) and Class Of Service (COS) implementations.
+
+endif

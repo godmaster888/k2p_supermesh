@@ -1,0 +1,9 @@
+config BR2_PACKAGE_MEMWATCH
+	bool "memwatch v2.71"
+	default n
+	help
+		Memory compile-time debugger
+		from http://www.linkdata.se/downloads/sourcecode/memwatch/memwatch-2.71.tar.gz
+		DO NOT USE IT IN RELEASES!!!
+		Selectig this tht few packages: ls/res/tr069 will be
+		built with support of memwatch.

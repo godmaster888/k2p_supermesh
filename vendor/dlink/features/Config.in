@@ -1,0 +1,469 @@
+menu "Features"
+
+config BR2_DSYSINIT
+	bool "SDK2.0 - dsysinit version"
+	select BR2_PACKAGE_DATAMODEL
+
+config BR2_DLINK_CONFIG_CACHE
+	bool "Enable config cache"
+	default y
+
+config BR2_SUPPORT_PHY_PORTS_SETTINGS
+	bool "Support PHY ports settings"
+
+config BR2_SUPPORT_WAN_CONNECTIVITY_CHECK
+	bool "WAN connectivity check"
+
+config BR2_SUPPORT_TWIN_IP
+	bool "Support Twin IP (Super DMZ)"
+
+config BR2_WITH_SUBNET_PROTECTION
+	bool "Support subnet protection"
+
+config BR2_SUPPORT_SYS_STATISTICS
+	bool "Use system statistics"
+
+config BR2_SUPPORT_PORTS_STATISTICS
+	bool "Support port statistics"
+	default y if BR2_SUPPORT_ASIC_COUNTERS
+	default y if RALINK_MT7621
+
+config BR2_SUPPORT_TRAFFIC_SEGMENTATION
+	bool "Support traffic segmentation"
+	depends on RTL8367
+	default y
+
+menuconfig BR2_REDIRECT
+	bool "DNS and IP Redirect"
+
+if BR2_REDIRECT
+config BR2_DUAL_PORT_REDIRECT
+	bool "dual port redirect"
+	default y
+endif
+
+config BR2_SUPPORT_DHCP_ON_LAN
+	bool "DHCP_on_LAN"
+	depends on BR2_DAP_MODE
+	help
+		Say Y if you want get a dynamic ip-address to the interface(device) in AP mode
+
+config BR2_SUPPORT_AUTOUPDATE_FW
+	bool "Autoupdate FW"
+
+config BR2_SUPPORT_AUTOPROVISION
+	bool "Autoprovision"
+	default y
+
+config BR2_SUPPORT_AUTO_CHANGE_GW
+	bool "Auto change GW"
+	default n
+
+config BR2_SUPPORT_AUTO_CHANGE_GW_ALWAYS
+	bool "Always change GW, even if the system is not in default state"
+	depends on BR2_SUPPORT_AUTO_CHANGE_GW
+
+menuconfig BR2_SUPPORT_QOS
+	bool "Support QoS"
+
+if BR2_SUPPORT_QOS
+
+config BR2_SUPPORT_SW_QOS
+	bool "Support software QoS"
+	select BR2_PACKAGE_LIBPCAP
+	select BR2_PACKAGE_IPROUTE2
+	select BR2_IPROUTE2_MODULE_TC
+
+menuconfig BR2_SUPPORT_HW_QOS
+	bool "Support hardware QoS"
+
+if BR2_SUPPORT_HW_QOS
+
+menu "Algorithms"
+config BR2_SUPPORT_HW_QOS_WRR
+	bool "Support WRR algorithm"
+	help
+	  Select to support WRR (Weighted Round Robin) algorithm.
+	default n
+
+config BR2_SUPPORT_HW_QOS_SP
+	bool "Support SP algorithm"
+	help
+	  Select to support SP (Strict Priority) algorithm.
+	default n
+endmenu
+
+config BR2_SUPPORT_HW_QOS_QUEUE_LIMIT
+	bool "Queue limit"
+	help
+	  Select this option if the number of queues is limited.
+	default n
+
+if BR2_SUPPORT_HW_QOS_QUEUE_LIMIT
+config BR2_SUPPORT_HW_QOS_QUEUE_MAX
+	int "Maximum queue number"
+	help
+	  Maximum number of queues.
+	default 1
+endif # BR2_SUPPORT_HW_QOS_QUEUE_LIMIT
+
+config BR2_SUPPORT_HW_QOS_QUEUE_CLASSIFY_UNIQUE
+	bool "Unique classify per queue"
+	help
+	  Select this option if the classification
+	  for each queue must be unique.
+	default n
+
+endif # BR2_SUPPORT_HW_QOS
+endif # BR2_SUPPORT_QOS
+
+config BR2_SUPPORT_HW_IGMP_SNOOPING
+	bool "Use hardware IGMP snooping"
+	default n
+	depends on (RALINK_RT6855 || RALINK_MT7620 || RALINK_MT7621)
+
+config BR2_SUPPORT_SLA_AGENT
+	bool "Support SLA agent"
+	select BR2_WITH_SLA_AGENT
+
+config BR2_SUPPORT_KABINET
+	bool "Support KABiNET ISP authorizer"
+	select BR2_PACKAGE_LANAUTH
+	default n
+
+config BR2_ENCRYPT_CONNECTION_USERNAMES
+	bool "Hide usernames in connections"
+
+choice
+	prompt "Encrypt method"
+	depends on BR2_PACKAGE_OPENSSL
+	default BR2_CRYPTO_CONFIG_NONE
+
+config BR2_CRYPTO_CONFIG_NONE
+	bool "Disable crypto config"
+
+config BR2_CRYPTO_CONFIG_PASSWORDS
+	bool "Encrypt passwords in config"
+
+config BR2_CRYPTO_CONFIG_ACCORDING_PERM
+	bool "Encrypt a part of config accoding permissions"
+
+config BR2_CRYPTO_CONFIG_FULL
+	bool "Encrypt full config"
+
+endchoice
+
+config BR2_GENERATE_ROOT_PASSWORD
+	bool "Generate root password in config"
+	select BR2_WITH_STD
+
+config BR2_SUPPORT_JFFS_DATA
+	bool "Enable mtd:JFFS_data (requires explicit support from kernel)"
+	select BR2_BUSYBOX_SYNC
+	select BR2_BUSYBOX_FLASH_ERASEALL
+
+menuconfig BR2_SUPPORT_PKI
+	bool "Enable PKI support (will install openssl binary)"
+	select BR2_PACKAGE_OPENSSL
+	select BR2_PACKAGE_OPENSSL_BIN
+	select BR2_PACKAGE_OPENSSL_ENGINES
+
+if BR2_SUPPORT_PKI
+config BR2_PKI_DEFAULT_CERT_COMMON_NAME
+	string "Common name for default certificate"
+	default "General Root CA"
+
+config BR2_PKI_DEFAULT_CERT_COUNTRY_CODE
+	string "Country code for default certificate"
+	default "RU"
+
+config BR2_PKI_DEFAULT_CERT_ORG
+	string "Organization for default certificate"
+	default "D-Link Ltd"
+
+config BR2_PKI_DEFAULT_CERT_ORG_UNIT
+	string "Organization unit for default certificate"
+	default ""
+
+config BR2_PKI_DEFAULT_CERT_EMAIL
+	string "Email for default certificate"
+	default "support@dlink.ru"
+
+config BR2_PKI_DEFAULT_CERT_LIFETIME
+	int "Lifetime in days for default certificate"
+	default 1825
+
+choice
+	prompt "Key bit length"
+	default BR2_PKI_KEY_BIT_1024
+
+	config BR2_PKI_KEY_BIT_256
+		bool "256"
+
+	config BR2_PKI_KEY_BIT_512
+		bool "512"
+
+	config BR2_PKI_KEY_BIT_1024
+		bool "1024"
+
+	config BR2_PKI_KEY_BIT_2048
+		bool "2048"
+
+endchoice
+
+config BR2_PKI_DEFAULT_KEY_BIT
+	string
+	default "256" if BR2_PKI_KEY_BIT_256
+	default "512" if BR2_PKI_KEY_BIT_512
+	default "2048" if BR2_PKI_KEY_BIT_2048
+	default "1024"
+
+endif
+
+config BR2_SUPPORT_ARP_PROXY
+	bool "Support ARP Proxy"
+	depends on !BR2_DLINK_DEVICE_IS_GENERIC
+	default n
+
+config BR2_SUPPORT_L2TP_SERVER
+	bool "Support L2TP server"
+
+config BR2_SUPPORT_PPTP_SERVER
+	select BR2_PACKAGE_PPPD_PPTP
+	select BR2_PACKAGE_POPTOP
+	bool "Support PPTP server"
+
+config BR2_SUPPORT_STATIC_CONNECTION
+	bool "Support STATIC connection"
+	default y
+
+config BR2_SUPPORT_DHCP_CONNECTION
+	bool "Support DHCP connection"
+	select BR2_PACKAGE_BUSYBOX
+	default y
+
+config BR2_SUPPORT_STATICv6_CONNECTION
+	depends on BR2_INET_IPV6
+	bool "Support STATICv6 connection"
+	default y
+
+config BR2_SUPPORT_DHCPv6_CONNECTION
+	depends on BR2_INET_IPV6
+	bool "Support DHCPv6 connection"
+	select BR2_PACKAGE_ODHCP6C
+	default y
+
+config BR2_SUPPORT_STATIC_L2TPv3
+	bool "Support StaticL2TPv3 connection"
+	default n
+	help
+	  StaticL2TPv3 tunnel requires support
+	  L2TP_V3 with l2tp_eth and l2tp_ip kernel module.
+
+config BR2_SUPPORT_STATIC_L2TPv3_CSUM6
+	bool "Enable udp checksum IPv6"
+	default n
+	depends on BR2_SUPPORT_STATIC_L2TPv3
+	help
+	  For control IPv6 UDP TX/RX checksums need kernel version 3.16.0+.
+
+config BR2_SUPPORT_L2TP_CONNECTION
+	select BR2_PACKAGE_PPPD
+	select BR2_PACKAGE_XL2TP if RLX_819X=y
+	select BR2_DEUTERON_APPS_PPP_WRAPPER
+	bool "Support L2TP connection"
+	default y
+
+config BR2_SUPPORT_L2TP_AUTHENTICATION
+	bool "Support l2tp authentication"
+	depends on BR2_SUPPORT_L2TP_CONNECTION
+
+config BR2_SUPPORT_PPTP_CONNECTION
+	select BR2_PACKAGE_PPPD
+	select BR2_PACKAGE_PPPD_PPTP if RLX_819X!=y
+	select BR2_PACKAGE_PPTPCLIENT if RLX_819X=y
+	select BR2_DEUTERON_APPS_PPP_WRAPPER
+	bool "Support PPTP connection"
+	default y
+
+config BR2_SUPPORT_PPPoE_CONNECTION
+	select BR2_PACKAGE_PPPD
+	select BR2_PACKAGE_PPPD_PPPOE
+	select BR2_DEUTERON_APPS_PPP_WRAPPER
+	bool "Support PPPoE connection"
+	default y
+
+config BR2_SUPPORT_GRE_COMMON
+	bool
+	default n
+
+config BR2_SUPPORT_GRE
+	bool "Support GRE"
+	select BR2_SUPPORT_GRE_COMMON
+
+config BR2_SUPPORT_GRETAP
+	bool "Support EoGRE"
+	default n
+	select BR2_SUPPORT_GRE_COMMON
+	help
+	  EoGRE aka "gretap" or Transparent Ethernet Bridging (RFC 1701)
+	  is the protocol family of GRE established to incapsulate
+	  a whole ethernet frame providing L2 connectivity.
+
+config BR2_SUPPORT_IPSEC
+	select BR2_PACKAGE_STRONGSWAN
+	bool "Support IPSec"
+	default y
+
+config BR2_SUPPORT_SIP
+	bool "Support SIP"
+	default y
+
+config BR2_SUPPORT_RTSP
+	bool "Support RTSP"
+	default y
+
+config BR2_SUPPORT_NAT_H323
+	bool "Support NAT H323"
+
+config BR2_SUPPORT_SYSLOG
+	bool "Support syslog"
+	select BR2_PACKAGE_BUSYBOX
+	default y
+
+config BR2_SUPPORT_SCHEDULER
+	bool "Support scheduler"
+	select BR2_PACKAGE_DEUTERON_FRAMEWORK
+	select BR2_PACKAGE_DEUTERON_APPS
+	default y
+
+config BR2_SUPPORT_RIP
+	bool "Support rip"
+	select BR2_PACKAGE_QUAGGA
+	select BR2_PACKAGE_QUAGGA_RIPD
+	default y
+
+config BR2_SUPPORT_RIPNG
+	bool "Support ripng"
+	depends on BR2_INET_IPV6
+	select BR2_PACKAGE_QUAGGA
+	select BR2_PACKAGE_QUAGGA_RIPNG
+	default y
+
+config BR2_SUPPORT_BGP
+	bool "Support bgp"
+	select BR2_PACKAGE_QUAGGA
+	select BR2_PACKAGE_QUAGGA_BGPD
+
+config BR2_SUPPORT_OSPF
+	bool "Support OSPF"
+	select BR2_PACKAGE_QUAGGA
+	select BR2_PACKAGE_QUAGGA_OSPFD
+	default n
+
+config BR2_SUPPORT_LDP
+	bool "Support LDP"
+	select BR2_PACKAGE_QUAGGA
+	select BR2_PACKAGE_QUAGGA_LDPD
+	default n
+
+config BR2_SUPPORT_VPLS
+	bool "Support VPLS"
+	select BR2_PACKAGE_QUAGGA
+	select BR2_SUPPORT_OSPF
+#	select BR2_SUPPORT_OSPF6 if BR2_INET_IPV6
+	select BR2_SUPPORT_LDP
+
+config BR2_SUPPORT_VPLS_CRYPTO
+	bool "VPLS crypto extension"
+	depends on BR2_SUPPORT_VPLS
+#	select some hash capability to make crypro keys
+	default n
+
+config BR2_SUPPORT_ISIS
+	bool "Support IS-IS"
+	select BR2_PACKAGE_QUAGGA
+	select BR2_PACKAGE_QUAGGA_ISISD
+	default n
+
+config BR2_WATCHDOG_HARDWARE
+	bool "Support hardware watchdog"
+
+config BR2_WATCHDOG_SOFTWARE
+	bool "Support software watchdog"
+	default y
+
+config BR2_SUPPORT_LOAD_BALANCING
+	bool "Support load balancing"
+
+config BR2_SUPPORT_FIREWALL_DOS
+	bool "Support firewall dos"
+	default n
+
+config BR2_SUPPORT_LEDS_DISABLE
+	bool "Disable all leds"
+	default y if RLX_819X
+
+config BR2_SUPPORT_CONNECTION_LOG
+	bool "Support connection log"
+	default n
+
+config BR2_SUPPORT_PORT_BANDWIDTH
+	bool "Support ports bandwidth management"
+	default y if RLX_819X
+
+config BR2_DYNAMIC_MODULE_LOADING
+	bool "Load Deuteron modules dynamically"
+	default n
+	help
+	  This option allows to load dmsd, dsysinit, dwatcher and dsched
+	  modules dynamically.
+
+	  Dynamic load method is slower, but more memory efficient.
+
+config BR2_SUPPORT_NSG
+	bool "Support NSG"
+	depends on BR2_SUPPORT_WIFI
+	depends on BR2_PACKAGE_CIVETWEB
+	select BR2_CIVETWEB_CGI
+	select BR2_PACKAGE_EBTABLES
+	select BR2_PACKAGE_LIBRADIUS
+	select BR2_PACKAGE_SOFTFLOWD
+	select BR2_PACKAGE_TINYPROXY
+
+config BR2_SUPPORT_ADBLOCK
+	bool "AdBlock"
+	depends on BR2_PACKAGE_DNSMASQ
+	default n
+
+config BR2_SUPPORT_PBR
+	bool "Support PBR"
+	default n
+
+config BR2_SUPPORT_PERMISSION_CONTROL
+	bool "Support dynamic user permission control"
+	default n
+
+config BR2_SUPPORT_PORT_MIRRORING
+	bool "Support Port Mirorring"
+	default n
+
+config BR2_PORT_MIRRORING_CLEAR_AFTER_REBOOT
+	bool "Clear Port Mirorring after starting the device"
+	depends on BR2_SUPPORT_PORT_MIRRORING
+	default n
+
+config BR2_SUPPORT_ODU_CONTROL
+	bool "Support ODU Control"
+	depends on BR2_PACKAGE_USBMODEM
+
+config BR2_SUPPORT_NAT_LOOPBACK
+	bool "Support NAT Loopback"
+
+config BR2_SUPPORT_EOIP
+	bool "Support EoIP"
+	depends on RALINK_MT7621
+	select BR2_SUPPORT_GRE_COMMON
+	default n
+
+endmenu

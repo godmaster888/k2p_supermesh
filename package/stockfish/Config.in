@@ -1,0 +1,17 @@
+menuconfig BR2_PACKAGE_STOCKFISH
+	bool "Stockfish-8"
+	select BR2_LEGACY
+	default n
+	help
+		Powerful chess engine.
+
+
+if BR2_PACKAGE_STOCKFISH
+
+
+config BR2_PACKAGE_STOCKFISH_BRANCH
+	string "Stockfish branch (master if empty)"
+	default "master"
+
+
+endif

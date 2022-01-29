@@ -1,0 +1,33 @@
+config BR2_PACKAGE_CA_CERTIFICATES
+	bool "CA Certificates"
+	default n
+	help
+	  This package includes PEM files of CA certificates to allow
+	  SSL-based applications to check for the authenticity of SSL
+	  connections.
+
+	  It includes, among others, certificate authorities used by the
+	  Debian infrastructure and those shipped with Mozilla's
+	  browsers.
+
+	  https://salsa.debian.org/debian/ca-certificates
+
+if BR2_PACKAGE_CA_CERTIFICATES
+
+	choice
+		prompt "Certificate installation type"
+		default BR2_PACKAGE_CA_CERTIFICATES_BUNDLE_ONLY
+
+		config BR2_PACKAGE_CA_CERTIFICATES_BUNDLE_ONLY
+			bool "Install ca_certificates.crt file only"
+			help
+			  Install only the bundle file ca_certificates.crt without *.pem files and hash files.
+
+		config BR2_PACKAGE_CA_CERTIFICATES_FULL
+			bool "Install all certificates"
+			help
+			  Install the bundle file ca_certificates.crt along with *.pem files and hash files.
+
+	endchoice
+
+endif

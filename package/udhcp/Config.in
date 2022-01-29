@@ -1,0 +1,33 @@
+menuconfig BR2_PACKAGE_UDHCP
+	bool "udhcp"
+	help
+		Tiny dhcp client
+
+if BR2_PACKAGE_UDHCP
+	menuconfig UDHCP_RESTART_MIN_MAX_DELAY
+	bool "Restart dhcp client for connect with min/max delay"
+	default n
+	help
+		Min/max delay: if connection count more then MAX_RETRY: use max delay, else min delay.
+
+	if UDHCP_RESTART_MIN_MAX_DELAY
+		config BR2_UDHCP_MAX_RETRY
+			string "Max count of dhcp client restart retry"
+			default "1"
+			help
+				Max count of dhcp client restart retry
+
+		config BR2_UDHCP_MAX_DELAY
+			string "Max delay for restart dhcp client"
+			default "30"
+			help
+				Max delay for restart dhcp client (sec)
+
+		config BR2_UDHCP_MIN_DELAY
+			string "Min delay for restart dhcp client"
+			default "5"
+			help
+				Min delay for restart dhcp client (sec)
+	endif
+
+endif

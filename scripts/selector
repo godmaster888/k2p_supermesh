@@ -1,0 +1,97 @@
+#!/usr/bin/env python
+
+import os
+import sys
+
+def usage(exit_code):
+    print("""
+Usage: selector OPTION [-a OPTION] [ -o OPTION ] [ -n OPTION ]
+Search for OPTIONS in each profile.
+Example: selector BR2_PROFILE_IS_GENERIC=y and not BR2_PROFILE_IS_EOL=y
+
+Filter options:
+
+  and(-a) OPTION       AND logic for filter
+  or (-o) OPTION       OR logic for filter
+  not(-n) OPTION       NOT logic for filter
+  (OPTION)             parentheses for logic priority""")
+    sys.exit(exit_code)
+
+def grep(filename, string):
+    for line in open(filename):
+        if string in line:
+            return True
+
+    return False
+
+def find_root_sdk():
+    old_cwd = os.getcwd()
+
+    try:
+        while os.getcwd() != "/":
+            if os.path.isfile(".sdk_root"):
+                return os.getcwd()
+
+            os.chdir("..")
+    finally:
+        os.chdir(old_cwd)
+
+    return None
+
+def get_search_string():
+    test_cmd = ''
+    for arg in sys.argv[1:]:
+        if arg == '(' or arg == ')':
+            test_cmd += ' ' + arg
+            continue
+
+        if arg == '-h' or arg == '--help':
+            usage(0)
+
+        if arg == "-o" or arg == "or":
+            test_cmd += " or"
+            continue
+        elif arg == "-a" or arg == "and":
+            test_cmd += " and"
+            continue
+        elif arg == '-n' or arg == "not":
+            test_cmd += " not"
+            continue
+
+        # not supported options
+        if arg[0] == '-':
+            usage(1)
+
+        test_cmd += " grep('%FILE%', '" + arg + "')"
+
+    return test_cmd.strip()
+
+def test_profile(cmd, filename):
+    return eval(cmd.replace("%FILE%", filename))
+
+def main():
+    test_cmd = get_search_string()
+    root = find_root_sdk()
+
+    if not root:
+        print("You need to be in the folder with sdk")
+        sys.exit(1)
+
+    profiles_dir = os.path.join(root, "profiles")
+
+    names = os.listdir(profiles_dir)
+
+    names.sort()
+
+    for name in names:
+        if '.' in name:
+            continue
+
+        if not os.path.isfile(os.path.join(profiles_dir, name, name)):
+            continue
+
+        if test_profile(test_cmd, os.path.join(profiles_dir, name, name)):
+            print(name)
+
+if __name__ == "__main__":
+    main()

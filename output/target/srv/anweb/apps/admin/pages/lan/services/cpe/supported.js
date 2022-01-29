@@ -1,0 +1,1 @@
+"use strict";!function(){angular.module("app").factory("lanSupported",["device",function(device){return device.lan.supported()}])}();

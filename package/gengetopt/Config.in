@@ -1,0 +1,7 @@
+config BR2_PACKAGE_GENGETOPT
+	bool "gengetopt"
+	help
+	  Adds GNU Gengetopt
+	  Gengetopt is a tool to write command line option parsing code for C programs. 
+	  
+	  http://www.gnu.org/software/gengetopt/gengetopt.html

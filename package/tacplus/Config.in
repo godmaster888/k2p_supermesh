@@ -1,0 +1,3 @@
+config BR2_PACKAGE_TACPLUS
+	bool "TACACS+ client"
+	default n

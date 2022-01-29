@@ -1,0 +1,12 @@
+menu "Qualcomm"
+
+menuconfig BR2_QCA_APP
+	bool "Qualcomm public stuff"
+	depends on BR2_qca
+	default y
+
+if BR2_QCA_APP
+source "package/qca/Config.in"
+endif
+
+endmenu

@@ -1,0 +1,80 @@
+menuconfig BR2_PACKAGE_DNSMASQ
+	bool "dnsmasq"
+	help
+		A lightweight DNS and DHCP server.  It is intended to provide
+		coupled DNS and DHCP service to a LAN.
+		http://www.thekelleys.org.uk/dnsmasq/
+
+if BR2_PACKAGE_DNSMASQ
+
+config BR2_PACKAGE_DNSMASQ_TFTP
+	bool "tftp support"
+	default n
+	depends on BR2_PACKAGE_DNSMASQ
+	help
+		Enable TFTP support in dnsmasq.
+
+config BR2_PACKAGE_DNSMASQ_DHCP
+	bool "dhcp support"
+	default y
+	depends on BR2_PACKAGE_DNSMASQ
+	help
+		Enable DHCP server support in dnsmasq.
+
+config BR2_PACKAGE_DNSMASQ_IDN
+	bool "IDN support (BIG!)"
+	depends on BR2_PACKAGE_DNSMASQ
+	select BR2_PACKAGE_LIBINTL
+	select BR2_PACKAGE_LIBIDN
+	help
+		Enable IDN support in dnsmasq.
+		This option is a big space taker since is pulls in many libraries.
+
+config BR2_PACKAGE_DNSMASQ_BIND_DNS_WAN_IFACE
+	bool "support binding wan iface for dns"
+	default n
+	depends on BR2_PACKAGE_DNSMASQ
+	help
+		Enable for alternative route for default wan interfaces from special lan interface.
+		DNS packet set wan as oif iface.
+		Eхample: interface=br0,br0.3[ppp0] // ppp0 not default (main table) and use only for br0.3 lan.
+
+config BR2_SUPPORT_YANDEX_DNS
+	bool "Yandex DNS"
+	default n
+	depends on BR2_PACKAGE_DNSMASQ
+
+config BR2_PACKAGE_DNSMASQ_CONNTRACK
+	bool "Support conntrack"
+	default n
+	depends on BR2_PACKAGE_DNSMASQ
+
+config BR2_SUPPORT_SAFEDNS
+	bool "SafeDNS"
+	default n
+	depends on BR2_PACKAGE_CIVETWEB
+	depends on BR2_PACKAGE_DNSMASQ
+	select BR2_CIVETWEB_CGI
+	select BR2_CIVETWEB_HTTPS
+	select BR2_PACKAGE_LIBCURL
+	select BR2_PACKAGE_LIBCURL_WITH_HTTP
+	select BR2_PACKAGE_LIBCURL_WITH_OPENSSL
+	select BR2_PACKAGE_SSLSPLIT
+
+endif
+
+menuconfig  BR2_PACKAGE_DNSMASQ_RESOLV
+    bool "dnsmasq resolv"
+    help
+        Resolv dns with dnsmasq, used resolv-file=/tmp/resolv_dnsmasq.conf for nameservers.
+        Not used /etc/resolv.conf
+    default n
+    depends on BR2_PACKAGE_DNSMASQ
+
+    if BR2_PACKAGE_DNSMASQ_RESOLV
+         config BR2_PACKAGE_DNSMASQ_RESOLV_MAXNS
+         int "max nameservers for dnsmasq_resolv"
+         default 5
+         depends on BR2_PACKAGE_DNSMASQ && BR2_PACKAGE_DNSMASQ_RESOLV
+    endif
+

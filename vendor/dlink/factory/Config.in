@@ -1,0 +1,19 @@
+menu "Factory"
+
+
+config BR2_FACTORY_FALLBACK
+	bool "Set fallback values on uninitialized factory"
+
+if BR2_FACTORY_FALLBACK
+
+config BR2_FACTORY_FALLBACK_COUNTRY_CODE
+	string "Country code fallback value"
+	default ""
+
+config BR2_FACTORY_FALLBACK_HARDWARE_REVISION
+	string "Hardware revision fallback value"
+	default ""
+
+endif
+
+endmenu

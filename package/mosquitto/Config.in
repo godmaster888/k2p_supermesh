@@ -1,0 +1,128 @@
+menuconfig BR2_PACKAGE_MOSQUITTO
+	bool "mosquitto"
+	default n
+	help
+	  "Official" MQTT implementation.
+
+if BR2_PACKAGE_MOSQUITTO
+
+	config BR2_PACKAGE_MOSQUITTO_VERSION
+		string "Used branch (default if empty)"
+
+#	menu "Options/Features"
+	comment "Options/Features"
+
+		comment "**  Global"
+		if !BR2_PACKAGE_OPENSSL
+			comment "You have to enable OpenSSL package"
+			comment "to get TLS support in mosquitto"
+		endif
+		config BR2_PACKAGE_MOSQUITTO_FEAT_TLS
+			bool "TLS"
+			depends on BR2_PACKAGE_OPENSSL
+			default y
+
+		if BR2_PACKAGE_MOSQUITTO_FEAT_TLS
+			config BR2_PACKAGE_MOSQUITTO_FEAT_TLS_PSK
+				bool "TLS-PSK"
+				default y
+
+			config BR2_PACKAGE_MOSQUITTO_FEAT_TLS_EC
+				bool "Elliptic Curve"
+				default y
+		endif
+
+		config BR2_PACKAGE_MOSQUITTO_FEAT_SOCKS5
+			bool "SOCKS5"
+			default n
+
+		config BR2_PACKAGE_MOSQUITTO_FEAT_SRV
+			bool "SRV lookup (ingored. see help)"
+			default n
+			help
+			  This needs c-ares library, which is not
+			  provided by us. So it will be ignored for now.
+
+		config BR2_PACKAGE_MOSQUITTO_FEAT_UUID
+			bool "UUID support"
+			default n
+			select BR2_PACKAGE_UTIL_LINUX
+			select BR2_PACKAGE_UTIL_LINUX_LIBUUID
+			help
+			  Using UUID functionality from a util-linux libuuid.
+
+		comment "**  Library"
+		config BR2_PACKAGE_MOSQUITTO_FEAT_THREADING
+			bool "Threading support"
+			default y
+
+		comment "**  Broker"
+		if BR2_PACKAGE_MOSQUITTO_BIN_BROKER
+			config BR2_PACKAGE_MOSQUITTO_FEAT_LIBMQTT
+				bool "Link broker with libmosquitto"
+				default y
+				# не прокатило, слишком по-разному библа собирается для
+				# брокера и клиентов. Пусть уж как есть.
+				depends on 0
+				help
+				  By default a broker is being built with
+				  library sources inside (like static lib).
+				  If Y, mosquitto broker is linked shared.
+				  It redused size, if the firmware contains
+				  client utilities also. Else set N.
+			config BR2_PACKAGE_MOSQUITTO_FEAT_BRIDGE
+				bool "Bridge support"
+				default y
+				help
+				  Include bridge support for connecting to other brokers
+			config BR2_PACKAGE_MOSQUITTO_FEAT_LIBWRAP
+				bool "tcp-wrappers support (DO NOT, we have no libwrap)"
+				default n
+			config BR2_PACKAGE_MOSQUITTO_FEAT_DBUP
+				bool "database upgrade support (fake? recommended but not used in)"
+				default y
+			config BR2_PACKAGE_MOSQUITTO_FEAT_MEMTRACK
+				bool "memory tracking"
+				default y
+			config BR2_PACKAGE_MOSQUITTO_FEAT_PERSIST
+				bool "persistence support"
+				default y
+			config BR2_PACKAGE_MOSQUITTO_FEAT_SYSTREE
+				bool "$SYS tree support"
+				default y
+			config BR2_PACKAGE_MOSQUITTO_FEAT_WEBSOCKS
+				bool "websockets"
+				default n
+		endif # BR2_PACKAGE_MOSQUITTO_BIN_BROKER
+#	endmenu
+
+#	menu "Programs"
+	comment "Programs"
+
+		config BR2_PACKAGE_MOSQUITTO_BIN_LIB
+			bool
+			default n
+
+		config BR2_PACKAGE_MOSQUITTO_BIN_BROKER
+			bool "broker"
+			default y
+			select BR2_PACKAGE_MOSQUITTO_BIN_LIB
+		config BR2_PACKAGE_MOSQUITTO_BIN_PASSWD
+			bool "passwd utility"
+			default y
+			depends on BR2_PACKAGE_MOSQUITTO_BIN_BROKER
+			depends on BR2_PACKAGE_MOSQUITTO_FEAT_TLS
+			# или on ...TLS_PSK?
+
+		config BR2_PACKAGE_MOSQUITTO_BIN_SUB
+			bool "subscriber"
+			default y
+			select BR2_PACKAGE_MOSQUITTO_BIN_LIB
+
+		config BR2_PACKAGE_MOSQUITTO_BIN_PUB
+			bool "publisher"
+			default y
+			select BR2_PACKAGE_MOSQUITTO_BIN_LIB
+
+#	endmenu
+endif

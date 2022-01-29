@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bad Browser</title>
+    <link rel="stylesheet" href="/general/css/general.css">
+    <link rel="stylesheet" href="/browser_check/css/style.css">
+    <script src="/browser_check/js/script.js"></script>
+</head>
+<body class="browser_check">
+    <div class="wrapper">
+        <div class="wrapper_title">Ваш браузер не підтримується</div>
+        При його використанні можуть виникнути проблеми. Рекомендується скористатися одним з наступних браузерів.
+
+        <div class="browsers">
+            <a class="browser" href="https://www.google.com/chrome/browser/">
+                <img src="/browser_check/img/chrome.png" alt="">
+                <div class="name">Google Chrome</div>
+            </a>
+
+            <a class="browser" href="https://www.mozilla.org/en-US/firefox/new/">
+                <img src="/browser_check/img/firefox.png" alt="">
+                <div class="name">Firefox</div>
+            </a>
+
+            <a class="browser" href="http://www.opera.com/">
+                <img src="/browser_check/img/opera.png" alt="">
+                <div class="name">Opera</div>
+            </a>
+        </div>
+
+		<div id="ie_warning">
+			Крім того, некорректна робота Internet Explorer може бути пов&#x27;язана з включенням режимів сумісності з попередніми версіями. Перейдіть в меню \
+		</div>
+
+        Ви можете продовжити роботу в поточному браузері, але коректна робота не гарантується.
+
+        <div class="button_block center">
+			<center>
+				<button id="continue" class="colored">Продовжити</button>
+			</center>
+        </div>
+    </div>
+
+    <div class="langs">
+        <a href="/check_browser?error=bad&lang=eng">
+            <img class="lang" src="/general/img/lang/eng.png" alt="">
+        </a>
+        <a href="/check_browser?error=bad&lang=rus">
+            <img class="lang" src="/general/img/lang/rus.png" alt="">
+        </a>
+    </div>
+</body>
+</html>

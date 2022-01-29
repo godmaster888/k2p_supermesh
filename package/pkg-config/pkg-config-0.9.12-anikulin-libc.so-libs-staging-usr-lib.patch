@@ -1,0 +1,70 @@
+From 07e7b5546800e99648b75a473b7c54bbc639af5a Mon Sep 17 00:00:00 2001
+From: farisey <anikulin@dlink.ru>
+Date: Mon, 8 Feb 2016 13:59:26 +0300
+Subject: [PATCH] =?UTF-8?q?[#13612,=20anikulin,=20libc.so]=20=D0=98=D0=B7?=
+ =?UTF-8?q?=20--libs=20=D1=83=D0=B4=D0=B0=D0=BB=D1=91=D0=BD=20=D0=BF=D1=83?=
+ =?UTF-8?q?=D1=82=D1=8C=20=D0=BA=20staging/usr/lib.?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Суть вот в чём.  Флаг --libs добавляет в вывод
+-L$(TOPDIR)/output/staging/usr/lib
+и это идёт в сборку.
+
+Причём старый pkg-config делает ТОЛЬКО для openssl'евских вещей:
+для openssl, libssl, libcrypto. Для всех прочих выводится только сама
+либа:
+-lz
+-ljansson
+-lnfnetlink
+-lmnl
+-lusb-1.0
+
+Почему так - не понимаю. Файл .pc - константа из пакета. По коду получается,
+что вроде как должен -L добавляться всегда (хотя код очень сильно отрефакторен
+со времени этого старинного v0.25)
+
+Как следствие, линкер лезет в staging/usr/lib, а там у тех же
+ралинков/медиатеков лежит от тулчейна файл libs.so, который есть линкер-скрипт.
+И то ли тулчейн не может сожрать такое (ожидая нормальную библу),
+то ли содержимое скрипта не то, но сборка фейлится с:
+... DWR_921/output/toolchains/bin/../lib/gcc/mipsel-dlink-linux-uclibc/4.1.2/../../../../mipsel-dlink-linux-uclibc/bin/ld: cannot find /lib/libc.so.0
+collect2: ld returned 1 exit status
+
+Причём если это файло снести, то уклибс вполне себе находится (в staging/lib),
+но всё равно получается коррупт:
+
+... DWR_921/output/toolchains/bin/../lib/gcc/mipsel-dlink-linux-uclibc/4.1.2/../../../../mipsel-dlink-linux-uclibc/bin/ld: BFD 2.17 assertion fail /home/builder/cross/build/targets/src/binutils-2.17/bfd/elflink.c:6261
+... DWR_921/output/toolchains/bin/../lib/gcc/mipsel-dlink-linux-uclibc/4.1.2/../../../../mipsel-dlink-linux-uclibc/bin/ld: hotplug: hidden symbol `__preinit_array_start' in hotplug is referenced by DSO
+... DWR_921/output/toolchains/bin/../lib/gcc/mipsel-dlink-linux-uclibc/4.1.2/../../../../mipsel-dlink-linux-uclibc/bin/ld: final link failed: Nonrepresentable section on output
+collect2: ld returned 1 exit status
+
+Из чего я делаю вывод, что линкер-скрипт нужен, и поломка сборки идёт
+именно из-за того, что это скрипт, а не ожидаемая либа.
+
+Почему не ломаются openssl'ные эксплуатанты - я хз. Может особые способы сборки.
+
+Короче, я решил выпилить из выхлопа --libs путь к staging/usr/lib.
+Путь к staging/lib и так передаётся в сборку.
+DWR_921 собирается.
+---
+ main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/main.c b/main.c
+index 6947126..ab3397f 100644
+--- a/main.c
++++ b/main.c
+@@ -23,7 +23,7 @@
+ #define PKG_LIBS_ONLY_LDPATH		(uint64_t)(1<<5)
+ #define PKG_LIBS_ONLY_LIBNAME		(uint64_t)(1<<6)
+ #define PKG_LIBS_ONLY_OTHER		(uint64_t)(1<<7)
+-#define PKG_LIBS			(uint64_t)(PKG_LIBS_ONLY_LDPATH|PKG_LIBS_ONLY_LIBNAME|PKG_LIBS_ONLY_OTHER)
++#define PKG_LIBS			(uint64_t)(/*PKG_LIBS_ONLY_LDPATH|*/PKG_LIBS_ONLY_LIBNAME|PKG_LIBS_ONLY_OTHER)
+ #define PKG_MODVERSION			(uint64_t)(1<<8)
+ #define PKG_REQUIRES			(uint64_t)(1<<9)
+ #define PKG_REQUIRES_PRIVATE		(uint64_t)(1<<10)
+-- 
+2.7.0
+

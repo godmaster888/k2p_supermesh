@@ -1,0 +1,40 @@
+From e801ede72e2c9a1aa3d98360d9a8fbc9d62f6996 Mon Sep 17 00:00:00 2001
+From: Kirill Bulygin <kbulygin@dlink.ru>
+Date: Mon, 4 Mar 2019 17:05:04 +0300
+Subject: [PATCH] added d_service_notify call
+
+Signed-off-by: Kirill Bulygin <kbulygin@dlink.ru>
+---
+ remserial.c | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+diff --git a/remserial.c b/remserial.c
+index 29799e2..fc3b468 100644
+--- a/remserial.c
++++ b/remserial.c
+@@ -34,6 +34,10 @@
+ #include <netinet/in.h>
+ #include <netdb.h>
+ 
++#ifdef DLINK_SOFTWARE
++#include <d-link/d_service_notify.h> // Библиотека для связи сервисов с deuteron
++#endif /* DLINK_SOFTWARE */
++
+ struct sockaddr_in addr,remoteaddr;
+ int sockfd = -1;
+ int port = 23000;
+@@ -57,6 +61,11 @@ void link_slave(int fd);
+ 
+ int main(int argc, char *argv[])
+ {
++
++#ifdef DLINK_SOFTWARE
++	dlink_service_connect(0); // D-Link: connect to daemon
++#endif /* DLINK_SOFTWARE */
++
+ 	int result;
+ 	extern char *optarg;
+ 	extern int optind;
+-- 
+2.11.0
+

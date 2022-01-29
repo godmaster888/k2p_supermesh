@@ -1,0 +1,4 @@
+menuconfig BR2_PACKAGE_NAT_RTSP_MODULE
+	bool "RTSP conntrack module"
+	help
+		RTSP conntrack module.

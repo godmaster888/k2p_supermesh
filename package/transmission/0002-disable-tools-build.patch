@@ -1,0 +1,27 @@
+From 53522e575592b6464daa381beff8e673d43a44b6 Mon Sep 17 00:00:00 2001
+From: Alexander Safonov <asafonov@dlink.ru>
+Date: Fri, 4 Oct 2019 12:24:55 +0300
+Subject: transmission: disable tools build
+
+Tools are not used on D-Link SDK.
+
+Signed-off-by: Alexander Safonov <asafonov@dlink.ru>
+---
+ Makefile.am | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/Makefile.am b/Makefile.am
+index 036ccdd..e2941ef 100644
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -19,7 +19,6 @@ SUBDIRS = \
+   extras \
+   third-party \
+   libtransmission \
+-  utils \
+   $(DAEMON_DIR) \
+   $(CLI_DIR) \
+   $(GTK_DIR) \
+-- 
+2.20.1
+

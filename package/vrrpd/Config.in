@@ -1,0 +1,6 @@
+config BR2_PACKAGE_VRRPD
+	bool "vrrpd"
+	help
+	  Аn implementation of Virtual Router Redundancy Protocol as specified in rfc2338.
+
+	  https://github.com/fredbcode/Vrrpd

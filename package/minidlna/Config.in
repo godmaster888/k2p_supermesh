@@ -1,0 +1,31 @@
+config BR2_PACKAGE_MINIDLNA
+	bool "MiniDLNA"
+	select BR2_PACKAGE_SQLITE
+	select BR2_PACKAGE_LIBEXIF
+	select BR2_PACKAGE_LIBID3TAG
+	select BR2_PACKAGE_LIBJPEG
+	select BR2_PACKAGE_ZLIB
+	help
+	  MiniDLNA server
+
+if BR2_PACKAGE_MINIDLNA
+
+choice
+	prompt "Branch"
+	default BR2_PACKAGE_MINIDLNA_VERSION_ADVANCED
+
+config BR2_PACKAGE_MINIDLNA_VERSION_ADVANCED
+	bool "advanced (stable)"
+	help
+	  Stable branch without FLAC and OGG support
+
+config BR2_PACKAGE_MINIDLNA_VERSION_1_2_1
+	bool "1.2.1 (Sep 2020)"
+	select BR2_PACKAGE_LIBFLAC
+	select BR2_PACKAGE_LIBVORBIS
+	help
+	  Branch of September 2020 with FLAC and OGG support
+
+endchoice
+
+endif

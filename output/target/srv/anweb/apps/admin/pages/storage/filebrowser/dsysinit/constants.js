@@ -1,0 +1,1 @@
+"use strict";!function(){angular.module("app").constant("filebrowserConstants",{FILES_ROOT:"Device.USB.Storage."})}();

@@ -1,0 +1,3 @@
+config BR2_PACKAGE_XUPNPD
+	bool "xupnpd"
+	select BR2_PACKAGE_UDPXY

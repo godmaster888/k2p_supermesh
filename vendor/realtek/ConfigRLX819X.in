@@ -1,0 +1,16 @@
+config BR2_RLX_HWNAT_SUPPORT
+	bool "Support HW_NAT"
+	default n
+
+config BR2_SUPPORT_ASIC_COUNTERS
+	bool "ASIC counters"
+	default n
+
+config BR2_SUPPORT_DOS_FILTER
+	bool "Kernel (fastpath) DOS filter"
+	default n
+
+config BR2_SUPPORT_PORT_UTILIZATION
+	bool "Support port utilization"
+	depends on BR2_SUPPORT_ASIC_COUNTERS
+	default n

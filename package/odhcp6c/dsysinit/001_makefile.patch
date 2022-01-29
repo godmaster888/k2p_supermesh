@@ -1,0 +1,18 @@
+diff --git a/Makefile b/Makefile
+new file mode 100644
+index 0000000..19caa12
+--- /dev/null
++++ b/Makefile
+@@ -0,0 +1,12 @@
++.PHONY: clean
++
++CFLAGS += -std=gnu99 -D_GNU_SOURCE -Wall
++LDFLAGS += -lresolv
++PNAME = odhcp6c
++OBJS = src/dhcpv6.o src/md5.o src/odhcp6c.o src/ra.o src/script.o src/compat.o
++
++$(PNAME): $(OBJS)
++	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
++
++clean:
++	-rm $(OBJS) $(PNAME)

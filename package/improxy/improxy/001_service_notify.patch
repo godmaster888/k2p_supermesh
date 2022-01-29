@@ -1,0 +1,52 @@
+diff --git a/src/proxy.c b/src/proxy.c
+index e62ba37..c3f6103 100644
+--- a/src/proxy.c
++++ b/src/proxy.c
+@@ -44,6 +44,10 @@
+ #include "data.h"
+ #include "membership.h"
+ 
++#ifdef DLINK_SOFTWARE
++#include <d-link/d_service_notify.h>
++#endif
++
+ mcast_proxy mproxy;
+ char    pid_file[1024] = {0};
+ 
+@@ -601,13 +605,26 @@ int main(int argc, char *argv[])
+ 	int log_level = 0;
+ 	FILE *pidfp;
+ 
++#ifdef DLINK_SOFTWARE
++	int dlink_service_id = -1;
++#endif
++
+ 	memset(&mproxy, 0, sizeof(mcast_proxy));
+ 
+ 	mproxy.print_level = 0; //disable log to stdout
+ 	mproxy.syslog_level = LOG_PRI_ERROR;
+ 
++#ifdef DLINK_SOFTWARE
++	while ((opt = getopt(argc, argv, "i:c:d:vp:h")) > 0) {
++#else
+ 	while ((opt = getopt(argc, argv, "c:d:vp:h")) > 0) {
++#endif
+ 		switch (opt) {
++#ifdef DLINK_SOFTWARE
++		case 'i':
++			dlink_service_id = optarg ? atoi(optarg) : -1;
++			break;
++#endif
+ 		case 'c':
+ 			IMP_LOG_DEBUG("config file is %s\n", optarg);
+ 			strcpy(config, optarg);
+@@ -689,6 +706,9 @@ int main(int argc, char *argv[])
+ 	add_all_vif();
+ 	init_timer();
+ 
++#ifdef DLINK_SOFTWARE
++	dlink_service_connect(dlink_service_id);
++#endif
+ 
+ 	while (1) {
+ 		struct timeval *tm;

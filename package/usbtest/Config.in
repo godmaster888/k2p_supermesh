@@ -1,0 +1,2 @@
+config BR2_PACKAGE_USBTEST
+	bool "USB test utilities."

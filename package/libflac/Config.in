@@ -1,0 +1,4 @@
+config BR2_PACKAGE_LIBFLAC
+	bool
+	select BR2_PACKAGE_LIBOGG
+	default n

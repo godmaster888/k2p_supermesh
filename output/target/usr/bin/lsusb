@@ -1,0 +1,2 @@
+#!/bin/sh
+hotplug lsusb

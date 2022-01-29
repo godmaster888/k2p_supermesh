@@ -1,0 +1,21 @@
+#!/bin/sh -e
+
+# $1 - elf binary to fix
+# [$2] - patchelf executable
+
+FILE=$1
+PATCHELF=$2
+if [ -z "$PATCHELF" ]; then
+	# try out-of-sdk on-host utility
+	PATCHELF=patchelf
+fi
+
+LIBS=`$PATCHELF --print-needed $FILE`
+for i in $LIBS; do
+	NEW=`echo $i | sed -r 's/^\.[^a-zA-Z]*//'`
+	[ "$i" = "$NEW" ] && continue
+	echo "file $FILE, fix needed libs: $i -> $NEW"
+#	$PATCHELF --replace-needed $i $NEW $FILE
+	$PATCHELF --remove-needed $i $FILE
+	$PATCHELF --add-needed $NEW $FILE
+done

@@ -1,0 +1,230 @@
+#!/bin/sh -e
+
+#echo $# args = $@
+#echo env below
+#env
+
+# We have:
+
+# global:
+# LINUXDIR
+
+# env exported:
+# MEDIATEK_WIFI_DIR
+# RALINK_MTK_WIFI_DRV_RT2860 ?= y
+# RALINK_MTK_WIFI_DRV_RTPCI ?= y
+# RALINK_MTK_WIFI_DRV_MT7610E ?= y
+# RALINK_MTK_WIFI_DRV_RLT_WIFI ?= y
+# RALINK_MTK_WIFI_DRV_MT_WIFI ?= y
+# BR2_PACKAGE_ROAMINGD ?= y
+
+if [ -n "${RALINK_MTK_WIFI_DRV_RT2860}${RALINK_MTK_WIFI_DRV_RTPCI}" ]; then
+	echo 'Your Wi-Fi settings are not supported still'
+	echo 'Only expected:'
+	echo '  RALINK_MTK_WIFI_DRV_RLT_WIFI'
+	echo '  RALINK_MTK_WIFI_DRV_MT_WIFI'
+	echo '	RALINK_MTK_WIFI_DRV_MT7610E'
+	exit 1
+fi
+
+#if [ "${RALINK_MTK_WIFI_DRV_RT2860}${RALINK_MTK_WIFI_DRV_RTPCI}${RALINK_MTK_WIFI_DRV_MT7610E}${RALINK_MTK_WIFI_DRV_RLT_WIFI}_${RALINK_MTK_WIFI_DRV_MT_WIFI}" != "_y" ]; then
+#	echo only RALINK_MTK_WIFI_DRV_MT_WIFI is expected here now
+#	exit 1
+#fi
+
+[ $# -ne 1 ] && exit 1
+
+cd $LINUXDIR
+MTKDIR=`basename $MEDIATEK_WIFI_DIR`
+
+
+slink_mt_wifi()
+{
+	MT_WIFI_DIR=drivers/net/wireless/mtk/mt7615e
+	if [ "${RALINK_MTK_WIFI_5GHZ_MT7613AEN}" = "y" ]; then
+		MT_WIFI_DIR=drivers/net/wireless/mtk/mt7663e
+	fi
+
+	#pushd drivers/net/wireless/mtk/mt7615e
+	cd ${MT_WIFI_DIR}
+	if [ -L mt_wifi ]; then
+		echo "seems like dirty mt7615e"
+		exit 1
+	fi
+	mv mt_wifi mt_wifi.dist
+	ln -snf ../../../../../../${MTKDIR}/mt_wifi .
+	ln -snf ../../../../../../${MTKDIR}/mt_wifi_ap .
+	if [ "${RALINK_MTK_WIFI_5GHZ_MT7613AEN}" = "y" ] || \
+		[ "${MEDIATEK_WIFI_VERSION}" = "bump_to_5050_dru" ]; then
+		ln -snf ../../../../../../${MTKDIR}/mt_wifi_sta .
+	fi
+	#popd
+	cd -
+
+	# curr mt7615 wifi searches for drivers/net/wireless/mt_wifi[_ap]
+	# I suppose the upgraded uses ..mtk/mt7615e pathes.
+	cd drivers/net/wireless
+	ln -snf ../../../../${MTKDIR}/mt_wifi .
+	ln -snf ../../../../${MTKDIR}/mt_wifi_ap .
+	cd -
+}
+
+clean_mt_wifi()
+{
+	MT_WIFI_DIR=drivers/net/wireless/mtk/mt7615e
+	if [ "${RALINK_MTK_WIFI_5GHZ_MT7613AEN}" = "y" ]; then
+		MT_WIFI_DIR=drivers/net/wireless/mtk/mt7663e
+	fi
+	#pushd drivers/net/wireless/mtk/mt7615e
+	cd ${MT_WIFI_DIR}
+	if [ ! -L mt_wifi ]; then
+		echo "seems like nothing to clean in mt7615e"
+		exit 0
+	fi
+	rm -f mt_wifi mt_wifi_ap
+	if [ "${RALINK_MTK_WIFI_5GHZ_MT7613AEN}" = "y" ] || \
+		[ "${MEDIATEK_WIFI_VERSION}" = "bump_to_5050_dru" ]; then
+		rm -f mt_wifi_sta
+	fi
+	mv mt_wifi.dist mt_wifi
+	#popd
+	cd -
+
+	cd drivers/net/wireless
+	rm -f mt_wifi mt_wifi_ap
+	cd -
+}
+
+slink_rlt_wifi()
+{
+	cd drivers/net/wireless/mtk/mt76x2e
+	if [ -L mt76x2_wifi ]; then
+		echo "seems like dirty mt76x2e"
+		exit 1
+	fi
+	mv mt76x2_wifi mt76x2_wifi.dist
+	ln -snf ../../../../../../${MTKDIR}/rlt_wifi mt76x2_wifi
+	ln -snf ../../../../../../${MTKDIR}/rlt_wifi_ap mt76x2_wifi_ap
+	cd -
+
+	# curr mt7615 wifi searches for drivers/net/wireless/(rlt|mt)_wifi[_ap]
+	# I suppose the upgraded uses ..mtk/mt7615e pathes.
+	cd drivers/net/wireless
+	mv rlt_wifi rlt_wifi.dist
+	ln -snf ../../../../${MTKDIR}/rlt_wifi .
+	ln -snf ../../../../${MTKDIR}/rlt_wifi_ap .
+	cd -
+}
+
+clean_rlt_wifi()
+{
+	cd drivers/net/wireless/mtk/mt76x2e
+	if [ ! -L mt76x2_wifi ]; then
+		echo "seems like nothing to clean in mt76x2e"
+		exit 0
+	fi
+	rm -f mt76x2_wifi mt76x2_wifi_ap
+	mv mt76x2_wifi.dist mt76x2_wifi
+	cd -
+
+	cd drivers/net/wireless
+	rm -f rlt_wifi rlt_wifi
+	mv rlt_wifi.dist rlt_wifi
+	cd -
+}
+
+slink_mt7610e()
+{
+	cd drivers/net/wireless/mtk/mt7610e
+	if [ -L mt7610_wifi ]; then
+		echo "seems like dirty mt7610e"
+		exit 1
+	fi
+	mv mt7610_wifi mt7610_wifi.dist
+	ln -snf ../../../../../../${MTKDIR}/MT7610_ap mt7610_wifi
+	cd -
+
+	cd drivers/net/wireless
+	ln -snf ../../../../${MTKDIR}/MT7610_ap .
+	cd -
+}
+
+clean_mt7610e()
+{
+	cd drivers/net/wireless/mtk/mt7610e
+	if [ ! -L mt7610_wifi ]; then
+		echo "seems like nothing to clean in mt7610e"
+		exit 0
+	fi
+	rm -f mt7610_wifi
+	mv mt7610_wifi.dist mt7610_wifi
+	cd -
+
+	cd drivers/net/wireless
+	rm -f MT7610_ap
+	cd -
+}
+
+
+slink_mt7603()
+{
+	#pushd drivers/net/wireless/mtk/mt7603e
+	cd drivers/net/wireless/mtk/mt7603e
+	if [ -L mt7603_wifi ]; then
+		echo "seems like dirty mt7603e"
+		exit 1
+	fi
+	mv mt7603_wifi mt7603_wifi.dist
+	ln -snf ../../../../../../${MTKDIR}/mt7603_wifi .
+	ln -snf ../../../../../../${MTKDIR}/mt7603_wifi_ap .
+	#popd
+	cd -
+}
+
+clean_mt7603()
+{
+	#pushd drivers/net/wireless/mtk/mt7603e
+	echo "clean in mt7603e"
+	cd drivers/net/wireless/mtk/mt7603e
+	if [ ! -L mt7603_wifi ]; then
+		echo "seems like nothing to clean in mt7603e"
+		exit 0
+	fi
+	rm -f mt7603_wifi mt7603_wifi_ap
+	mv mt7603_wifi.dist mt7603_wifi
+	#popd
+	cd -
+}
+
+
+if [ $1 = "slink" ]; then
+	[ "${RALINK_MTK_WIFI_DRV_RLT_WIFI}" = "y" ] && slink_rlt_wifi
+	[ "${RALINK_MTK_WIFI_DRV_MT_WIFI}" = "y" ] && slink_mt_wifi
+	[ "${RALINK_MTK_WIFI_DRV_MT7610E}" = "y" ] && slink_mt7610e
+	[ "${RALINK_MTK_WIFI_DRV_MT7603}" = "y" ] && slink_mt7603
+
+	if [ "$BR2_PACKAGE_ROAMINGD" = "y" ]; then
+		sed -i 's/^\#source "drivers\/net\/wireless\/roam_transport/source "drivers\/net\/wireless\/roam_transport/g' ralink/Kconfig
+		cd drivers/net/wireless
+		ln -snf ../../../../${MTKDIR}/roam_transport .
+		cd -
+	fi
+elif [ $1 = "clean" ]; then
+	[ "${RALINK_MTK_WIFI_DRV_RLT_WIFI}" = "y" ] && clean_rlt_wifi
+	[ "${RALINK_MTK_WIFI_DRV_MT_WIFI}" = "y" ] && clean_mt_wifi
+	[ "${RALINK_MTK_WIFI_DRV_MT7610E}" = "y" ] && clean_mt7610e
+	[ "${RALINK_MTK_WIFI_DRV_MT7603}" = "y" ] && clean_mt7603
+
+	if [ "$BR2_PACKAGE_ROAMINGD" = "y" ]; then
+		sed -i 's/^source "drivers\/net\/wireless\/roam_transport/\#source "drivers\/net\/wireless\/roam_transport/g' ralink/Kconfig
+		cd drivers/net/wireless
+		rm -f roam_transport
+		cd -
+	fi
+else
+	echo "Unexpected cmd $1"
+	exit 1
+fi
+
+
+exit 0

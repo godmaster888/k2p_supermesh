@@ -1,0 +1,26 @@
+choice
+	prompt "Device type"
+	default BR2_DLINK_DEVICE_IS_GENERIC
+
+config BR2_DLINK_DEVICE_IS_GENERIC
+	bool "Generic device"
+	help
+		Выставляется, если профиль отправляется в продакшен на сайт dlink
+
+config BR2_DLINK_DEVICE_IS_CUSTOM
+	bool "Custom device"
+	help
+		Выставляется, если профиль является кастомом
+
+config BR2_DLINK_DEVICE_IS_SAMPLE
+	bool "Sample device"
+	help
+		Выставляется, если профиль нужен только для отладки (включен ipv6, supermesh, балансировка и тд)
+endchoice
+
+config BR2_DLINK_GENERIC_PROFILE
+	string "Base profile"
+	default ""
+
+config BR2_DLINK_DEVICE_IS_EOL
+	bool "EOL device"

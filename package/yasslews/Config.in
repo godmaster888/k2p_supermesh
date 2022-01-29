@@ -1,0 +1,27 @@
+#YASSLEWS HTTPS
+config BR2_PACKAGE_YASSLEWS
+	bool "yasslEWS"
+	depends on !BR2_PACKAGE_CIVETWEB
+	select BR2_LEGACY
+	default n
+	help
+		The yaSSL Embedded Web Server is a fast, embeddable, and
+		easy-to-configure web server with a strong focus on
+		portability and security. It offers SSL/TLS (HTTPS) support
+		built-in through the CyaSSL embedded SSL Library to provide
+		you with the secure performance that your project needs.
+		http://www.yassl.com
+
+if BR2_PACKAGE_YASSLEWS
+
+	source "package/libcyassl/Config.in"
+
+config BR2_YASSLEWS_USE_AXTLS
+	bool "axtls (enables HTTPS)"
+	depends on BR2_PACKAGE_AXTLS
+
+config BR2_YASSLEWS_EXTENDED_BUFFER
+	bool "Extended buffer for yasslews"
+	default y
+
+endif	# BR2_PACKAGE_YASSLEWS

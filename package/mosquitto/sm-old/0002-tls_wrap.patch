@@ -1,0 +1,49 @@
+--- a/lib/mosquitto.h   2018-02-28 23:53:44.000000000 +0800
++++ b/lib/mosquitto.h   2018-03-27 14:02:52.730573600 +0800
+@@ -80,7 +80,8 @@
+ 	MOSQ_ERR_UNKNOWN = 13,
+ 	MOSQ_ERR_ERRNO = 14,
+ 	MOSQ_ERR_EAI = 15,
+-	MOSQ_ERR_PROXY = 16
++	 MOSQ_ERR_PROXY = 16,
++    MOSQ_ERR_NO_WANT_CONNECT = 17
+ };
+ 
+ /* Error values */
+@@ -1528,6 +1529,8 @@
+  */
+ libmosq_EXPORT int mosquitto_sub_topic_check(const char *topic);
+ 
++libmosq_EXPORT int mosquitto_socket_connect_tls(struct mosquitto *mosq);
++
+ #ifdef __cplusplus
+ }
+ #endif
+
+--- a/lib/mosquitto.c   2018-02-28 23:53:44.000000000 +0800
++++ b/lib/mosquitto.c   2018-03-27 14:10:10.386123131 +0800
+@@ -1434,4 +1434,16 @@
+ 
+ 	return MOSQ_ERR_SUCCESS;
+ }
++/* Tom Li, 03/27*/
++int mosquitto_socket_connect_tls(struct mosquitto *mosq)
++{
++    if(mosq->want_connect)
++    {
++        return mosquitto__socket_connect_tls(mosq);
++    }
++    else
++    {
++        return MOSQ_ERR_NO_WANT_CONNECT;
++    }
++}
+
+--- a/lib/linker.version	2018-03-27 16:42:53.476255167 +0800
++++ b/lib/linker.version	2018-03-27 16:42:35.039111105 +0800
+@@ -77,4 +77,5 @@
+ 		mosquitto_pub_topic_check;
+ 		mosquitto_sub_topic_check;
+ 		mosquitto_socks5_set;
++        mosquitto_socket_connect_tls;
+ } MOSQ_1.3;

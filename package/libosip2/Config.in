@@ -1,0 +1,34 @@
+menuconfig BR2_PACKAGE_LIBOSIP2
+	bool "libosip2"
+	default n
+	help
+	  oSIP is an LGPL implementation of SIP. It's stable, portable, flexible and compliant!
+
+	  http://www.antisip.com
+
+if BR2_PACKAGE_LIBOSIP2
+config BR2_PACKAGE_LIBOSIP2_MULTITHREAD
+	bool "support multithread"
+	default y
+	help
+	  build with support multithread
+
+config BR2_PACKAGE_LIBOSIP2_MINIMIZE
+	bool "minimize build"
+	default n
+	help
+	  only compile minimal voip related code
+
+choice
+	prompt "Version"
+	default BR2_PACKAGE_LIBOSIP2_V5_1
+
+config BR2_PACKAGE_LIBOSIP2_V5_0
+	bool "v5.0.0"
+
+config BR2_PACKAGE_LIBOSIP2_V5_1
+	bool "v5.1.0"
+
+endchoice
+
+endif

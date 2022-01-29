@@ -1,0 +1,5 @@
+config BR2_PACKAGE_VLAN
+       bool "vlan"
+       select BR2_LEGACY
+       help
+         vlan 8021q support

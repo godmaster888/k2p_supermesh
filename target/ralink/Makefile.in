@@ -1,0 +1,63 @@
+###################################
+#  RALINK CHIPS
+###################################
+
+export RALINK=y
+
+ifeq ($(RALINK_RT6855),y)
+export CONFIG_RALINK_RT6855=y
+TARGET_CFLAGS += -DCONFIG_RALINK_RT6855
+endif
+
+ifeq ($(RALINK_RT6855A),y)
+export CONFIG_RALINK_RT6855A=y
+TARGET_CFLAGS += -DCONFIG_RALINK_RT6855A
+endif
+
+ifeq ($(RALINK_MT7620),y)
+export CONFIG_RALINK_MT7620=y
+TARGET_CFLAGS += -DCONFIG_RALINK_MT7620
+endif
+
+ifeq ($(RALINK_MT7621),y)
+export CONFIG_RALINK_MT7621=y
+# для libflex, pppd, openl2tp ...
+##export RALINK_TOOLCHAIN_MT7621=y
+# UPDATE: was moved below
+TARGET_CFLAGS += -DCONFIG_RALINK_MT7621
+endif
+
+ifeq ($(BR2_LINUX_KERNEL_3_10)$(mipsel),yy)
+export RALINK_TOOLCHAIN_MT7621=y
+endif
+
+ifeq ($(RALINK_MT7628),y)
+export CONFIG_RALINK_MT7628=y
+TARGET_CFLAGS += -DCONFIG_RALINK_MT7628
+endif
+
+ifneq (${SWITCH_WAN_PHY}, )
+TARGET_CFLAGS +=-DWAN_PHY=${SWITCH_WAN_PHY}
+else
+$(error SWITCH_WAN_PHY is empty!!!)
+endif
+
+ifneq (${SWITCH_COUNT_PHY_PORTS}, )
+TARGET_CFLAGS +=-DCOUNT_PHY_PORTS=${SWITCH_COUNT_PHY_PORTS}
+else
+$(error SWITCH_COUNT_PHY_PORTS is empty!!!)
+endif
+
+TARGETS += rt3x5x
+TARGET_CFLAGS += -DRALINK -pipe -mips32r2 -mtune=mips32r2 -msoft-float
+
+ifeq ($(BR2_MTK_WIFI_MULTI_POWER_LIMIT),y)
+SINGLE_SKU = SINGLE_SKU=y
+endif
+
+rt3x5x:
+	@$(PROFILE_DIR)/buildFS $(PROFILE_DIR) $(TARGET_DIR) $(SINGLE_SKU)
+#	install target/ralink/wlctl ${TARGET_DIR}/bin/
+#	install target/ralink/config.default ${TARGET_DIR}/etc/
+
+

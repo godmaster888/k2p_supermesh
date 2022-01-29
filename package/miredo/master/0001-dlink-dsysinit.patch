@@ -1,0 +1,201 @@
+--- a/libteredo/teredo.c
++++ b/libteredo/teredo.c
+@@ -64,6 +64,12 @@
+ 	{ { { 0xfe, 0x80, 0, 0, 0, 0, 0, 0,
+ 		    0x80, 0, 'T', 'E', 'R', 'E', 'D', 'O' } } };
+ 
++#ifdef DLINK_SOFTWARE
++#ifdef IP_PKTINFO
++unsigned int teredo_bind_ifindex = 0;
++#endif /* IP_PKTINFO */
++#endif /* DLINK_SOFTWARE */
++
+ int teredo_socket (uint32_t bind_ip, uint16_t port)
+ {
+ 	struct sockaddr_in myaddr =
+@@ -152,6 +158,30 @@
+ 	};
+ 
+ 	ssize_t res;
++
++#ifdef DLINK_SOFTWARE
++#ifdef IP_PKTINFO
++	char cbuf[CMSG_SPACE(sizeof(struct in_pktinfo))] = { 0 };
++	struct cmsghdr *cmsg;
++	struct in_pktinfo *pktinfo;
++
++	if (!teredo_bind_ifindex)
++		goto skip_bind_ifindex;
++
++	msg.msg_control = cbuf;
++	msg.msg_controllen = sizeof(cbuf);
++
++	cmsg = CMSG_FIRSTHDR(&msg);
++	cmsg->cmsg_len = CMSG_LEN(sizeof(struct in_pktinfo));
++	cmsg->cmsg_level = IPPROTO_IP;
++	cmsg->cmsg_type = IP_PKTINFO;
++
++	pktinfo = (struct in_pktinfo *)CMSG_DATA(cmsg);
++	pktinfo->ipi_ifindex = teredo_bind_ifindex;
++
++skip_bind_ifindex:
++#endif /* IP_PKTINFO */
++#endif /* DLINK_SOFTWARE */
+ 
+ 	/* Try to send until we have dequeued all pending errors */
+ 	do
+--- a/libteredo/teredo.h
++++ b/libteredo/teredo.h
+@@ -43,6 +43,12 @@
+  */
+ extern const struct in6_addr teredo_restrict;
+ extern const struct in6_addr teredo_cone;
++
++#ifdef DLINK_SOFTWARE
++#ifdef IP_PKTINFO
++extern unsigned int teredo_bind_ifindex;
++#endif /* IP_PKTINFO */
++#endif /* DLINK_SOFTWARE */
+ 
+ #define TEREDO_PREFIX          0x20010000
+ #define TEREDO_PREFIX_OBSOLETE 0x3ffe831f
+--- a/src/main.c
++++ b/src/main.c
+@@ -53,6 +53,10 @@
+ 
+ #include "miredo.h"
+ 
++#ifdef DLINK_SOFTWARE
++#include <d-link/d_service_notify.h>
++#endif /* DLINK_SOFTWARE */
++
+ /*
+  * RETURN VALUES:
+  * 0: ok
+@@ -341,8 +345,15 @@
+ 		{ "user",       required_argument, NULL, 'u' },
+ 		{ "username",   required_argument, NULL, 'u' },
+ 		{ "version",    no_argument,       NULL, 'V' },
++#ifdef DLINK_SOFTWARE
++		{ "serviceid",  required_argument, NULL, 'i' },
++#endif /* DLINK_SOFTWARE */
+ 		{ NULL,         no_argument,       NULL, '\0'}
+ 	};
++
++#ifdef DLINK_SOFTWARE
++	int dlink_service_id = -1;
++#endif /* DLINK_SOFTWARE */
+ 
+ 	init_locale ();
+ 
+@@ -355,7 +366,11 @@
+ 	memset (&flags, 0, sizeof (flags));
+ 
+ 	int c;
++#ifdef DLINK_SOFTWARE
++	while ((c = getopt_long (argc, argv, "c:fhp:t:u:Vi:", opts, NULL)) != -1)
++#else
+ 	while ((c = getopt_long (argc, argv, "c:fhp:t:u:V", opts, NULL)) != -1)
++#endif /* DLINK_SOFTWARE */
+ 		switch (c)
+ 		{
+ 
+@@ -384,6 +399,12 @@
+ 
+ 			case 'V':
+ 				return miredo_version ();
++
++#ifdef DLINK_SOFTWARE
++			case 'i':
++				dlink_service_id = optarg ? atoi(optarg) : -1;
++				break;
++#endif /* DLINK_SOFTWARE */
+ 
+ 			case '?':
+ 			default:
+@@ -523,6 +544,10 @@
+ 	}
+ 	close (pipes[1]);
+ 
++#ifdef DLINK_SOFTWARE
++	dlink_service_connect(dlink_service_id);
++#endif /* DLINK_SOFTWARE */
++
+ 	/*
+ 	 * Run
+ 	 */
+--- a/src/miredo.c
++++ b/src/miredo.c
+@@ -216,8 +216,12 @@
+ 			status = WTERMSIG (status);
+ 			syslog (LOG_INFO, _("Child %d killed by signal %d (%s)"),
+ 			        (int)pid, status, strsignal (status));
++#ifdef DLINK_SOFTWARE
++			retval = ((status == SIGABRT) ? 1 : 2);
++#else
+ 			retval = 2;
+ 			sleep (1);
++#endif /* DLINK_SOFTWARE */
+ 		}
+ 	}
+ 	while (retval == 2);
+--- a/src/relayd.c
++++ b/src/relayd.c
+@@ -67,6 +67,12 @@
+ #include "miredo.h"
+ #include "conf.h"
+ 
++#ifdef DLINK_SOFTWARE
++#include <net/if.h>
++#include <jansson.h>
++#include <d-link/d_service_notify.h>
++#endif /* DLINK_SOFTWARE */
++
+ static void miredo_setup_fd (int fd);
+ static void miredo_setup_nonblock_fd (int fd);
+ 
+@@ -293,6 +299,14 @@
+ 	assert (data != NULL);
+ 
+ 	configure_tunnel (((miredo_tunnel *)data)->priv_fd, addr, mtu);
++
++#ifdef DLINK_SOFTWARE
++	json_t *dlink_pack_obj = json_pack("{s:s, s:s, s:i}",
++	                                   "state", "up",
++	                                   "address", str,
++	                                   "mtu", mtu);
++	dlink_service_update(dlink_pack_obj);
++#endif /* DLINK_SOFTWARE */
+ }
+ 
+ 
+@@ -307,6 +321,12 @@
+ 	configure_tunnel (((miredo_tunnel *)data)->priv_fd, &in6addr_any,
+ 	                         1280);
+ 	syslog (LOG_NOTICE, _("Teredo pseudo-tunnel stopped"));
++
++#ifdef DLINK_SOFTWARE
++	json_t *dlink_pack_obj = json_pack("{s:s}",
++	                                   "state", "down");
++	dlink_service_update(dlink_pack_obj);
++#endif /* DLINK_SOFTWARE */
+ }
+ 
+ 
+@@ -530,6 +550,16 @@
+ 
+ 	char *ifname = miredo_conf_get (conf, "InterfaceName", NULL);
+ 
++#ifdef DLINK_SOFTWARE
++#ifdef IP_PKTINFO
++	char *bind_ifname = miredo_conf_get(conf, "BindInterface", NULL);
++	if (bind_ifname) {
++		teredo_bind_ifindex = if_nametoindex(bind_ifname);
++		free(bind_ifname);
++	}
++#endif /* IP_PKTINFO */
++#endif /* DLINK_SOFTWARE */
++
+ 	miredo_conf_clear (conf, 5);
+ 
+ 	/*

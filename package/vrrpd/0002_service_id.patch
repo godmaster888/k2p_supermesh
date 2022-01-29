@@ -1,0 +1,27 @@
+--- Vrrpd-master/vrrpd.c
++++ vrrpd-master/vrrpd.c
+@@ -48,6 +48,11 @@
+ /* local include */
+ #include "vrrpd.h"
+ #include "ipaddr.h"
++
++#ifdef DLINK_SOFTWARE
++#include <d-link/d_service_notify.h>
++#endif
++
+ 
+ int ip_id = 0;	/* to have my own ip_id creates collision with kernel ip->id
+ 		** but it should be ok because the packets are unlikely to be
+@@ -1892,6 +1898,11 @@
+         killvrrpd(12,vsrv->vif.ifname);
+ 	strcpy(backup_reason,"INIT state");
+ 
++#ifdef DLINK_SOFTWARE
++    dlink_service_connect(0);
++    dlink_service_update_cmdline();
++#endif
++
+ 	/* main loop */
+ 	while( 1 ){
+ 		if (monitor) {ethsup(vsrv);};
+

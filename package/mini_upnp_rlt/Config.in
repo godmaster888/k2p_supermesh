@@ -1,0 +1,10 @@
+config BR2_PACKAGE_MINI_UPNP_RLT
+	bool "mini_upnp_rtl"
+	depends on BR2_rlx_wifi
+	help
+	  For Realtek WPS daemon.
+
+config BR2_MINI_UPNP_RLT_VERSION
+	string "miniupnp-version"
+	depends on BR2_PACKAGE_MINI_UPNP_RLT
+	default "3.4.11C"

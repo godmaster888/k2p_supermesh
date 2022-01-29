@@ -1,0 +1,1 @@
+"use strict";angular.module("trouble").controller("connectedCtrl",["$scope","$rootScope","queryString",function($scope,$rootScope){$rootScope.dlinkMobileApp.isUserInMobileApp()?($scope.title="dcc_finish_title",$scope.info=null):($scope.title="dcc_trouble_ok",$scope.info="dcc_click_tosite")}]);

@@ -1,0 +1,7 @@
+config BR2_PACKAGE_REMSERIAL
+	bool "remserial"
+	help
+		The remserial program acts as a communications bridge between a
+		TCP/IP network port and a Linux device such as a serial port.
+		Any character-oriented Linux /dev device will work.
+		http://lpccomp.bc.ca/remserial/

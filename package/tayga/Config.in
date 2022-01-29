@@ -1,0 +1,5 @@
+config BR2_PACKAGE_TAYGA
+	bool "tayga"
+	depends on BR2_INET_IPV6
+	help
+	  NAT64

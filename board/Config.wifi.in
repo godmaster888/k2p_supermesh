@@ -1,0 +1,520 @@
+menuconfig BR2_SUPPORT_WIFI
+	bool "Support Wi-Fi in device"
+	select BR2_PACKAGE_WIRELESS_TOOLS
+	select BR2_PACKAGE_WIRELESS_TOOLS_LIB
+	select BR2_PACKAGE_WIRELESS_REGDB
+	select BR2_PACKAGE_IW if BR2_qca
+	default y
+
+if BR2_SUPPORT_WIFI
+
+if BR2_ralink
+source "package/private/mediatek/mediatek_wifi/Config.in"
+source "package/private/mediatek/mediatek_wifi/Config_eeprom.in"
+
+config BR2_WIFI_MT7615
+	bool "MT7615 is used"
+	depends on (RALINK_MTK_WIFI_2GHZ_MT7615EN || RALINK_MTK_WIFI_5GHZ_MT7615EN)
+	select BR2_WIFI_LED_CTRL_BY_DRIVER
+
+config BR2_WIFI_LED_CTRL_BY_DRIVER
+	bool
+	default y
+	depends on (BR2_WIFI_MT7615 || RALINK_MTK_WIFI_2GHZ_MT7603E || RALINK_MTK_WIFI_5GHZ_MT7610EN)
+
+choice
+	prompt "Wi-Fi Chip in 2.4GHz"
+	default BR2_WIFI_OTHER
+
+config RALINK_MTK_WIFI_2GHZ_MT7615EN
+	bool "MT7615EN"
+	select BR2_WIFI_MT7615
+
+config RALINK_MTK_WIFI_2GHZ_MT7603E
+	bool "MT7603E"
+	select RALINK_MTK_WIFI_DRV_MT7603
+	select BR2_WIFI_LED_CTRL_BY_DRIVER
+
+config BR2_WIFI_OTHER
+	bool "Other"
+endchoice
+
+if BR2_SUPPORT_WIFI_5GHZ
+source "package/private/mediatek/mediatek_wifi/Config.5.in"
+endif
+
+config BR2_WIFI_MT7615_SIMULT_DUALBAND
+	bool "Simultaneous dual-band on MT7615"
+	default n
+	depends on BR2_WIFI_MT7615
+	help
+	  Set to Y if a board uses MT7615 in
+	  dual-band mode simultaneously. You can
+	  find such variant eg. on DIR-853 which
+	  contains only one MT7615 ship.
+	  It was called SUPPORT_WIFI_CONCURRENT
+	  in the "new_config" branch of the DRU sdk.
+
+config BR2_WIFI_ANTENNAS_NUM
+	int "Number of antennas"
+	default 2 if RALINK_MT7620A
+	default 4 if (BR2_PACKAGE_DLINK_HQ_SUPERMESH || BR2_WIFI_MT7615)
+	depends on BR2_SUPPORT_WIFI && (BR2_PACKAGE_DLINK_HQ_SUPERMESH || RALINK_MT7620A || BR2_WIFI_MT7615)
+
+config BR2_WIFI_SUPPORT_CALIBRATION_CACHE
+	bool "Enable calibration cache"
+	depends on BR2_WIFI_MT7615
+	depends on !BR2_WIFI_MT7615_SIMULT_DUALBAND
+	help
+		Enable caching for wifi calibrations.
+
+		This option speeds up wifi restarting, if a wifi driver is not unloaded.
+
+		This option will be harmful on SIMULT_DUALBAND boards,
+		because both interfaces are restarted simultaneously, therefore a wifi module is unloaded.
+endif
+
+if BR2_rlx_wifi
+choice
+	prompt "Wi-Fi Chip For 2.4GHz"
+	default BR2_WIFI_2GHZ_RTL_NONE
+
+config BR2_WIFI_2GHZ_RTL_NONE
+	bool "NONE"
+
+config BR2_WIFI_2GHZ_RTL_8188RE
+	bool "RTL8188RE"
+
+config BR2_WIFI_2GHZ_RTL_8188ER
+	bool "RTL8188ER"
+
+config BR2_WIFI_2GHZ_RTL_8192CE
+	bool "RTL8192CE"
+
+config BR2_WIFI_2GHZ_RTL_8192ER
+	bool "RTL8192ER"
+
+config BR2_WIFI_2GHZ_RTL_8194AE
+	bool "RTL8194AE"
+
+config BR2_WIFI_2GHZ_RTL_8197F
+	bool "RTL8197F"
+
+config BR2_WIFI_2GHZ_RTL_8197G
+	bool "RTL8197G"
+
+config BR2_WIFI_2GHZ_RTL_8192FR
+	bool "RTL8192FR"
+
+endchoice
+
+choice
+	prompt "Wi-Fi Chip For 5GHz"
+	default BR2_WIFI_5GHZ_RTL_NONE
+
+config BR2_WIFI_5GHZ_RTL_NONE
+	bool "NONE"
+
+config BR2_WIFI_5GHZ_RTL_8881A
+	bool "RTL8881A"
+
+config BR2_WIFI_5GHZ_RTL_8812
+	bool "RTL8812A"
+
+config BR2_WIFI_5GHZ_RTL_8814AE
+	bool "RTL8814A"
+
+config BR2_WIFI_5GHZ_RTL_8814B
+	bool "RTL8814B"
+
+config BR2_WIFI_5GHZ_RTL_8822
+	bool "RTL8812B"
+
+config BR2_WIFI_5GHZ_RTL_8812F
+	bool "RTL8812F"
+
+endchoice
+
+config BR2_RF_DPK_SETTING_SUPPORT
+	bool "rf dpk settings"
+	depends on BR2_WIFI_2GHZ_RTL_8192FR || BR2_WIFI_2GHZ_RTL_8197F
+
+config BR2_RLX_WIFI_TSSI_2_4GHZ
+	bool
+	default y
+	depends on BR2_WIFI_2GHZ_RTL_8197G
+
+config BR2_RLX_WIFI_TSSI_5GHZ
+	bool
+	default y
+	depends on BR2_WIFI_5GHZ_RTL_8812F || BR2_WIFI_5GHZ_RTL_8814B
+
+config BR2_RLX_WIFI_FORCE_DISABLE_TSSI_2_4GHZ
+	bool "Force disable TSSI for 2.4GHz"
+	depends on BR2_RLX_WIFI_TSSI_2_4GHZ
+	help
+	  This option allows to ignore HW value from flash.
+
+config BR2_RLX_WIFI_FORCE_DISABLE_TSSI_5GHZ
+	bool "Force disable TSSI for 5GHz"
+	depends on BR2_RLX_WIFI_TSSI_5GHZ
+	help
+	  This option allows to ignore HW value from flash.
+
+endif
+
+# 22564
+if BR2_qca
+
+choice
+	prompt "Select Wi-Fi driver"
+	default BR2_WIFI_DRIVER_LINUX
+
+config BR2_WIFI_DRIVER_LINUX
+	bool "Linux kernel"
+	help
+	  Use ath9k/ath10k in linux kernel tree.
+
+config BR2_WIFI_DRIVER_QCA
+	bool "Qualcomm proprietary"
+	select BR2_PACKAGE_QCA_SSDK
+	help
+	  Use QCA SPF Wi-Fi driver.
+
+endchoice
+
+
+comment "!!! CAUTION !!! Expected wlan0/wlan1 as interface names if Linux is selected"
+	depends on BR2_WIFI_DRIVER_LINUX
+	depends on (BR2_WIFI_HW_FIRST_PHY_NAME != "wlan0") || (BR2_WIFI_HW_SECOND && (BR2_WIFI_HW_SECOND_PHY_NAME != "wlan1"))
+
+comment "!!! CAUTION !!! Expected wifi0/wifi1 as interface names if Qualcomm is selected"
+	depends on BR2_WIFI_DRIVER_QCA
+	depends on (BR2_WIFI_HW_FIRST_PHY_NAME != "wifi0") || (BR2_WIFI_HW_SECOND && (BR2_WIFI_HW_SECOND_PHY_NAME != "wifi1"))
+
+endif # BR2_qca
+
+#
+# Свойства радиомодулей
+#
+
+menuconfig BR2_WIFI_HW_FIRST
+	bool "First transmitter"
+	default y
+
+if BR2_WIFI_HW_FIRST
+config BR2_WIFI_HW_FIRST_DRIVER
+	string "Driver name"
+	default "rlx" if BR2_rlx_wifi
+	# TODO дождаться завершения тикета 21193 и воспользоваться наработками
+	default "WAIT_FOR_21193" if BR2_ralink
+	default "hostapd"
+	help
+	  Specifies the name of the driver for this interface.
+
+config BR2_WIFI_HW_FIRST_5GHZ
+	bool "5GHz frequency band"
+	select BR2_SUPPORT_WIFI_5GHZ
+	default n
+	help
+	  Say Y if this interface is supposed to work with 5GHz frequency band.
+
+if BR2_WIFI_HW_FIRST_5GHZ
+config BR2_WIFI_HW_FIRST_5GHZ_BW80
+	bool "Support bandwidth 80MHz for 5G band"
+	select BR2_SUPPORT_WIFI_5GHZ_BW80
+	select BR2_SUPPORT_WIFI_AC
+	default y
+
+config BR2_WIFI_HW_FIRST_5GHZ_BW160
+	bool "Support bandwidth 160MHz for 5G band"
+	select BR2_WIFI_HW_FIRST_5GHZ_BW80
+	select BR2_SUPPORT_WIFI_5GHZ_BW160
+	default y if RALINK_MTK_WIFI_5GHZ_MT7615EN
+	default n
+
+config BR2_WIFI_HW_FIRST_5GHZ_BW8080
+	bool "Support bandwidth 80+80MHz for 5G band"
+	select BR2_WIFI_HW_FIRST_5GHZ_BW80
+	select BR2_SUPPORT_WIFI_5GHZ_BW8080
+	default y if RALINK_MTK_WIFI_5GHZ_MT7615EN
+	default n
+endif
+
+config BR2_WIFI_HW_FIRST_AX
+	bool "Support 802.11ax mode"
+	select BR2_SUPPORT_WIFI_AX
+	default n
+
+config BR2_WIFI_HW_FIRST_PHY_NAME
+	string "Interface name"
+	default "ra0"   if BR2_ralink
+	default "wlan0"
+	help
+	  Specifies the name of the driver for this interface.
+
+menu "Interface settings"
+config BR2_WIFI_HW_FIRST_VA_NAME_MASK
+	string "Virtual interface name template"
+	default "ra%i"       if BR2_ralink
+	default "wlan0_va%i" if BR2_rlx_wifi
+	default "wlan0_%i"
+
+config BR2_WIFI_HW_FIRST_VA_NAME_START
+	int "Virtual interface first index"
+	default 0 if BR2_ralink
+	default 1
+
+config BR2_WIFI_HW_FIRST_SUPPORT_AP
+	bool
+	select BR2_SUPPORT_WIFI_AP
+	default y if BR2_WIFI_HW_FIRST_AP_LIMIT != 0
+
+config BR2_WIFI_HW_FIRST_AP_LIMIT
+	int "Maximum AccessPoint count"
+	default 2
+
+config BR2_WIFI_HW_FIRST_SUPPORT_CLIENT
+	bool
+	select BR2_SUPPORT_WIFI_CLIENT
+	default y if BR2_WIFI_HW_FIRST_CLIENT_LIMIT != 0
+
+config BR2_WIFI_HW_FIRST_CLIENT_LIMIT
+	int "Maximum Client count"
+	default 1
+
+config BR2_WIFI_HW_FIRST_SUPPORT_WDS
+	bool
+	select BR2_SUPPORT_WIFI_WDS
+	default y if BR2_WIFI_HW_FIRST_WDS_LIMIT != 0
+
+config BR2_WIFI_HW_FIRST_WDS_LIMIT
+	int "Maximum WDS count"
+	default 0
+
+
+config BR2_WIFI_HW_FIRST_IFACE_TOTAL_LIMIT
+	int "Total interface limit (0 - no limit)"
+	default 0
+endmenu
+
+
+endif # BR2_WIFI_HW_FIRST
+
+menuconfig BR2_WIFI_HW_SECOND
+	bool "Second transmitter"
+	select BR2_WIFI_HW_FIRST
+	default n
+
+if BR2_WIFI_HW_SECOND
+config BR2_WIFI_HW_SECOND_DRIVER
+	string "Driver name"
+	default "rlx" if BR2_rlx_wifi
+	# TODO дождаться завершения тикета 21193 и воспользоваться наработками
+	default "WAIT_FOR_21193" if BR2_ralink
+	default "hostapd"
+	help
+	  Specifies the name of the driver for this interface.
+
+config BR2_WIFI_HW_SECOND_5GHZ
+	bool "5GHz frequency band"
+	select BR2_SUPPORT_WIFI_5GHZ
+	default n
+	help
+	  Say Y if this interface is supposed to work with 5GHz frequency band.
+
+if BR2_WIFI_HW_SECOND_5GHZ
+config BR2_WIFI_HW_SECOND_5GHZ_BW80
+	bool "Support bandwidth 80MHz for 5G band"
+	select BR2_SUPPORT_WIFI_5GHZ_BW80
+	select BR2_SUPPORT_WIFI_AC
+	default y
+
+config BR2_WIFI_HW_SECOND_5GHZ_BW160
+	bool "Support bandwidth 160MHz for 5G band"
+	select BR2_WIFI_HW_SECOND_5GHZ_BW80
+	select BR2_SUPPORT_WIFI_5GHZ_BW160
+	default y if RALINK_MTK_WIFI_5GHZ_MT7615EN
+	depends on !RALINK_MTK_WIFI_5GHZ_MT7613AEN
+	default n
+
+config BR2_WIFI_HW_SECOND_5GHZ_BW8080
+	bool "Support bandwidth 80+80MHz for 5G band"
+	select BR2_WIFI_HW_SECOND_5GHZ_BW80
+	select BR2_SUPPORT_WIFI_5GHZ_BW8080
+	default y if RALINK_MTK_WIFI_5GHZ_MT7615EN
+	depends on !RALINK_MTK_WIFI_5GHZ_MT7613AEN
+	default n
+endif
+
+config BR2_WIFI_HW_SECOND_AX
+	bool "Support 802.11ax mode"
+	select BR2_SUPPORT_WIFI_AX
+	default n
+
+menu "Interface settings"
+config BR2_WIFI_HW_SECOND_PHY_NAME
+	string "Interface name"
+	default "rax0"   if BR2_ralink && BR2_WIFI_MT7615_SIMULT_DUALBAND
+	default "rai0"   if BR2_ralink
+	default "wlan1"
+	help
+	  Specifies the name of the driver for this interface.
+
+config BR2_WIFI_HW_SECOND_VA_NAME_MASK
+	string "Virtual interface name template"
+	default "rax%i"       if BR2_ralink && BR2_WIFI_MT7615_SIMULT_DUALBAND
+	default "rai%i"       if BR2_ralink
+	default "wlan1_va%i"  if BR2_rlx_wifi
+	default "wlan1_%i"
+
+config BR2_WIFI_HW_SECOND_VA_NAME_START
+	int "Virtual interface first index"
+	default 0 if BR2_ralink
+	default 1
+
+config BR2_WIFI_HW_SECOND_SUPPORT_AP
+	bool
+	select BR2_SUPPORT_WIFI_AP
+	default y if BR2_WIFI_HW_SECOND_AP_LIMIT != 0
+
+config BR2_WIFI_HW_SECOND_AP_LIMIT
+	int "Maximum AccessPoint count"
+	default 2
+
+config BR2_WIFI_HW_SECOND_SUPPORT_CLIENT
+	bool
+	select BR2_SUPPORT_WIFI_CLIENT
+	default y if BR2_WIFI_HW_SECOND_CLIENT_LIMIT != 0
+
+config BR2_WIFI_HW_SECOND_CLIENT_LIMIT
+	int "Maximum Client count"
+	default 1
+
+config BR2_WIFI_HW_SECOND_SUPPORT_WDS
+	bool
+	select BR2_SUPPORT_WIFI_WDS
+	default y if BR2_WIFI_HW_SECOND_WDS_LIMIT != 0
+
+config BR2_WIFI_HW_SECOND_WDS_LIMIT
+	int "Maximum WDS count"
+	default 0
+
+
+config BR2_WIFI_HW_SECOND_IFACE_TOTAL_LIMIT
+	int "Total interface limit (0 - no limit)"
+	default 0
+endmenu
+
+
+endif # BR2_WIFI_HW_SECOND
+
+menuconfig BR2_WIFI_HW_THIRD
+	bool "Third transmitter"
+	select BR2_WIFI_HW_SECOND
+	default n
+
+if BR2_WIFI_HW_THIRD
+config BR2_WIFI_HW_THIRD_DRIVER
+	string "Driver name"
+	default "rlx" if BR2_rlx_wifi
+	# TODO дождаться завершения тикета 21193 и воспользоваться наработками
+	default "WAIT_FOR_21193" if BR2_ralink
+	default "hostapd"
+	help
+	  Specifies the name of the driver for this interface.
+
+config BR2_WIFI_HW_THIRD_5GHZ
+	bool "5GHz frequency band"
+	select BR2_SUPPORT_WIFI_5GHZ
+	default n
+	help
+	  Say Y if this interface is supposed to work with 5GHz frequency band.
+
+if BR2_WIFI_HW_THIRD_5GHZ
+config BR2_WIFI_HW_THIRD_5GHZ_BW80
+	bool "Support bandwidth 80MHz for 5G band"
+	select BR2_SUPPORT_WIFI_5GHZ_BW80
+	select BR2_SUPPORT_WIFI_AC
+	default n
+
+config BR2_WIFI_HW_THIRD_5GHZ_BW160
+	bool "Support bandwidth 160MHz for 5G band"
+	select BR2_WIFI_HW_THIRD_5GHZ_BW80
+	select BR2_SUPPORT_WIFI_5GHZ_BW160
+	default n
+	default n
+
+config BR2_WIFI_HW_THIRD_5GHZ_BW8080
+	bool "Support bandwidth 80+80MHz for 5G band"
+	select BR2_WIFI_HW_THIRD_5GHZ_BW80
+	select BR2_SUPPORT_WIFI_5GHZ_BW8080
+	default n
+	default n
+endif
+
+config BR2_WIFI_HW_THIRD_PHY_NAME
+	string "Interface name"
+	default "wlan2"
+	help
+	  Specifies the name of the driver for this interface.
+
+config BR2_WIFI_HW_THIRD_AX
+	bool "Support 802.11ax mode"
+	select BR2_SUPPORT_WIFI_AX
+	default n
+
+menu "Interface settings"
+config BR2_WIFI_HW_THIRD_VA_NAME_MASK
+	string "Virtual interface name template"
+	default "wlan2_%i"
+
+config BR2_WIFI_HW_THIRD_VA_NAME_START
+	int "Virtual interface first index"
+	default 1
+
+config BR2_WIFI_HW_THIRD_SUPPORT_AP
+	bool
+	select BR2_SUPPORT_WIFI_AP
+	default y if BR2_WIFI_HW_THIRD_AP_LIMIT != 0
+
+config BR2_WIFI_HW_THIRD_AP_LIMIT
+	int "Maximum AccessPoint count"
+	default 2
+
+config BR2_WIFI_HW_THIRD_SUPPORT_CLIENT
+	bool
+	select BR2_SUPPORT_WIFI_CLIENT
+	default y if BR2_WIFI_HW_THIRD_CLIENT_LIMIT != 0
+
+config BR2_WIFI_HW_THIRD_CLIENT_LIMIT
+	int "Maximum Client count"
+	default 1
+
+config BR2_WIFI_HW_THIRD_SUPPORT_WDS
+	bool
+	select BR2_SUPPORT_WIFI_WDS
+	default y if BR2_WIFI_HW_THIRD_WDS_LIMIT != 0
+
+config BR2_WIFI_HW_THIRD_WDS_LIMIT
+	int "Maximum WDS count"
+	default 0
+
+
+config BR2_WIFI_HW_THIRD_IFACE_TOTAL_LIMIT
+	int "Total interface limit (0 - no limit)"
+	default 0
+endmenu
+
+
+endif # BR2_WIFI_HW_THIRD
+
+
+config BR2_WIFI_RADIO_COUNT
+	int
+	default 0 if ! BR2_WIFI_HW_FIRST
+	default 1 if ! BR2_WIFI_HW_SECOND
+	default 2 if ! BR2_WIFI_HW_THIRD
+	default 3
+
+endif # BR2_SUPPORT_WIFI

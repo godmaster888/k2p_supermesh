@@ -1,0 +1,28 @@
+From 9a24e31c2d6eda064fbb8bf0407a4120bbcdc5f3 Mon Sep 17 00:00:00 2001
+From: Alexandr Ivanov <alivanov@dlink.ru>
+Date: Wed, 23 Oct 2019 17:43:31 +0300
+Subject: [PATCH] Make default cache size customizable.
+
+---
+ libtransmission/session.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/libtransmission/session.c b/libtransmission/session.c
+index e570ec8..792b0d4 100644
+--- a/libtransmission/session.c
++++ b/libtransmission/session.c
+@@ -62,7 +62,11 @@
+ enum
+ {
+ #ifdef TR_LIGHTWEIGHT
++#ifdef DLINK_SOFTWARE
++  DEFAULT_CACHE_SIZE_KB = DLINK_CACHE_SIZE,
++#else
+   DEFAULT_CACHE_SIZE_KB = 2048,
++#endif
+   DEFAULT_PREFETCH_ENABLED = false,
+ #else
+   DEFAULT_CACHE_SIZE_KB = 4096,
+-- 
+2.20.1
+

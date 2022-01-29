@@ -1,0 +1,33 @@
+From cda07b8981b6094e21a473c90d29c200d99781c0 Mon Sep 17 00:00:00 2001
+From: Maxim Zhukov <mzhukov@dlink.ru>
+Date: Fri, 19 Jul 2019 11:11:13 +0300
+Subject: [PATCH] src, Makefile.am: replace isystem with I for correct build
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Некоторые тулчейны не собирают libbsd, т.к. игнорируют папку с инклудами
+bsd, этого делать не надо, т.к. данная библиотека самодостаточна и не
+зависит от внешних хедеров
+
+Signed-off-by: Maxim Zhukov <mzhukov@dlink.ru>
+---
+ src/Makefile.am | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/Makefile.am b/src/Makefile.am
+index f3cc0fa..4ac6e75 100644
+--- a/src/Makefile.am
++++ b/src/Makefile.am
+@@ -2,7 +2,7 @@
+ 
+ AM_CPPFLAGS = \
+ 	-I$(top_builddir) \
+-	-isystem $(top_srcdir)/include/bsd/ \
++	-I$(top_srcdir)/include/bsd/ \
+ 	-include $(top_builddir)/config.h \
+ 	-DLIBBSD_OVERLAY -DLIBBSD_DISABLE_DEPRECATED \
+ 	-D__REENTRANT
+-- 
+2.22.0
+

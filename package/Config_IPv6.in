@@ -1,0 +1,48 @@
+menuconfig BR2_INET_IPV6
+	bool "IPv6"
+
+if BR2_INET_IPV6
+
+source "package/ndisc6/Config.in"
+source "package/radvd/Config.in"
+source "package/wide_dhcpv6/Config.in"
+source "package/odhcp6c/Config.in"
+source "package/improxy/Config.in"
+source "package/tayga/Config.in"
+source "package/miredo/Config.in"
+
+menuconfig BR2_SUPPORT_SIT
+	bool "SIT"
+
+if BR2_SUPPORT_SIT
+
+config BR2_SUPPORT_6TO4
+	bool "6to4"
+
+config BR2_SUPPORT_6RD
+	bool "6rd"
+
+config BR2_SUPPORT_ISATAP
+	bool "ISATAP"
+
+endif # BR2_SUPPORT_SIT
+
+menuconfig BR2_SUPPORT_IPV6_TUNNEL
+	bool "IP-in-IPv6 tunnel"
+
+config BR2_SUPPORT_DSLITE
+	bool "DS-Lite"
+	depends on BR2_SUPPORT_IPV6_TUNNEL
+
+config BR2_SUPPORT_NAT64
+	bool "NAT64"
+	select BR2_PACKAGE_TAYGA
+
+config BR2_SUPPORT_NATV6
+	bool "NATv6"
+
+config BR2_SUPPORT_TEREDO
+	bool "Teredo"
+	select BR2_PACKAGE_MIREDO
+
+endif # BR2_INET_IPV6

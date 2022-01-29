@@ -1,0 +1,6 @@
+config BR2_PACKAGE_IMPROXY
+	bool "improxy"
+	depends on BR2_INET_IPV6
+	default n
+	help
+	  IGMP/MLD proxy

@@ -1,0 +1,59 @@
+menuconfig BR2_PACKAGE_HOSTAPD
+	bool "hostapd"
+	select BR2_PACKAGE_LIBNL if BR2_bcm
+	select BR2_PACKAGE_LIBNL_TINY
+	select BR2_PACKAGE_QCA_WIFI if BR2_WIFI_DRIVER_QCA
+	help
+		hostapd is a user space daemon for access point and authentication servers. It implements IEEE 802.11 access point management, IEEE 802.1X/WPA/WPA2/EAP Authenticators, RADIUS client, EAP server, and RADIUS authentication server.
+		http://hostap.epitest.fi/hostapd/
+
+if BR2_PACKAGE_HOSTAPD
+
+config BR2_PACKAGE_HOSTAPD_CONFIG
+	string "path to build config"
+
+config BR2_PACKAGE_HOSTAPD_ACS
+	bool "Enable ACS"
+	default y
+
+config BR2_PACKAGE_HOSTAPD_EAP
+	bool "Enable EAP"
+
+config BR2_PACKAGE_HOSTAPD_WPS
+	bool "Enable WPS"
+
+comment "hostapd: install additional"
+
+config BR2_PACKAGE_HOSTAPD_INSTALL_CLI
+	bool "hostapd_cli"
+	default n
+
+config BR2_PACKAGE_HOSTAPD_INSTALL_CONF
+	bool "hostapd.conf"
+	default n
+	help
+	  A config is normally runtime generated, so you
+	  definitely do not need this.
+
+
+comment "wpa_supplicant:"
+config BR2_PACKAGE_HOSTAPD_WPASUPP
+	bool "wpa_supplicant"
+	default y
+	help
+	  Build and install wpa_supplicant.
+
+
+if BR2_PACKAGE_HOSTAPD_WPASUPP
+
+config BR2_PACKAGE_HOSTAPD_WPASUPP_MESH
+	bool "MESH"
+	default y
+config BR2_PACKAGE_HOSTAPD_WPASUPP_P2P
+	bool "P2P"
+	default n
+
+endif # BR2_PACKAGE_HOSTAPD_WPASUPP
+
+
+endif # BR2_PACKAGE_HOSTAPD

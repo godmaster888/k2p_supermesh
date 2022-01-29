@@ -1,0 +1,32 @@
+TINYSVCMDNS_SITE = $(DLINK_GIT_STORAGE)/tinysvcmdns
+TINYSVCMDNS_VERSION = master
+TINYSVCMDNS_LICENSE = BSD-3-Clause
+TINYSVCMDNS_LICENSE_FILES = README.markdown LICENSE.txt
+TINYSVCMDNS_CFLAGS = $(TARGET_CFLAGS)
+TINYSVCMDNS_LDFLAGS = $(TARGET_LDFLAGS)
+
+ifeq ($(BR2_DSYSINIT),y)
+TINYSVCMDNS_DEPENDENCIES = deuteron_framework
+TINYSVCMDNS_LDFLAGS += -ljansson -ld_service_notify -L$(STAGING_DIR)/usr/lib -Wl,-rpath-link,$(STAGING_DIR)/lib -Wl,-rpath-link,$(STAGING_DIR)/usr/lib
+endif
+
+ifeq ($(BR2_INET_IPV6),y)
+	TINYSVCMDNS_CFLAGS += -DSUPPORT_IPV6
+endif
+
+define TINYSVCMDNS_BUILD_CMDS
+	CFLAGS="$(TINYSVCMDNS_CFLAGS)" \
+	LDFLAGS="$(TINYSVCMDNS_LDFLAGS)" \
+	$(MAKE) CC="$(TARGET_CC)" LD="$(TARGET_LD)" -C $(@D)
+endef
+
+define TINYSVCMDNS_CLEAN_CMDS
+	$(MAKE) -C $(@D) clean
+endef
+
+define TINYSVCMDNS_INSTALL_TARGET_CMDS
+	$(INSTALL) -D -m 0755 $(@D)/tinysvcmdns $(TARGET_DIR)/usr/bin
+	$(TARGET_STRIP) $(TARGET_DIR)/usr/bin/tinysvcmdns
+endef
+
+$(eval $(call GENTARGETS))

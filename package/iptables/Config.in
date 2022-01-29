@@ -1,0 +1,55 @@
+menuconfig BR2_PACKAGE_IPTABLES
+	bool "iptables"
+	help
+	  Linux kernel firewall, NAT, and packet mangling tools.
+
+	  http://www.netfilter.org/projects/iptables/index.html
+
+if BR2_PACKAGE_IPTABLES
+
+config BR2_IPTABLES_VERSION
+	string "Branch"
+	default "1.6.1"
+
+config BR2_PACKAGE_IPTABLES_BPF_NFSYNPROXY
+	bool "bpfc and nfsynproxy"
+	select BR2_PACKAGE_LIBPCAP
+	help
+	  Build bpf compiler and nfsynproxy configuration tool.
+
+config BR2_PACKAGE_IPTABLES_NFTABLES
+	bool "nftables compat"
+	# uses dlfcn
+	depends on !BR2_STATIC_LIBS
+	depends on BR2_USE_WCHAR
+	depends on BR2_TOOLCHAIN_HEADERS_AT_LEAST_3_12
+	select BR2_PACKAGE_LIBMNL
+	select BR2_PACKAGE_LIBNFTNL
+	help
+	  Build nftables compat utilities.
+
+comment "nftables compat needs a toolchain w/ wchar, dynamic library, headers >= 3.12"
+	depends on !BR2_TOOLCHAIN_HEADERS_AT_LEAST_3_12 || \
+		!BR2_USE_WCHAR || BR2_STATIC_LIBS
+
+menuconfig BR2_PACKAGE_IPTABLES_TTL_SUPPORT
+	bool "TTL match and target"
+
+if BR2_PACKAGE_IPTABLES_TTL_SUPPORT
+
+config BR2_PACKAGE_IPTABLES_TTL_IPV4
+	bool "IPv4 TTL support"
+
+config BR2_PACKAGE_IPTABLES_TTL_IPV6
+	bool "IPv6 TTL support"
+	depends on BR2_INET_IPV6
+
+endif # BR2_PACKAGE_IPTABLES_TTL_SUPPORT
+
+config BR2_PACKAGE_IPTABLES_SKB_MARK2_SUPPORT
+	bool "mark2"
+	depends on BR2_rtk_luna
+	help
+		Build iptables with mark2 [32-64] bit
+
+endif

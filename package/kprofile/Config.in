@@ -1,0 +1,23 @@
+menuconfig BR2_PACKAGE_KPROFILE
+	bool "Kernel profiling"
+	default n
+	select BR2_LEGACY
+	help
+		Tools to profile kernel bottlnecks.
+		You need to enable CONFIG_PROFILING in kernel
+		and load it with (for example) "profile=2" cmd option.
+		And provide System.map.
+
+if BR2_PACKAGE_KPROFILE
+	config BR2_KPROFILE_READPROFILE
+		bool "readprofile"
+		default y
+		help
+			From util-linux-2.24
+
+	config BR2_KPROFILE_KERNELTOP
+		bool "kerneltop"
+		default y
+		help
+			Based on readprofile.
+endif

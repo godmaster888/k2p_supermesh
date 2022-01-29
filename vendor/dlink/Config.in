@@ -1,0 +1,14 @@
+menu "Dlink"
+
+source "vendor/dlink/device_type/Config.in"
+source "vendor/dlink/device_info/Config.in"
+source "vendor/dlink/customization/Config.in"
+source "vendor/dlink/firmware/Config.in"
+source "vendor/dlink/device_modes/Config.in"
+source "vendor/dlink/auth/Config.in"
+source "vendor/dlink/languages/Config.in"
+source "vendor/dlink/features/Config.in"
+source "vendor/dlink/factory/Config.in"
+source "vendor/dlink/workaround/Config.in"
+
+endmenu

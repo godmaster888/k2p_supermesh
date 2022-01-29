@@ -1,0 +1,1 @@
+"use strict";angular.module("trouble").controller("waitCtrl",["$scope",function($scope){$scope.WAIT_TIMEOUT=3e4,~["l2tp","pptp","pppoe","pppoedual","pppoev6"].indexOf($scope.connType)&&($scope.WAIT_TIMEOUT+=45e3),$scope.onBarStatus=function(status){"finished"==status&&$scope.showNextError()}}]);

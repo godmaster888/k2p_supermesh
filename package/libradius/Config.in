@@ -1,0 +1,4 @@
+config BR2_PACKAGE_LIBRADIUS
+	bool "libradius"
+	select BR2_PACKAGE_LIBMD5_RFC
+	default n

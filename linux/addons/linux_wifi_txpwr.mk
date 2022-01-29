@@ -1,0 +1,42 @@
+# MT7610_ap
+ifeq ($(call qstrip,$(RALINK_MTK_WIFI_DRV_MT7610E)), y)
+
+define MTK_WIFI_TX_POWER_LIMIT_ENABLE
+$(call MESSAGE,"Enabling SINGLE_SKU_V2 for wi-fi tx power limits \(MT7610_ap\)") ;
+$(call KCONFIG_ENABLE_OPT,CONFIG_MT7610_AP_SINGLE_SKU, $(LINUX_CONFIG)) ;
+endef
+
+define MTK_WIFI_TX_POWER_LIMIT_DISABLE
+$(call MESSAGE,"Disabling SINGLE_SKU_V2 for wi-fi tx power limits \(MT7610_ap\)") ;
+$(call KCONFIG_DISABLE_OPT,CONFIG_MT7610_AP_SINGLE_SKU, $(LINUX_CONFIG)) ;
+endef
+
+ifneq ($(BR2_TXPWR_CUSTOMIZATION_NONE), y)
+LINUX_ADDONS += MTK_WIFI_TX_POWER_LIMIT_ENABLE
+else
+LINUX_ADDONS += MTK_WIFI_TX_POWER_LIMIT_DISABLE
+endif
+
+endif
+
+
+# rlt_wifi
+ifeq ($(call qstrip,$(RALINK_MTK_WIFI_DRV_RLT_WIFI)), y)
+
+define RLT_WIFI_TX_POWER_LIMIT_ENABLE
+$(call MESSAGE,"Enabling SINGLE_SKU_V2 for wi-fi tx power limits \(rlt_wifi\)") ;
+$(call KCONFIG_ENABLE_OPT,CONFIG_SINGLE_SKU_V2, $(LINUX_CONFIG)) ;
+endef
+
+define RLT_WIFI_TX_POWER_LIMIT_DISABLE
+$(call MESSAGE,"Disabling SINGLE_SKU_V2 for wi-fi tx power limits \(rlt_wifi\)") ;
+$(call KCONFIG_DISABLE_OPT,CONFIG_SINGLE_SKU_V2, $(LINUX_CONFIG)) ;
+endef
+
+ifneq ($(BR2_TXPWR_CUSTOMIZATION_NONE), y)
+LINUX_ADDONS += RLT_WIFI_TX_POWER_LIMIT_ENABLE
+else
+LINUX_ADDONS += RLT_WIFI_TX_POWER_LIMIT_DISABLE
+endif
+
+endif

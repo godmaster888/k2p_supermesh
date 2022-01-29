@@ -1,0 +1,4 @@
+config BR2_PACKAGE_SSLSPLIT
+	bool "sslsplit"
+	select BR2_PACKAGE_LIBEVENT
+	select BR2_PACKAGE_OPENSSL

@@ -1,0 +1,40 @@
+From 48713c071e47ab1bd4827257f2d9c7aeb2a06754 Mon Sep 17 00:00:00 2001
+From: Alexander Safonov <asafonov@dlink.ru>
+Date: Sun, 6 Oct 2019 16:31:46 +0300
+Subject: [PATCH] disable remote
+
+Signed-off-by: Alexander Safonov <asafonov@dlink.ru>
+---
+ daemon/Makefile.am | 7 ++-----
+ 1 file changed, 2 insertions(+), 5 deletions(-)
+
+diff --git a/daemon/Makefile.am b/daemon/Makefile.am
+index 677f765c5..468a3502e 100644
+--- a/daemon/Makefile.am
++++ b/daemon/Makefile.am
+@@ -11,12 +11,10 @@ EXTRA_DIST = \
+     transmission-daemon.service
+ 
+ dist_man_MANS = \
+-    transmission-daemon.1 \
+-    transmission-remote.1
++    transmission-daemon.1
+ 
+ bin_PROGRAMS = \
+-    transmission-daemon \
+-    transmission-remote
++    transmission-daemon
+ 
+ LDADD = \
+     $(top_builddir)/libtransmission/libtransmission.a \
+@@ -37,7 +35,6 @@ LDADD = \
+ noinst_HEADERS = daemon.h
+ 
+ transmission_daemon_SOURCES = daemon.c
+-transmission_remote_SOURCES = remote.c
+ 
+ if WIN32
+ transmission_daemon_SOURCES += daemon-win32.c
+-- 
+2.20.1
+

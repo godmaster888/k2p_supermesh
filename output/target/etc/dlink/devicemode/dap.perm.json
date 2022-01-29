@@ -1,0 +1,2328 @@
+{
+    "&perm": {
+        "1": {
+            "access": 341,
+            "user": "@system"
+        },
+        "2": {
+            "access": 682,
+            "user": "@guest"
+        },
+        "3": {
+            "access": 682,
+            "user": "@auth"
+        },
+        "default_count": 3,
+        "max_instance": 3
+    },
+    "Device": {
+        "&perm": {
+            "1": {
+                "access": 341,
+                "user": "@auth"
+            },
+            "default_count": 1,
+            "max_instance": 1
+        },
+        "DeviceInfo": {
+            "&perm": {
+                "1": {
+                    "access": 1,
+                    "user": "@guest"
+                },
+                "default_count": 1,
+                "max_instance": 1
+            }
+        },
+        "Firewall": {
+            "#template": {
+                "Rules": {
+                    "#template": {
+                        "Origin": {
+                            "&perm": {
+                                "1": {
+                                    "access": 8,
+                                    "user": "@all"
+                                },
+                                "2": {
+                                    "access": 4,
+                                    "user": "@system"
+                                },
+                                "default_count": 2,
+                                "max_instance": 2
+                            }
+                        }
+                    }
+                }
+            },
+            "&perm": {
+                "1": {
+                    "access": 10,
+                    "user": "@all"
+                },
+                "default_count": 1,
+                "max_instance": 1
+            },
+            "IPv4": {
+                "Enable": {
+                    "&perm": {
+                        "1": {
+                            "access": 5,
+                            "user": "@system"
+                        },
+                        "default_count": 1,
+                        "max_instance": 1
+                    }
+                },
+                "Policy": {
+                    "&perm": {
+                        "1": {
+                            "access": 85,
+                            "user": "@system"
+                        },
+                        "2": {
+                            "access": 85,
+                            "user": "@auth"
+                        },
+                        "default_count": 2,
+                        "max_instance": 2
+                    },
+                    "1": {
+                        "&perm": {
+                            "1": {
+                                "access": 137,
+                                "user": "@system"
+                            },
+                            "2": {
+                                "access": 137,
+                                "user": "@auth"
+                            },
+                            "default_count": 2,
+                            "max_instance": 2
+                        }
+                    },
+                    "2": {
+                        "&perm": {
+                            "1": {
+                                "access": 137,
+                                "user": "@system"
+                            },
+                            "2": {
+                                "access": 137,
+                                "user": "@auth"
+                            },
+                            "default_count": 2,
+                            "max_instance": 2
+                        }
+                    },
+                    "3": {
+                        "&perm": {
+                            "1": {
+                                "access": 137,
+                                "user": "@system"
+                            },
+                            "2": {
+                                "access": 137,
+                                "user": "@auth"
+                            },
+                            "default_count": 2,
+                            "max_instance": 2
+                        },
+                        "Policy": {
+                            "&perm": {
+                                "1": {
+                                    "access": 5,
+                                    "user": "@system"
+                                },
+                                "2": {
+                                    "access": 5,
+                                    "user": "@auth"
+                                },
+                                "default_count": 2,
+                                "max_instance": 2
+                            }
+                        }
+                    }
+                },
+                "Rules": {
+                    "#template": {
+                        "Origin": {
+                            "&perm": {
+                                "1": {
+                                    "access": 8,
+                                    "user": "@all"
+                                },
+                                "2": {
+                                    "access": 4,
+                                    "user": "@system"
+                                },
+                                "default_count": 2,
+                                "max_instance": 2
+                            }
+                        }
+                    },
+                    "&perm": {
+                        "1": {
+                            "access": 5,
+                            "user": "@system"
+                        },
+                        "2": {
+                            "access": 5,
+                            "user": "@auth"
+                        },
+                        "default_count": 2,
+                        "max_instance": 2
+                    }
+                },
+                "Status": {
+                    "&perm": {
+                        "1": {
+                            "access": 5,
+                            "user": "@system"
+                        },
+                        "default_count": 1,
+                        "max_instance": 1
+                    }
+                },
+                "Zones": {
+                    "&perm": {
+                        "1": {
+                            "access": 169,
+                            "user": "@system"
+                        },
+                        "2": {
+                            "access": 169,
+                            "user": "@auth"
+                        },
+                        "default_count": 2,
+                        "max_instance": 2
+                    }
+                }
+            },
+            "IPv6": {
+                "Enable": {
+                    "&perm": {
+                        "1": {
+                            "access": 5,
+                            "user": "@system"
+                        },
+                        "default_count": 1,
+                        "max_instance": 1
+                    }
+                },
+                "Policy": {
+                    "&perm": {
+                        "1": {
+                            "access": 85,
+                            "user": "@system"
+                        },
+                        "2": {
+                            "access": 85,
+                            "user": "@auth"
+                        },
+                        "default_count": 2,
+                        "max_instance": 2
+                    },
+                    "1": {
+                        "&perm": {
+                            "1": {
+                                "access": 137,
+                                "user": "@system"
+                            },
+                            "2": {
+                                "access": 137,
+                                "user": "@auth"
+                            },
+                            "default_count": 2,
+                            "max_instance": 2
+                        }
+                    },
+                    "2": {
+                        "&perm": {
+                            "1": {
+                                "access": 137,
+                                "user": "@system"
+                            },
+                            "2": {
+                                "access": 137,
+                                "user": "@auth"
+                            },
+                            "default_count": 2,
+                            "max_instance": 2
+                        }
+                    },
+                    "3": {
+                        "&perm": {
+                            "1": {
+                                "access": 137,
+                                "user": "@system"
+                            },
+                            "2": {
+                                "access": 137,
+                                "user": "@auth"
+                            },
+                            "default_count": 2,
+                            "max_instance": 2
+                        },
+                        "Policy": {
+                            "&perm": {
+                                "1": {
+                                    "access": 5,
+                                    "user": "@system"
+                                },
+                                "2": {
+                                    "access": 5,
+                                    "user": "@auth"
+                                },
+                                "default_count": 2,
+                                "max_instance": 2
+                            }
+                        }
+                    }
+                },
+                "Rules": {
+                    "#template": {
+                        "Origin": {
+                            "&perm": {
+                                "1": {
+                                    "access": 8,
+                                    "user": "@all"
+                                },
+                                "2": {
+                                    "access": 4,
+                                    "user": "@system"
+                                },
+                                "default_count": 2,
+                                "max_instance": 2
+                            }
+                        }
+                    },
+                    "&perm": {
+                        "1": {
+                            "access": 5,
+                            "user": "@system"
+                        },
+                        "2": {
+                            "access": 5,
+                            "user": "@auth"
+                        },
+                        "default_count": 2,
+                        "max_instance": 2
+                    }
+                },
+                "Status": {
+                    "&perm": {
+                        "1": {
+                            "access": 5,
+                            "user": "@system"
+                        },
+                        "default_count": 1,
+                        "max_instance": 1
+                    }
+                },
+                "Zones": {
+                    "&perm": {
+                        "1": {
+                            "access": 169,
+                            "user": "@system"
+                        },
+                        "2": {
+                            "access": 169,
+                            "user": "@auth"
+                        },
+                        "default_count": 2,
+                        "max_instance": 2
+                    }
+                }
+            },
+            "Modules": {
+                "&perm": {
+                    "1": {
+                        "access": 5,
+                        "user": "@system"
+                    },
+                    "2": {
+                        "access": 5,
+                        "user": "@auth"
+                    },
+                    "default_count": 2,
+                    "max_instance": 2
+                },
+                "Rules": {
+                    "#template": {
+                        "Origin": {
+                            "&perm": {
+                                "1": {
+                                    "access": 8,
+                                    "user": "@all"
+                                },
+                                "2": {
+                                    "access": 4,
+                                    "user": "@system"
+                                },
+                                "default_count": 2,
+                                "max_instance": 2
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "Hostnames": {
+            "#template": {
+                "&perm": {
+                    "1": {
+                        "access": 128,
+                        "user": "@all"
+                    },
+                    "2": {
+                        "access": 64,
+                        "user": "@system"
+                    },
+                    "default_count": 2,
+                    "max_instance": 2
+                },
+                "Hostname": {
+                    "&perm": {
+                        "1": {
+                            "access": 8,
+                            "user": "@all"
+                        },
+                        "2": {
+                            "access": 4,
+                            "user": "@system"
+                        },
+                        "default_count": 2,
+                        "max_instance": 2
+                    }
+                }
+            }
+        },
+        "Network": {
+            "&perm": {
+                "1": {
+                    "access": 10,
+                    "user": "@all"
+                },
+                "default_count": 1,
+                "max_instance": 1
+            },
+            "Connection": {
+                "#template": {
+                    "Interface": {
+                        "&perm": {
+                            "1": {
+                                "access": 1,
+                                "user": "@guest"
+                            },
+                            "default_count": 1,
+                            "max_instance": 1
+                        }
+                    },
+                    "Name": {
+                        "&perm": {
+                            "1": {
+                                "access": 1,
+                                "user": "@guest"
+                            },
+                            "default_count": 1,
+                            "max_instance": 1
+                        }
+                    },
+                    "Status": {
+                        "&perm": {
+                            "1": {
+                                "access": 1,
+                                "user": "@guest"
+                            },
+                            "default_count": 1,
+                            "max_instance": 1
+                        }
+                    }
+                },
+                "DHCP": {
+                    "&perm": {
+                        "1": {
+                            "access": 165,
+                            "user": "@system"
+                        },
+                        "2": {
+                            "access": 165,
+                            "user": "@auth"
+                        },
+                        "default_count": 2,
+                        "max_instance": 2
+                    },
+                    "Interface": {
+                        "&perm": {
+                            "1": {
+                                "access": 1,
+                                "user": "@guest"
+                            },
+                            "default_count": 1,
+                            "max_instance": 1
+                        }
+                    },
+                    "Name": {
+                        "&perm": {
+                            "1": {
+                                "access": 1,
+                                "user": "@guest"
+                            },
+                            "default_count": 1,
+                            "max_instance": 1
+                        }
+                    },
+                    "Status": {
+                        "&perm": {
+                            "1": {
+                                "access": 1,
+                                "user": "@guest"
+                            },
+                            "default_count": 1,
+                            "max_instance": 1
+                        }
+                    }
+                },
+                "DHCPv6": {
+                    "&perm": {
+                        "1": {
+                            "access": 165,
+                            "user": "@system"
+                        },
+                        "2": {
+                            "access": 165,
+                            "user": "@auth"
+                        },
+                        "default_count": 2,
+                        "max_instance": 2
+                    },
+                    "Interface": {
+                        "&perm": {
+                            "1": {
+                                "access": 1,
+                                "user": "@guest"
+                            },
+                            "default_count": 1,
+                            "max_instance": 1
+                        }
+                    },
+                    "Name": {
+                        "&perm": {
+                            "1": {
+                                "access": 1,
+                                "user": "@guest"
+                            },
+                            "default_count": 1,
+                            "max_instance": 1
+                        }
+                    },
+                    "Status": {
+                        "&perm": {
+                            "1": {
+                                "access": 1,
+                                "user": "@guest"
+                            },
+                            "default_count": 1,
+                            "max_instance": 1
+                        }
+                    }
+                },
+                "Static": {
+                    "&perm": {
+                        "1": {
+                            "access": 165,
+                            "user": "@system"
+                        },
+                        "2": {
+                            "access": 165,
+                            "user": "@auth"
+                        },
+                        "default_count": 2,
+                        "max_instance": 2
+                    },
+                    "Interface": {
+                        "&perm": {
+                            "1": {
+                                "access": 1,
+                                "user": "@guest"
+                            },
+                            "default_count": 1,
+                            "max_instance": 1
+                        }
+                    },
+                    "Name": {
+                        "&perm": {
+                            "1": {
+                                "access": 1,
+                                "user": "@guest"
+                            },
+                            "default_count": 1,
+                            "max_instance": 1
+                        }
+                    },
+                    "Status": {
+                        "&perm": {
+                            "1": {
+                                "access": 1,
+                                "user": "@guest"
+                            },
+                            "default_count": 1,
+                            "max_instance": 1
+                        }
+                    }
+                },
+                "Staticv6": {
+                    "&perm": {
+                        "1": {
+                            "access": 165,
+                            "user": "@system"
+                        },
+                        "2": {
+                            "access": 165,
+                            "user": "@auth"
+                        },
+                        "default_count": 2,
+                        "max_instance": 2
+                    },
+                    "Interface": {
+                        "&perm": {
+                            "1": {
+                                "access": 1,
+                                "user": "@guest"
+                            },
+                            "default_count": 1,
+                            "max_instance": 1
+                        }
+                    },
+                    "Name": {
+                        "&perm": {
+                            "1": {
+                                "access": 1,
+                                "user": "@guest"
+                            },
+                            "default_count": 1,
+                            "max_instance": 1
+                        }
+                    },
+                    "Status": {
+                        "&perm": {
+                            "1": {
+                                "access": 1,
+                                "user": "@guest"
+                            },
+                            "default_count": 1,
+                            "max_instance": 1
+                        }
+                    }
+                }
+            },
+            "DNS": {
+                "&perm": {
+                    "1": {
+                        "access": 5,
+                        "user": "@system"
+                    },
+                    "2": {
+                        "access": 5,
+                        "user": "@auth"
+                    },
+                    "default_count": 2,
+                    "max_instance": 2
+                }
+            },
+            "Group": {
+                "&perm": {
+                    "1": {
+                        "access": 165,
+                        "user": "@system"
+                    },
+                    "2": {
+                        "access": 165,
+                        "user": "@auth"
+                    },
+                    "default_count": 2,
+                    "max_instance": 2
+                },
+                "1": {
+                    "&perm": {
+                        "1": {
+                            "access": 136,
+                            "user": "@system"
+                        },
+                        "2": {
+                            "access": 136,
+                            "user": "@auth"
+                        },
+                        "default_count": 2,
+                        "max_instance": 2
+                    },
+                    "CurrentWAN": {
+                        "&perm": {
+                            "1": {
+                                "access": 4,
+                                "user": "@system"
+                            },
+                            "default_count": 1,
+                            "max_instance": 1
+                        }
+                    },
+                    "CurrentWANv6": {
+                        "&perm": {
+                            "1": {
+                                "access": 4,
+                                "user": "@system"
+                            },
+                            "default_count": 1,
+                            "max_instance": 1
+                        }
+                    },
+                    "DomainName": {
+                        "&perm": {
+                            "1": {
+                                "access": 4,
+                                "user": "@system"
+                            },
+                            "2": {
+                                "access": 4,
+                                "user": "@auth"
+                            },
+                            "default_count": 2,
+                            "max_instance": 2
+                        }
+                    },
+                    "Table": {
+                        "&perm": {
+                            "1": {
+                                "access": 8,
+                                "user": "@system"
+                            },
+                            "2": {
+                                "access": 8,
+                                "user": "@auth"
+                            },
+                            "default_count": 2,
+                            "max_instance": 2
+                        }
+                    },
+                    "WAN": {
+                        "&perm": {
+                            "1": {
+                                "access": 16,
+                                "user": "@system"
+                            },
+                            "2": {
+                                "access": 16,
+                                "user": "@auth"
+                            },
+                            "default_count": 2,
+                            "max_instance": 2
+                        },
+                        "1": {
+                            "Link": {
+                                "&perm": {
+                                    "1": {
+                                        "access": 4,
+                                        "user": "@system"
+                                    },
+                                    "2": {
+                                        "access": 4,
+                                        "user": "@auth"
+                                    },
+                                    "default_count": 2,
+                                    "max_instance": 2
+                                }
+                            }
+                        },
+                        "2": {
+                            "Link": {
+                                "&perm": {
+                                    "1": {
+                                        "access": 4,
+                                        "user": "@system"
+                                    },
+                                    "2": {
+                                        "access": 4,
+                                        "user": "@auth"
+                                    },
+                                    "default_count": 2,
+                                    "max_instance": 2
+                                }
+                            }
+                        }
+                    },
+                    "WANReserve": {
+                        "&perm": {
+                            "1": {
+                                "access": 8,
+                                "user": "@auth"
+                            },
+                            "default_count": 1,
+                            "max_instance": 1
+                        }
+                    },
+                    "WANv6": {
+                        "&perm": {
+                            "1": {
+                                "access": 16,
+                                "user": "@system"
+                            },
+                            "2": {
+                                "access": 16,
+                                "user": "@auth"
+                            },
+                            "default_count": 2,
+                            "max_instance": 2
+                        },
+                        "1": {
+                            "Link": {
+                                "&perm": {
+                                    "1": {
+                                        "access": 4,
+                                        "user": "@system"
+                                    },
+                                    "2": {
+                                        "access": 4,
+                                        "user": "@auth"
+                                    },
+                                    "default_count": 2,
+                                    "max_instance": 2
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "IP": {
+                "#template": {
+                    "IPv4Address": {
+                        "#template": {
+                            "AddressingType": {
+                                "&perm": {
+                                    "1": {
+                                        "access": 1,
+                                        "user": "@guest"
+                                    },
+                                    "default_count": 1,
+                                    "max_instance": 1
+                                }
+                            },
+                            "IPAddress": {
+                                "&perm": {
+                                    "1": {
+                                        "access": 1,
+                                        "user": "@guest"
+                                    },
+                                    "default_count": 1,
+                                    "max_instance": 1
+                                }
+                            },
+                            "PeerIPAddress": {
+                                "&perm": {
+                                    "1": {
+                                        "access": 8,
+                                        "user": "@all"
+                                    },
+                                    "2": {
+                                        "access": 5,
+                                        "user": "@system"
+                                    },
+                                    "3": {
+                                        "access": 1,
+                                        "user": "@guest"
+                                    },
+                                    "default_count": 3,
+                                    "max_instance": 3
+                                }
+                            },
+                            "Status": {
+                                "&perm": {
+                                    "1": {
+                                        "access": 1,
+                                        "user": "@guest"
+                                    },
+                                    "default_count": 1,
+                                    "max_instance": 1
+                                }
+                            },
+                            "SubnetOverlap": {
+                                "&perm": {
+                                    "1": {
+                                        "access": 8,
+                                        "user": "@all"
+                                    },
+                                    "2": {
+                                        "access": 5,
+                                        "user": "@system"
+                                    },
+                                    "3": {
+                                        "access": 1,
+                                        "user": "@guest"
+                                    },
+                                    "default_count": 3,
+                                    "max_instance": 3
+                                }
+                            }
+                        }
+                    },
+                    "IPv6Address": {
+                        "#template": {
+                            "AddressingType": {
+                                "&perm": {
+                                    "1": {
+                                        "access": 1,
+                                        "user": "@guest"
+                                    },
+                                    "default_count": 1,
+                                    "max_instance": 1
+                                }
+                            },
+                            "IPAddress": {
+                                "&perm": {
+                                    "1": {
+                                        "access": 1,
+                                        "user": "@guest"
+                                    },
+                                    "default_count": 1,
+                                    "max_instance": 1
+                                }
+                            },
+                            "Status": {
+                                "&perm": {
+                                    "1": {
+                                        "access": 1,
+                                        "user": "@guest"
+                                    },
+                                    "default_count": 1,
+                                    "max_instance": 1
+                                }
+                            },
+                            "SubnetOverlap": {
+                                "&perm": {
+                                    "1": {
+                                        "access": 8,
+                                        "user": "@all"
+                                    },
+                                    "2": {
+                                        "access": 5,
+                                        "user": "@system"
+                                    },
+                                    "3": {
+                                        "access": 1,
+                                        "user": "@guest"
+                                    },
+                                    "default_count": 3,
+                                    "max_instance": 3
+                                }
+                            }
+                        }
+                    },
+                    "LowerLayer": {
+                        "&perm": {
+                            "1": {
+                                "access": 1,
+                                "user": "@guest"
+                            },
+                            "default_count": 1,
+                            "max_instance": 1
+                        }
+                    }
+                },
+                "&perm": {
+                    "1": {
+                        "access": 5,
+                        "user": "@system"
+                    },
+                    "2": {
+                        "access": 5,
+                        "user": "@auth"
+                    },
+                    "default_count": 2,
+                    "max_instance": 2
+                }
+            },
+            "Interface": {
+                "#template": {
+                    "#template": {
+                        "BridgeLink": {
+                            "&perm": {
+                                "1": {
+                                    "access": 8,
+                                    "user": "@all"
+                                },
+                                "2": {
+                                    "access": 4,
+                                    "user": "@system"
+                                },
+                                "default_count": 2,
+                                "max_instance": 2
+                            }
+                        },
+                        "Bridged": {
+                            "&perm": {
+                                "1": {
+                                    "access": 8,
+                                    "user": "@all"
+                                },
+                                "2": {
+                                    "access": 4,
+                                    "user": "@system"
+                                },
+                                "default_count": 2,
+                                "max_instance": 2
+                            }
+                        },
+                        "Ifname": {
+                            "&perm": {
+                                "1": {
+                                    "access": 8,
+                                    "user": "@all"
+                                },
+                                "2": {
+                                    "access": 4,
+                                    "user": "@system"
+                                },
+                                "default_count": 2,
+                                "max_instance": 2
+                            }
+                        },
+                        "LowerLayer": {
+                            "&perm": {
+                                "1": {
+                                    "access": 1,
+                                    "user": "@guest"
+                                },
+                                "default_count": 1,
+                                "max_instance": 1
+                            }
+                        },
+                        "Name": {
+                            "&perm": {
+                                "1": {
+                                    "access": 1,
+                                    "user": "@guest"
+                                },
+                                "default_count": 1,
+                                "max_instance": 1
+                            }
+                        },
+                        "Status": {
+                            "&perm": {
+                                "1": {
+                                    "access": 1,
+                                    "user": "@guest"
+                                },
+                                "default_count": 1,
+                                "max_instance": 1
+                            }
+                        }
+                    }
+                },
+                "Bridge": {
+                    "#template": {
+                        "BridgeLink": {
+                            "&perm": {
+                                "1": {
+                                    "access": 8,
+                                    "user": "@all"
+                                },
+                                "2": {
+                                    "access": 4,
+                                    "user": "@system"
+                                },
+                                "default_count": 2,
+                                "max_instance": 2
+                            }
+                        },
+                        "Bridged": {
+                            "&perm": {
+                                "1": {
+                                    "access": 8,
+                                    "user": "@all"
+                                },
+                                "2": {
+                                    "access": 4,
+                                    "user": "@system"
+                                },
+                                "default_count": 2,
+                                "max_instance": 2
+                            }
+                        },
+                        "Ifname": {
+                            "&perm": {
+                                "1": {
+                                    "access": 8,
+                                    "user": "@all"
+                                },
+                                "2": {
+                                    "access": 4,
+                                    "user": "@system"
+                                },
+                                "default_count": 2,
+                                "max_instance": 2
+                            }
+                        },
+                        "LowerLayer": {
+                            "&perm": {
+                                "1": {
+                                    "access": 1,
+                                    "user": "@guest"
+                                },
+                                "default_count": 1,
+                                "max_instance": 1
+                            }
+                        },
+                        "Members": {
+                            "&perm": {
+                                "1": {
+                                    "access": 85,
+                                    "user": "@system"
+                                },
+                                "2": {
+                                    "access": 85,
+                                    "user": "@auth"
+                                },
+                                "default_count": 2,
+                                "max_instance": 2
+                            }
+                        },
+                        "Name": {
+                            "&perm": {
+                                "1": {
+                                    "access": 1,
+                                    "user": "@guest"
+                                },
+                                "default_count": 1,
+                                "max_instance": 1
+                            }
+                        },
+                        "Status": {
+                            "&perm": {
+                                "1": {
+                                    "access": 1,
+                                    "user": "@guest"
+                                },
+                                "default_count": 1,
+                                "max_instance": 1
+                            }
+                        }
+                    },
+                    "&perm": {
+                        "1": {
+                            "access": 165,
+                            "user": "@system"
+                        },
+                        "2": {
+                            "access": 165,
+                            "user": "@auth"
+                        },
+                        "default_count": 2,
+                        "max_instance": 2
+                    }
+                },
+                "Ethernet": {
+                    "#template": {
+                        "BridgeLink": {
+                            "&perm": {
+                                "1": {
+                                    "access": 8,
+                                    "user": "@all"
+                                },
+                                "2": {
+                                    "access": 4,
+                                    "user": "@system"
+                                },
+                                "default_count": 2,
+                                "max_instance": 2
+                            }
+                        },
+                        "Bridged": {
+                            "&perm": {
+                                "1": {
+                                    "access": 8,
+                                    "user": "@all"
+                                },
+                                "2": {
+                                    "access": 4,
+                                    "user": "@system"
+                                },
+                                "default_count": 2,
+                                "max_instance": 2
+                            }
+                        },
+                        "Ifname": {
+                            "&perm": {
+                                "1": {
+                                    "access": 8,
+                                    "user": "@all"
+                                },
+                                "2": {
+                                    "access": 4,
+                                    "user": "@system"
+                                },
+                                "default_count": 2,
+                                "max_instance": 2
+                            }
+                        },
+                        "LowerLayer": {
+                            "&perm": {
+                                "1": {
+                                    "access": 1,
+                                    "user": "@guest"
+                                },
+                                "default_count": 1,
+                                "max_instance": 1
+                            }
+                        },
+                        "Name": {
+                            "&perm": {
+                                "1": {
+                                    "access": 1,
+                                    "user": "@guest"
+                                },
+                                "default_count": 1,
+                                "max_instance": 1
+                            }
+                        },
+                        "Status": {
+                            "&perm": {
+                                "1": {
+                                    "access": 1,
+                                    "user": "@guest"
+                                },
+                                "default_count": 1,
+                                "max_instance": 1
+                            }
+                        }
+                    },
+                    "&perm": {
+                        "1": {
+                            "access": 5,
+                            "user": "@system"
+                        },
+                        "2": {
+                            "access": 5,
+                            "user": "@auth"
+                        },
+                        "default_count": 2,
+                        "max_instance": 2
+                    }
+                },
+                "WiFi": {
+                    "#template": {
+                        "BridgeLink": {
+                            "&perm": {
+                                "1": {
+                                    "access": 8,
+                                    "user": "@all"
+                                },
+                                "2": {
+                                    "access": 4,
+                                    "user": "@system"
+                                },
+                                "default_count": 2,
+                                "max_instance": 2
+                            }
+                        },
+                        "Bridged": {
+                            "&perm": {
+                                "1": {
+                                    "access": 8,
+                                    "user": "@all"
+                                },
+                                "2": {
+                                    "access": 4,
+                                    "user": "@system"
+                                },
+                                "default_count": 2,
+                                "max_instance": 2
+                            }
+                        },
+                        "Ifname": {
+                            "&perm": {
+                                "1": {
+                                    "access": 8,
+                                    "user": "@all"
+                                },
+                                "2": {
+                                    "access": 4,
+                                    "user": "@system"
+                                },
+                                "default_count": 2,
+                                "max_instance": 2
+                            }
+                        },
+                        "LowerLayer": {
+                            "&perm": {
+                                "1": {
+                                    "access": 1,
+                                    "user": "@guest"
+                                },
+                                "default_count": 1,
+                                "max_instance": 1
+                            }
+                        },
+                        "Name": {
+                            "&perm": {
+                                "1": {
+                                    "access": 1,
+                                    "user": "@guest"
+                                },
+                                "default_count": 1,
+                                "max_instance": 1
+                            }
+                        },
+                        "Status": {
+                            "&perm": {
+                                "1": {
+                                    "access": 1,
+                                    "user": "@guest"
+                                },
+                                "default_count": 1,
+                                "max_instance": 1
+                            }
+                        }
+                    },
+                    "&perm": {
+                        "1": {
+                            "access": 5,
+                            "user": "@system"
+                        },
+                        "2": {
+                            "access": 5,
+                            "user": "@auth"
+                        },
+                        "default_count": 2,
+                        "max_instance": 2
+                    }
+                }
+            },
+            "Server": {
+                "DHCP": {
+                    "&perm": {
+                        "1": {
+                            "access": 165,
+                            "user": "@system"
+                        },
+                        "2": {
+                            "access": 165,
+                            "user": "@auth"
+                        },
+                        "default_count": 2,
+                        "max_instance": 2
+                    }
+                },
+                "DNS": {
+                    "#template": {
+                        "SafeDNS": {
+                            "Provider": {
+                                "#template": {
+                                    "DNS": {
+                                        "#template": {
+                                            "Address": {
+                                                "&perm": {
+                                                    "1": {
+                                                        "access": 8,
+                                                        "user": "@all"
+                                                    },
+                                                    "2": {
+                                                        "access": 4,
+                                                        "user": "@system"
+                                                    },
+                                                    "default_count": 2,
+                                                    "max_instance": 2
+                                                }
+                                            }
+                                        },
+                                        "&perm": {
+                                            "1": {
+                                                "access": 160,
+                                                "user": "@all"
+                                            },
+                                            "2": {
+                                                "access": 80,
+                                                "user": "@system"
+                                            },
+                                            "default_count": 2,
+                                            "max_instance": 2
+                                        }
+                                    }
+                                },
+                                "&perm": {
+                                    "1": {
+                                        "access": 160,
+                                        "user": "@all"
+                                    },
+                                    "2": {
+                                        "access": 80,
+                                        "user": "@system"
+                                    },
+                                    "default_count": 2,
+                                    "max_instance": 2
+                                }
+                            }
+                        }
+                    },
+                    "&perm": {
+                        "1": {
+                            "access": 165,
+                            "user": "@system"
+                        },
+                        "2": {
+                            "access": 165,
+                            "user": "@auth"
+                        },
+                        "default_count": 2,
+                        "max_instance": 2
+                    }
+                }
+            },
+            "ServerDetection": {
+                "DHCP": {
+                    "&perm": {
+                        "1": {
+                            "access": 5,
+                            "user": "@system"
+                        },
+                        "2": {
+                            "access": 5,
+                            "user": "@auth"
+                        },
+                        "default_count": 2,
+                        "max_instance": 2
+                    }
+                },
+                "PPPoE": {
+                    "&perm": {
+                        "1": {
+                            "access": 5,
+                            "user": "@system"
+                        },
+                        "2": {
+                            "access": 5,
+                            "user": "@auth"
+                        },
+                        "default_count": 2,
+                        "max_instance": 2
+                    }
+                }
+            }
+        },
+        "Routing": {
+            "&perm": {
+                "1": {
+                    "access": 8,
+                    "user": "@all"
+                },
+                "2": {
+                    "access": 4,
+                    "user": "@system"
+                },
+                "default_count": 2,
+                "max_instance": 2
+            },
+            "IPv4": {
+                "Tables": {
+                    "1": {
+                        "&perm": {
+                            "1": {
+                                "access": 136,
+                                "user": "@system"
+                            },
+                            "default_count": 1,
+                            "max_instance": 1
+                        }
+                    },
+                    "2": {
+                        "&perm": {
+                            "1": {
+                                "access": 136,
+                                "user": "@system"
+                            },
+                            "default_count": 1,
+                            "max_instance": 1
+                        }
+                    }
+                }
+            }
+        },
+        "Services": {
+            "&perm": {
+                "1": {
+                    "access": 10,
+                    "user": "@all"
+                },
+                "default_count": 1,
+                "max_instance": 1
+            },
+            "Anweb": {
+                "&perm": {
+                    "1": {
+                        "access": 5,
+                        "user": "@system"
+                    },
+                    "2": {
+                        "access": 5,
+                        "user": "@auth"
+                    },
+                    "default_count": 2,
+                    "max_instance": 2
+                },
+                "WebInterfaceMode": {
+                    "&perm": {
+                        "1": {
+                            "access": 1,
+                            "user": "@guest"
+                        },
+                        "default_count": 1,
+                        "max_instance": 1
+                    }
+                }
+            },
+            "Autoprovision": {
+                "&perm": {
+                    "1": {
+                        "access": 1,
+                        "user": "@all"
+                    },
+                    "2": {
+                        "access": 4,
+                        "user": "@system"
+                    },
+                    "3": {
+                        "access": 4,
+                        "user": "@auth"
+                    },
+                    "default_count": 3,
+                    "max_instance": 3
+                }
+            },
+            "Autoupdate": {
+                "&perm": {
+                    "1": {
+                        "access": 5,
+                        "user": "@all"
+                    },
+                    "default_count": 1,
+                    "max_instance": 1
+                },
+                "FirmwareMD5": {
+                    "&perm": {
+                        "1": {
+                            "access": 1,
+                            "user": "@all"
+                        },
+                        "default_count": 1,
+                        "max_instance": 1
+                    }
+                },
+                "FirmwareStatus": {
+                    "&perm": {
+                        "1": {
+                            "access": 1,
+                            "user": "@all"
+                        },
+                        "default_count": 1,
+                        "max_instance": 1
+                    }
+                },
+                "FirmwareURL": {
+                    "&perm": {
+                        "1": {
+                            "access": 1,
+                            "user": "@all"
+                        },
+                        "default_count": 1,
+                        "max_instance": 1
+                    }
+                },
+                "FirmwareVersion": {
+                    "&perm": {
+                        "1": {
+                            "access": 1,
+                            "user": "@all"
+                        },
+                        "default_count": 1,
+                        "max_instance": 1
+                    }
+                },
+                "Period": {
+                    "&perm": {
+                        "1": {
+                            "access": 10,
+                            "user": "@all"
+                        },
+                        "2": {
+                            "access": 5,
+                            "user": "@system"
+                        },
+                        "3": {
+                            "access": 5,
+                            "user": "@auth"
+                        },
+                        "default_count": 3,
+                        "max_instance": 3
+                    }
+                }
+            },
+            "DCA": {
+                "&perm": {
+                    "1": {
+                        "access": 5,
+                        "user": "@system"
+                    },
+                    "2": {
+                        "access": 5,
+                        "user": "@auth"
+                    },
+                    "default_count": 2,
+                    "max_instance": 2
+                }
+            },
+            "FTP": {
+                "&perm": {
+                    "1": {
+                        "access": 5,
+                        "user": "@system"
+                    },
+                    "2": {
+                        "access": 5,
+                        "user": "@auth"
+                    },
+                    "default_count": 2,
+                    "max_instance": 2
+                }
+            },
+            "LocDNS": {
+                "&perm": {
+                    "1": {
+                        "access": 5,
+                        "user": "@system"
+                    },
+                    "2": {
+                        "access": 5,
+                        "user": "@auth"
+                    },
+                    "default_count": 2,
+                    "max_instance": 2
+                }
+            },
+            "MDNS": {
+                "&perm": {
+                    "1": {
+                        "access": 5,
+                        "user": "@system"
+                    },
+                    "2": {
+                        "access": 5,
+                        "user": "@auth"
+                    },
+                    "default_count": 2,
+                    "max_instance": 2
+                }
+            },
+            "NTP": {
+                "&perm": {
+                    "1": {
+                        "access": 5,
+                        "user": "@system"
+                    },
+                    "2": {
+                        "access": 5,
+                        "user": "@auth"
+                    },
+                    "default_count": 2,
+                    "max_instance": 2
+                }
+            },
+            "PrintServer": {
+                "&perm": {
+                    "1": {
+                        "access": 5,
+                        "user": "@system"
+                    },
+                    "2": {
+                        "access": 5,
+                        "user": "@auth"
+                    },
+                    "default_count": 2,
+                    "max_instance": 2
+                }
+            },
+            "Roamd": {
+                "&perm": {
+                    "1": {
+                        "access": 5,
+                        "user": "@system"
+                    },
+                    "2": {
+                        "access": 5,
+                        "user": "@auth"
+                    },
+                    "default_count": 2,
+                    "max_instance": 2
+                }
+            },
+            "SSH": {
+                "&perm": {
+                    "1": {
+                        "access": 5,
+                        "user": "@system"
+                    },
+                    "2": {
+                        "access": 5,
+                        "user": "@auth"
+                    },
+                    "default_count": 2,
+                    "max_instance": 2
+                }
+            },
+            "Samba": {
+                "&perm": {
+                    "1": {
+                        "access": 5,
+                        "user": "@system"
+                    },
+                    "2": {
+                        "access": 5,
+                        "user": "@auth"
+                    },
+                    "default_count": 2,
+                    "max_instance": 2
+                }
+            },
+            "Syslog": {
+                "&perm": {
+                    "1": {
+                        "access": 5,
+                        "user": "@system"
+                    },
+                    "2": {
+                        "access": 5,
+                        "user": "@auth"
+                    },
+                    "default_count": 2,
+                    "max_instance": 2
+                }
+            },
+            "Telnet": {
+                "&perm": {
+                    "1": {
+                        "access": 5,
+                        "user": "@system"
+                    },
+                    "2": {
+                        "access": 5,
+                        "user": "@auth"
+                    },
+                    "default_count": 2,
+                    "max_instance": 2
+                }
+            }
+        },
+        "Statistics": {
+            "&perm": {
+                "1": {
+                    "access": 10,
+                    "user": "@all"
+                },
+                "2": {
+                    "access": 1,
+                    "user": "@system"
+                },
+                "3": {
+                    "access": 1,
+                    "user": "@auth"
+                },
+                "default_count": 3,
+                "max_instance": 3
+            },
+            "CPU": {
+                "&perm": {
+                    "1": {
+                        "access": 5,
+                        "user": "@system"
+                    },
+                    "default_count": 1,
+                    "max_instance": 1
+                }
+            },
+            "DHCPConnection": {
+                "&perm": {
+                    "1": {
+                        "access": 5,
+                        "user": "@system"
+                    },
+                    "default_count": 1,
+                    "max_instance": 1
+                }
+            },
+            "Firewall": {
+                "&perm": {
+                    "1": {
+                        "access": 5,
+                        "user": "@system"
+                    },
+                    "default_count": 1,
+                    "max_instance": 1
+                }
+            },
+            "Interface": {
+                "&perm": {
+                    "1": {
+                        "access": 5,
+                        "user": "@system"
+                    },
+                    "default_count": 1,
+                    "max_instance": 1
+                }
+            },
+            "Meminfo": {
+                "&perm": {
+                    "1": {
+                        "access": 5,
+                        "user": "@system"
+                    },
+                    "default_count": 1,
+                    "max_instance": 1
+                }
+            },
+            "Multicast": {
+                "&perm": {
+                    "1": {
+                        "access": 5,
+                        "user": "@system"
+                    },
+                    "default_count": 1,
+                    "max_instance": 1
+                }
+            },
+            "Neighbours": {
+                "#template": {
+                    "IPAddress": {
+                        "&perm": {
+                            "1": {
+                                "access": 1,
+                                "user": "@guest"
+                            },
+                            "default_count": 1,
+                            "max_instance": 1
+                        }
+                    },
+                    "Port": {
+                        "&perm": {
+                            "1": {
+                                "access": 1,
+                                "user": "@guest"
+                            },
+                            "default_count": 1,
+                            "max_instance": 1
+                        }
+                    }
+                },
+                "&perm": {
+                    "1": {
+                        "access": 5,
+                        "user": "@system"
+                    },
+                    "default_count": 1,
+                    "max_instance": 1
+                }
+            },
+            "Routing": {
+                "&perm": {
+                    "1": {
+                        "access": 2,
+                        "user": "@auth"
+                    },
+                    "2": {
+                        "access": 5,
+                        "user": "@system"
+                    },
+                    "default_count": 2,
+                    "max_instance": 2
+                }
+            },
+            "Sessions": {
+                "&perm": {
+                    "1": {
+                        "access": 5,
+                        "user": "@system"
+                    },
+                    "default_count": 1,
+                    "max_instance": 1
+                }
+            },
+            "WiFi": {
+                "&perm": {
+                    "1": {
+                        "access": 5,
+                        "user": "@system"
+                    },
+                    "default_count": 1,
+                    "max_instance": 1
+                }
+            }
+        },
+        "Switch": {
+            "&perm": {
+                "1": {
+                    "access": 10,
+                    "user": "@all"
+                },
+                "2": {
+                    "access": 5,
+                    "user": "@system"
+                },
+                "3": {
+                    "access": 5,
+                    "user": "@auth"
+                },
+                "default_count": 3,
+                "max_instance": 3
+            },
+            "Switches": {
+                "#template": {
+                    "Ports": {
+                        "#template": {
+                            "Status": {
+                                "&perm": {
+                                    "1": {
+                                        "access": 1,
+                                        "user": "@guest"
+                                    },
+                                    "default_count": 1,
+                                    "max_instance": 1
+                                }
+                            }
+                        }
+                    },
+                    "Vlan": {
+                        "#template": {
+                            "Status": {
+                                "&perm": {
+                                    "1": {
+                                        "access": 1,
+                                        "user": "@guest"
+                                    },
+                                    "default_count": 1,
+                                    "max_instance": 1
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "System": {
+            "&perm": {
+                "1": {
+                    "access": 10,
+                    "user": "@all"
+                },
+                "default_count": 1,
+                "max_instance": 1
+            },
+            "Boot": {
+                "&perm": {
+                    "1": {
+                        "access": 5,
+                        "user": "@system"
+                    },
+                    "2": {
+                        "access": 5,
+                        "user": "@auth"
+                    },
+                    "default_count": 2,
+                    "max_instance": 2
+                }
+            },
+            "Command": {
+                "#template": {
+                    "UID": {
+                        "&perm": {
+                            "1": {
+                                "access": 8,
+                                "user": "@all"
+                            },
+                            "2": {
+                                "access": 4,
+                                "user": "@system"
+                            },
+                            "default_count": 2,
+                            "max_instance": 2
+                        }
+                    }
+                },
+                "&perm": {
+                    "1": {
+                        "access": 4181,
+                        "user": "@all"
+                    },
+                    "default_count": 1,
+                    "max_instance": 1
+                }
+            },
+            "Debug": {
+                "&perm": {
+                    "1": {
+                        "access": 5,
+                        "user": "@system"
+                    },
+                    "2": {
+                        "access": 5,
+                        "user": "@auth"
+                    },
+                    "default_count": 2,
+                    "max_instance": 2
+                }
+            },
+            "Permission": {
+                "&perm": {
+                    "1": {
+                        "access": 10,
+                        "user": "@all"
+                    },
+                    "2": {
+                        "access": 4,
+                        "user": "@system"
+                    },
+                    "default_count": 2,
+                    "max_instance": 2
+                },
+                "Check": {
+                    "&perm": {
+                        "1": {
+                            "access": 4,
+                            "user": "@auth"
+                        },
+                        "default_count": 1,
+                        "max_instance": 1
+                    }
+                }
+            },
+            "Scheduler": {
+                "&perm": {
+                    "1": {
+                        "access": 5,
+                        "user": "@system"
+                    },
+                    "2": {
+                        "access": 5,
+                        "user": "@auth"
+                    },
+                    "default_count": 2,
+                    "max_instance": 2
+                }
+            },
+            "Time": {
+                "&perm": {
+                    "1": {
+                        "access": 5,
+                        "user": "@system"
+                    },
+                    "2": {
+                        "access": 5,
+                        "user": "@auth"
+                    },
+                    "3": {
+                        "access": 1,
+                        "user": "@guest"
+                    },
+                    "default_count": 3,
+                    "max_instance": 3
+                }
+            }
+        },
+        "USB": {
+            "&perm": {
+                "1": {
+                    "access": 10,
+                    "user": "@auth"
+                },
+                "default_count": 1,
+                "max_instance": 1
+            },
+            "Printer": {
+                "&perm": {
+                    "1": {
+                        "access": 1,
+                        "user": "@auth"
+                    },
+                    "default_count": 1,
+                    "max_instance": 1
+                }
+            },
+            "Storage": {
+                "#template": {
+                    "Disable": {
+                        "&perm": {
+                            "1": {
+                                "access": 4,
+                                "user": "@auth"
+                            },
+                            "default_count": 1,
+                            "max_instance": 1
+                        }
+                    }
+                },
+                "&perm": {
+                    "1": {
+                        "access": 1,
+                        "user": "@auth"
+                    },
+                    "default_count": 1,
+                    "max_instance": 1
+                }
+            },
+            "Users": {
+                "&perm": {
+                    "1": {
+                        "access": 5,
+                        "user": "@auth"
+                    },
+                    "default_count": 1,
+                    "max_instance": 1
+                }
+            }
+        },
+        "Users": {
+            "CurrentUser": {
+                "&perm": {
+                    "1": {
+                        "access": 9,
+                        "user": "@auth"
+                    },
+                    "default_count": 1,
+                    "max_instance": 1
+                }
+            },
+            "Group": {
+                "#template": {
+                    "&perm": {
+                        "1": {
+                            "access": 10,
+                            "user": "@guest"
+                        },
+                        "default_count": 1,
+                        "max_instance": 1
+                    }
+                },
+                "&perm": {
+                    "1": {
+                        "access": 10,
+                        "user": "@auth"
+                    },
+                    "default_count": 1,
+                    "max_instance": 1
+                }
+            },
+            "User": {
+                "#template": {
+                    "&perm": {
+                        "1": {
+                            "access": 128,
+                            "user": "@auth"
+                        },
+                        "default_count": 1,
+                        "max_instance": 1
+                    },
+                    "Groups": {
+                        "&perm": {
+                            "1": {
+                                "access": 10,
+                                "user": "@guest"
+                            },
+                            "2": {
+                                "access": 10,
+                                "user": "@auth"
+                            },
+                            "default_count": 2,
+                            "max_instance": 2
+                        }
+                    },
+                    "Password": {
+                        "&perm": {
+                            "1": {
+                                "access": 2,
+                                "user": "@auth"
+                            },
+                            "default_count": 1,
+                            "max_instance": 1
+                        }
+                    }
+                },
+                "&perm": {
+                    "1": {
+                        "access": 32,
+                        "user": "@auth"
+                    },
+                    "default_count": 1,
+                    "max_instance": 1
+                }
+            }
+        },
+        "WiFi": {
+            "APProfile": {
+                "#template": {
+                    "SSID": {
+                        "&perm": {
+                            "1": {
+                                "access": 1,
+                                "user": "@guest"
+                            },
+                            "default_count": 1,
+                            "max_instance": 1
+                        }
+                    },
+                    "Security": {
+                        "ModeEnabled": {
+                            "&perm": {
+                                "1": {
+                                    "access": 1,
+                                    "user": "@guest"
+                                },
+                                "default_count": 1,
+                                "max_instance": 1
+                            }
+                        }
+                    }
+                }
+            },
+            "Radio": {
+                "#template": {
+                    "#template": {
+                        "&perm": {
+                            "1": {
+                                "access": 64,
+                                "user": "@auth"
+                            },
+                            "default_count": 1,
+                            "max_instance": 1
+                        }
+                    },
+                    "&perm": {
+                        "1": {
+                            "access": 128,
+                            "user": "@auth"
+                        },
+                        "default_count": 1,
+                        "max_instance": 1
+                    },
+                    "AccessPoint": {
+                        "#template": {
+                            "Enable": {
+                                "&perm": {
+                                    "1": {
+                                        "access": 1,
+                                        "user": "@guest"
+                                    },
+                                    "default_count": 1,
+                                    "max_instance": 1
+                                }
+                            },
+                            "Profile": {
+                                "&perm": {
+                                    "1": {
+                                        "access": 1,
+                                        "user": "@guest"
+                                    },
+                                    "default_count": 1,
+                                    "max_instance": 1
+                                }
+                            }
+                        },
+                        "&perm": {
+                            "1": {
+                                "access": 64,
+                                "user": "@auth"
+                            },
+                            "default_count": 1,
+                            "max_instance": 1
+                        }
+                    },
+                    "Advanced": {
+                        "&perm": {
+                            "1": {
+                                "access": 64,
+                                "user": "@auth"
+                            },
+                            "default_count": 1,
+                            "max_instance": 1
+                        },
+                        "DisableTransmitPowerLimit": {
+                            "&perm": {
+                                "1": {
+                                    "access": 8,
+                                    "user": "@all"
+                                },
+                                "2": {
+                                    "access": 4,
+                                    "user": "@system"
+                                },
+                                "default_count": 2,
+                                "max_instance": 2
+                            }
+                        }
+                    },
+                    "OperatingFrequencyBand": {
+                        "&perm": {
+                            "1": {
+                                "access": 1,
+                                "user": "@guest"
+                            },
+                            "2": {
+                                "access": 64,
+                                "user": "@auth"
+                            },
+                            "default_count": 2,
+                            "max_instance": 2
+                        }
+                    },
+                    "Status": {
+                        "&perm": {
+                            "1": {
+                                "access": 1,
+                                "user": "@guest"
+                            },
+                            "2": {
+                                "access": 64,
+                                "user": "@auth"
+                            },
+                            "default_count": 2,
+                            "max_instance": 2
+                        }
+                    }
+                },
+                "&perm": {
+                    "1": {
+                        "access": 32,
+                        "user": "@auth"
+                    },
+                    "default_count": 1,
+                    "max_instance": 1
+                }
+            }
+        }
+    },
+    "Links": {
+        "&perm": {
+            "1": {
+                "access": 1,
+                "user": "@auth"
+            },
+            "default_count": 1,
+            "max_instance": 1
+        }
+    },
+    "View": {
+        "&perm": {
+            "1": {
+                "access": 341,
+                "user": "@auth"
+            },
+            "default_count": 1,
+            "max_instance": 1
+        }
+    }
+}

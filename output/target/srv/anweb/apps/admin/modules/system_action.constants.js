@@ -1,0 +1,1 @@
+"use strict";!function(){angular.module(regdep("system-action-constants"),[]).constant("systemActionConstants",{REBOOT_TIME:autoconf.BR2_PACKAGE_ANWEB_DEVICE_REBOOT_TIME?parseInt(autoconf.BR2_PACKAGE_ANWEB_DEVICE_REBOOT_TIME):9e4,CHECK_COUNT:0})}();

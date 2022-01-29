@@ -1,0 +1,10 @@
+config BR2_PACKAGE_SAMBA
+	bool "Samba"
+	select BR2_PACKAGE_UTIL_LINUX
+	select BR2_PACKAGE_UTIL_LINUX_LIBUUID
+	default n
+
+config BR2_PACKAGE_SAMBA_FASTPATH
+	depends on BR2_PACKAGE_SAMBA
+	bool "Enable fastpath for samba"
+	default n

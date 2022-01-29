@@ -1,0 +1,15 @@
+menuconfig BR2_PACKAGE_CEREAL
+	bool "cereal"
+	default n
+	help
+		cereal - A C++11 library for serialization
+
+if BR2_PACKAGE_CEREAL
+
+config BR2_PACKAGE_CEREAL_INSTALL_HEADERS_ONLY
+	bool "Install cereal headers only."
+	default y
+	help
+		Copy only header files to the staging directory.
+
+endif

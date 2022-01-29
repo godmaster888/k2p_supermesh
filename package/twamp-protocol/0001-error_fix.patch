@@ -1,0 +1,161 @@
+From ea6d23df07e5e532a735ac7c5fb66d067f6442d8 Mon Sep 17 00:00:00 2001
+From: Vladimir Yaichkin <vyaichkin@rzn.dlink.ru>
+Date: Wed, 18 Dec 2019 19:08:17 +0300
+Subject: [#39193] twamp-protocol, client, server: removed the ban check to run
+ twamp
+Patch-from-hash: b3407d2adbb820bc00cfb54449ac323a307c8bc6
+Patch-repo: twamp-protocol
+Patch-branch: master
+Patch-version: 1
+
+Why is the root user unable to run twamp utilities ? Fixed.
+
+Signed-off-by: Vladimir Yaichkin <vyaichkin@rzn.dlink.ru>
+---
+ client.c | 2 +-
+ server.c | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/client.c b/client.c
+index 8d0547a..f3cf1c4 100644
+--- a/client.c
++++ b/client.c
+@@ -243,7 +243,7 @@ int main(int argc, char *argv[])
+     struct hostent *server;
+
+     /* Sanity check */
+-#if 1
++#if 0
+     if (getuid() == 0) {
+         fprintf(stderr, "%s should not be run as root\n", progname);
+         exit(EXIT_FAILURE);
+diff --git a/server.c b/server.c
+index 688db91..4c42168 100644
+--- a/server.c
++++ b/server.c
+@@ -652,7 +652,7 @@ int main(int argc, char *argv[])
+     /* Obtain the program name without the full path */
+     progname = (progname == strrchr(argv[0], '/')) ? progname + 1 : *argv;
+
+-#if 1
++#if 0
+     /* Sanity check */
+     if (getuid() == 0) {
+         fprintf(stderr, "%s should not be run as root\n", progname);
+--
+2.20.1
+
+
+From a4c8568b679a6a3867412d20975b72da3ebf73d2 Mon Sep 17 00:00:00 2001
+From: Vladimir Yaichkin <vyaichkin@rzn.dlink.ru>
+Date: Wed, 18 Dec 2019 19:14:46 +0300
+Subject: [#39193] twamp, server: fixed sigsev when starting the twamp server
+Patch-from-hash: b3407d2adbb820bc00cfb54449ac323a307c8bc6
+Patch-repo: twamp-protocol
+Patch-branch: master
+Patch-version: 1
+
+If the server starts on the absolute path, then everything is fine.
+But if we start twamp-server along the relative path,
+then a SIGSEGV error occurs. Fixed.
+
+Signed-off-by: Vladimir Yaichkin <vyaichkin@rzn.dlink.ru>
+---
+ server.c | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/server.c b/server.c
+index 4c42168..a266ac5 100644
+--- a/server.c
++++ b/server.c
+@@ -647,10 +647,13 @@ static int receive_test_message(struct client_info *client, int session_index)
+
+ int main(int argc, char *argv[])
+ {
+-    char *progname = NULL;
++    char *ptr = NULL;
++    char *progname = argv[0];
+     srand(time(NULL));
+     /* Obtain the program name without the full path */
+-    progname = (progname == strrchr(argv[0], '/')) ? progname + 1 : *argv;
++    if ((ptr = strrchr(argv[0], '/'))) {
++        progname = ptr + 1;
++    }
+
+ #if 0
+     /* Sanity check */
+--
+2.20.1
+
+
+From a72536d4bf5460e1764fcf2ea9c8c49f6bb3688d Mon Sep 17 00:00:00 2001
+From: Vladimir Yaichkin <vyaichkin@rzn.dlink.ru>
+Date: Thu, 19 Dec 2019 12:16:15 +0300
+Subject: [#39193] twamp, client: fixed memleak in main loop
+Patch-from-hash: b3407d2adbb820bc00cfb54449ac323a307c8bc6
+Patch-repo: twamp-protocol
+Patch-branch: master
+Patch-version: 1
+
+Fixed a memory leak that occurred during the main message
+sending cycle.
+
+Signed-off-by: Vladimir Yaichkin <vyaichkin@rzn.dlink.ru>
+---
+ client.c | 25 +++++++++++++------------
+ 1 file changed, 13 insertions(+), 12 deletions(-)
+
+diff --git a/client.c b/client.c
+index f3cf1c4..8034dec 100644
+--- a/client.c
++++ b/client.c
+@@ -617,24 +617,25 @@ int main(int argc, char *argv[])
+
+             /* New for recvmsg */
+
+-            struct msghdr *message = malloc(sizeof(struct msghdr));
++            struct msghdr message;
++            struct iovec iov[1];
+             struct cmsghdr *c_msg;
+-            char *control_buffer = malloc(TST_PKT_SIZE);
++            char control_buffer[TST_PKT_SIZE];
+             int control_length = TST_PKT_SIZE;
+
+-            memset(message, 0, sizeof(*message));
+-            message->msg_iov = malloc(sizeof(struct iovec));
+-            message->msg_iov->iov_base = &pack_reflect;
+-            message->msg_iov->iov_len = TST_PKT_SIZE;
+-            message->msg_iovlen = 1;
++            memset(&message, 0, sizeof(message));
++            message.msg_iov = iov;
++            message.msg_iov->iov_base = &pack_reflect;
++            message.msg_iov->iov_len = TST_PKT_SIZE;
++            message.msg_iovlen = 1;
+             /* Message control does not exist on every system. For instance, HP Tru64
+              * does not have it */
+ #ifndef NO_MESSAGE_CONTROL
+-            message->msg_control = control_buffer;
+-            message->msg_controllen = control_length;
++            message.msg_control = control_buffer;
++            message.msg_controllen = control_length;
+ #endif
+
+-            int rv = recvmsg(twamp_test[i].testfd, message, 0);
++            int rv = recvmsg(twamp_test[i].testfd, &message, 0);
+
+             /* Get Time of the received TWAMP-Test response message */
+             TWAMPTimestamp rcv_resp_time = get_timestamp();
+@@ -674,8 +675,8 @@ int main(int argc, char *argv[])
+                 uint8_t sw_tos = 0;
+
+ #ifndef NO_MESSAGE_CONTROL
+-                for (c_msg = CMSG_FIRSTHDR(message); c_msg;
+-                     c_msg = (CMSG_NXTHDR(message, c_msg))) {
++                for (c_msg = CMSG_FIRSTHDR(&message); c_msg;
++                     c_msg = (CMSG_NXTHDR(&message, c_msg))) {
+                     if ((c_msg->cmsg_level == IPPROTO_IP
+                          && c_msg->cmsg_type == IP_TTL)
+                         || (c_msg->cmsg_level == IPPROTO_IPV6
+--
+2.20.1
+

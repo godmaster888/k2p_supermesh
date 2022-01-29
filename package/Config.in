@@ -1,0 +1,162 @@
+menu "Package Selection for the target"
+
+source "package/private/Config.in"
+
+menu "WAN Connections"
+source "package/pppd/Config.in"
+source "package/xl2tp/Config.in"
+source "package/pptpclient/Config.in"
+source "package/poptop/Config.in"
+source "package/udhcp/Config.in"
+source "package/wpa_supplicant/Config.in"
+source "package/lanauth/Config.in"
+endmenu
+
+# Большие группы
+source "package/Config_WIFI.in"
+source "package/Config_USB.in"
+source "package/Config_IPv6.in"
+
+source "package/busybox/Config.in"
+
+menu "Libraries"
+menu "Compressors and decompressors"
+if BR2_PACKAGE_BUSYBOX_SHOW_OTHERS
+source "package/bzip2/Config.in"
+source "package/gzip/Config.in"
+endif
+source "package/lzop/Config.in"
+source "package/lzma/Config.in"
+source "package/xz/Config.in"
+source "package/minilzo/Config.in"
+source "package/lzo/Config.in"
+source "package/zlib/Config.in"
+endmenu
+
+menu "Crypto"
+source "package/axtls/Config.in"
+source "package/bearssl/Config.in"
+source "package/ca-certificates/Config.in"
+source "package/libmd5-rfc/Config.in"
+source "package/libtomcrypt/Config.in"
+source "package/openssl/Config.in"
+endmenu
+
+menu "Database"
+source "package/sqlite/Config.in"
+endmenu
+
+menu "Filesystem"
+source "package/libconfuse/Config.in"
+endmenu
+
+menu "JSON/XML"
+source "package/expat/Config.in"
+source "package/libroxml/Config.in"
+source "package/jansson/Config.in"
+source "package/libjsonc/Config.in"
+source "package/cereal/Config.in"
+
+endmenu
+
+
+menu "Networking"
+source "package/libmnl/Config.in"
+source "package/libnetfilter_queue/Config.in"
+source "package/libnfnetlink/Config.in"
+source "package/libnl/Config.in"
+source "package/libnl-tiny/Config.in"
+source "package/libpcap/Config.in"
+source "package/libumqtt/Config.in"
+source "package/openzwave/Config.in"
+source "package/nat_rtsp_module/Config.in"
+endmenu
+
+menu "Other"
+source "package/boost/Config.in"
+source "package/gengetopt/Config.in"
+source "package/libbsd/Config.in"
+source "package/libcap/Config.in"
+source "package/libcrc/Config.in"
+source "package/libev/Config.in"
+source "package/libevent/Config.in"
+source "package/libexif/Config.in"
+source "package/libflac/Config.in"
+source "package/libid3tag/Config.in"
+source "package/libite/Config.in"
+source "package/libjpeg/Config.in"
+source "package/libogg/Config.in"
+source "package/libvorbis/Config.in"
+source "package/libstrophe/Config.in"
+source "package/libtommath/Config.in"
+source "package/lua-minify/Config.in"
+source "package/tz/Config.in"
+source "package/util-linux/Config.in"
+endmenu
+endmenu
+
+menu "Miscellaneous"
+source "package/domoticz/Config.in"
+source "package/libctelebot/Config.in"
+endmenu
+
+menu "Networking applications"
+source "package/arptables/Config.in"
+source "package/coovachilli/Config.in"
+source "package/dnsmasq/Config.in"
+source "package/dropbear/Config.in"
+source "package/ebtables/Config.in"
+source "package/inadyn/Config.in"
+source "package/iperf3/Config.in"
+source "package/iproute2/Config.in"
+source "package/ipsec-tools/Config.in"
+source "package/iptables/Config.in"
+source "package/libcurl/Config.in"
+source "package/mdnsresponder/Config.in"
+source "package/mini_upnp_rlt/Config.in"
+source "package/miniupnpd/Config.in"
+source "package/mosquitto/Config.in"
+source "package/net-snmp/Config.in"
+source "package/openvpn/Config.in"
+source "package/p0f/Config.in"
+source "package/portmap/Config.in"
+source "package/quagga/Config.in"
+source "package/sslsplit/Config.in"
+source "package/ssmtp/Config.in"
+source "package/strongswan/Config.in"
+source "package/tacplus/Config.in"
+source "package/tcpdump/Config.in"
+source "package/tinyproxy/Config.in"
+source "package/tinysvcmdns/Config.in"
+source "package/twamp-protocol/Config.in"
+source "package/vrrpd/Config.in"
+source "package/udpxy/Config.in"
+source "package/softflowd/Config.in"
+source "package/libradius/Config.in"
+source "package/remserial/Config.in"
+endmenu
+
+menu "Debugging, profiling and benchmark"
+source "package/libunwind/Config.in"
+source "package/memwatch/Config.in"
+source "package/strace/Config.in"
+source "package/valgrind/Config.in"
+endmenu
+
+menu "Interpreter languages and scripting"
+source "package/lua/Config.in"
+source "package/lua-ev/Config.in"
+source "package/nodejs/Config.in"
+endmenu
+
+menu "Filesystem and flash utilities"
+source "package/cpio/Config.in"
+source "package/genext2fs/Config.in"
+source "package/mtd/Config.in"
+endmenu
+
+menu "Development tools"
+source "package/gperf/Config.in"
+endmenu
+
+endmenu

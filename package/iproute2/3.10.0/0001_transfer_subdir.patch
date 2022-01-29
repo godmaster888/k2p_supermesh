@@ -1,0 +1,35 @@
+From 5b58d0b2bc46788fcd2319db0bb1e60eec175af4 Mon Sep 17 00:00:00 2001
+From: Vladimir Yaichkin <vyaichkin@rzn.dlink.ru>
+Date: Thu, 3 Oct 2019 15:47:24 +0300
+Subject: [#37910] package, iproute2: patch to transfer iproute2 subdirectories
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+Patch-from-hash: 5ea792fab1804993788ae422ddbca6199b8a3a25
+Patch-repo: sdk
+Patch-branch: dsysinit
+Patch-version: 2
+
+Патч, который позволяет переназначить поддиректории, где должны
+быть сборки/установки модулей iproute2.
+
+Signed-off-by: Vladimir Yaichkin <vyaichkin@rzn.dlink.ru>
+---
+ Makefile_1 | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/Makefile b/Makefile
+index d4eed713cb..41bd40c399 100644
+--- a/Makefile
++++ b/Makefile
+@@ -36,7 +36,7 @@ WFLAGS += -Wmissing-declarations -Wold-style-definition
+ CFLAGS = $(WFLAGS) $(CCOPTS) -I../include $(DEFINES)
+ YACCFLAGS = -d -t -v
+
+-SUBDIRS=lib ip tc bridge misc netem genl man
++SUBDIRS ?= lib ip tc bridge misc netem genl man
+
+ LIBNETLINK=../lib/libnetlink.a ../lib/libutil.a
+ LDLIBS += $(LIBNETLINK)
+--
+2.20.1

@@ -1,0 +1,5 @@
+# vim: noexpandtab:ts=8:sw=8
+
+# VDSL
+
+/dev/ptm	c	666	0	0	120	0	-	-	-

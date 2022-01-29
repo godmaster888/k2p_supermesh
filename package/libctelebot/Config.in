@@ -1,0 +1,8 @@
+config BR2_PACKAGE_LIBCTELEBOT
+	select BR2_PACKAGE_JANSSON
+	select BR2_PACKAGE_LIBCURL
+	bool "libctelebot"
+	default n
+	help
+		Telegram bot API library
+		https://github.com/pogudaev/libctelebot.git

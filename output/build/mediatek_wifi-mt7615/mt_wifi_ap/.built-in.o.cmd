@@ -1,0 +1,1 @@
+cmd_drivers/net/wireless/mtk/mt7615e/mt_wifi_ap/built-in.o :=  rm -f drivers/net/wireless/mtk/mt7615e/mt_wifi_ap/built-in.o; /home/builder/sdk/output/toolchains/bin/mipsel-dlink-linux-uclibc-ar rcsD drivers/net/wireless/mtk/mt7615e/mt_wifi_ap/built-in.o

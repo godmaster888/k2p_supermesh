@@ -1,0 +1,1 @@
+"use strict";!function(){angular.module("app").service("wifiWpsUtil",["devinfo","funcs",function(){return{checkStatus:function(){return!0},unlock:function(){return!0}}}])}();

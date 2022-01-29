@@ -1,0 +1,51 @@
+#!/bin/sh
+
+ROOT=""
+FOLDER_1=$(realpath "$1")
+FOLDER_2=$(realpath "$2")
+
+while [ "$PWD" != "/" ]; do
+	if [ -f "$PWD/.sdk_root" ]; then
+		ROOT=$PWD
+		break;
+	fi
+
+	cd ..
+done
+
+if [ -z "$ROOT" ]; then
+	echo "Must be run from the a sdk tree"
+	exit 1
+fi
+
+test -d "$FOLDER_1" || exit 1
+test -d "$FOLDER_2" || exit 1
+
+{
+	(
+		cd "$FOLDER_1" || exit 1
+		find -name '*.o' -o -name '*.os' # -o -name '*.so'
+	)
+	(
+		cd "$FOLDER_2" || exit 1
+		find -name '*.o' -o -name '*.os' # -o -name '*.so'
+	)
+} | sed 's:^\./::' | sort | uniq | \
+tee LST | \
+(
+IFS=''
+while read -r oname; do
+	if ! test -f "$FOLDER_1/$oname"; then
+		echo "Only $FOLDER_2/$oname"
+		continue
+	fi
+	if ! test -f "$FOLDER_2/$oname"; then
+		echo "Only $FOLDER_1/$oname"
+		continue
+	fi
+	$ROOT/scripts/bloat-o-meter $FOLDER_1/$oname $FOLDER_2/$oname | grep 'otal: 0 byte' >/dev/null && continue
+	$ROOT/scripts/bloat-o-meter $FOLDER_1/$oname $FOLDER_2/$oname
+	size $FOLDER_1/$oname $FOLDER_2/$oname
+	echo
+done
+)

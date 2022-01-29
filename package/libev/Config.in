@@ -1,0 +1,8 @@
+config BR2_PACKAGE_LIBEV
+	bool "libev"
+	default n
+	help
+	  Userspace library for handling asynchronous notifications
+
+	  http://software.schmorp.de/pkg/libev.html
+	  https://salsa.debian.org/debian/libev

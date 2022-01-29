@@ -1,0 +1,1 @@
+"use strict";angular.module("app").controller("WanHealthCheckCtrl",["$scope",function($scope){$scope.healthCheck=$scope.conn.HealthCheck}]);

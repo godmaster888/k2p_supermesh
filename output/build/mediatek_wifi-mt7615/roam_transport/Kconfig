@@ -1,0 +1,8 @@
+config SUPPORT_ROAMING
+	bool "Roaming (r11) emulation support"
+	default n
+	help
+		This feature implements roaming emulation for AP and clients that don't
+		have native r11 support.
+		For using roaming, activate roaming package from buildroot first.
+

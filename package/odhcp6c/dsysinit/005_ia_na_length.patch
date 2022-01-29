@@ -1,0 +1,13 @@
+diff --git a/src/dhcpv6.c b/src/dhcpv6.c
+index 9dce577..f57488c 100644
+--- a/src/dhcpv6.c
++++ b/src/dhcpv6.c
+@@ -1299,7 +1299,7 @@ static int dhcpv6_parse_ia(void *opt, void *end)
+ 			if (entry.t1 > entry.t2)
+ 				entry.t1 = entry.t2;
+ 
+-			entry.length = 128;
++			entry.length = 64;
+ 			entry.target = addr->addr;
+ 
+ 			odhcp6c_update_entry(STATE_IA_NA, &entry, 0, 0);

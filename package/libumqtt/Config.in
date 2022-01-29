@@ -1,0 +1,6 @@
+menuconfig BR2_PACKAGE_LIBUMQTT
+	bool "libumqtt"
+	default n
+	select BR2_PACKAGE_LIBEV
+	help
+	  Client library MQTT implementation.

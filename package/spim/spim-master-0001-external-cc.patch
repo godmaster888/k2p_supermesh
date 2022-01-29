@@ -1,0 +1,13 @@
+diff --git a/spim/Makefile b/spim/Makefile
+index be676a0..cafc714 100755
+--- a/spim/Makefile
++++ b/spim/Makefile
+@@ -111,7 +111,7 @@ MEM_SIZES = -DTEXT_SIZE=65536 -DDATA_SIZE=131072 -DK_TEXT_SIZE=65536
+ 
+ DEFINES = $(MEM_SIZES) -DDEFAULT_EXCEPTION_HANDLER="\"$(EXCEPTION_DIR)/exceptions.s\""
+ 
+-CC = g++
++CC ?= gcc
+ CFLAGS += -I. -I$(CPU_DIR) $(DEFINES) -O -g -Wall -pedantic -Wextra -Wunused -Wno-write-strings -x c++
+ YCFLAGS +=
+ LDFLAGS += -lm

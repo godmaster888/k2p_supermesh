@@ -1,0 +1,22 @@
+diff --git a/memwatch.c b/memwatch.c
+index 2e7298a..7a60b31 100644
+--- a/memwatch.c
++++ b/memwatch.c
+@@ -418,7 +418,7 @@ void mwInit( void ) {
+ 	MW_MUTEX_INIT();
+ 
+     /* start a log if none is running */
+-    if( mwLogR() == NULL ) mwLogFile( "memwatch.log" );
++    if( mwLogR() == NULL ) mwLogFile( "/tmp/memwatch.log" );
+     if( mwLogR() == NULL ) {
+         int i;
+         char buf[32];
+@@ -426,7 +426,7 @@ void mwInit( void ) {
+         /* probably because it's already open */
+         /* so we try some other names */
+         for( i=1; i<100; i++ ) {
+-            sprintf( buf, "memwat%02d.log", i );
++            sprintf( buf, "/tmp/memwat%02d.log", i );
+             mwLogFile( buf );
+             if( mwLogR() != NULL ) break;
+             }

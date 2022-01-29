@@ -1,0 +1,46 @@
+config RALINK_MTK_SUPPORTS_PCI
+	bool
+	default n
+
+choice
+	prompt "Target Variant"
+config RALINK_RT6855
+	bool "RT6855"
+	select mipsel
+config RALINK_RT6855A
+	bool "RT6855A"
+	select mipsel
+config RALINK_MT7620
+	bool "MT7620"
+	select mipsel
+	# see N|A variants below
+config RALINK_MT7621
+	bool "MT7621"
+	select mipsel
+	select RALINK_MTK_SUPPORTS_PCI
+config RALINK_MT7628
+	bool "MT7628"
+	select mipsel
+	select RALINK_MTK_SUPPORTS_PCI
+endchoice
+
+choice
+	prompt "MT7620 Variant"
+	depends on RALINK_MT7620
+	default RALINK_MT7620A
+config RALINK_MT7620N
+	bool "MT7620N"
+	# see Wi-Fi variants below
+config RALINK_MT7620A
+	bool "MT7620A"
+	select RALINK_MTK_SUPPORTS_PCI
+endchoice
+
+choice
+	prompt "MT7620N Wi-Fi Variant"
+	depends on RALINK_MT7620N
+	depends on BR2_SUPPORT_WIFI
+	default RALINK_MT7620N_NEW_WIFI
+config RALINK_MT7620N_NEW_WIFI
+	bool "MT7620N with new Wi-Fi (rlt_wifi)"
+endchoice

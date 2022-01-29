@@ -1,0 +1,54 @@
+menuconfig BR2_PACKAGE_LIBEXOSIP2
+	bool "libeXosip2"
+	default n
+	select BR2_PACKAGE_LIBOSIP2
+	help
+	  eXosip is a GPL library that  extend  the  capability  of the oSIP library. It aims  to  implement  a  simple  high layer API to control SIP (rfc3261) for sessions establishements and common extensions.
+	  http://www.antisip.com
+
+if BR2_PACKAGE_LIBEXOSIP2
+
+config BR2_PACKAGE_LIBEXOSIP2_TOOLS
+	bool "tools"
+	default n
+	help
+	  example execute file for test eXosip
+
+config BR2_PACKAGE_LIBEXOSIP2_OPENSSL
+	bool "use openssl"
+	default y
+	depends on BR2_PACKAGE_OPENSSL
+	help
+	  build with support openssl
+
+config BR2_PACKAGE_LIBEXOSIP2_SRV_DNS
+	bool "support SRV DNS"
+	default y
+	help
+	  build with support SRV DNS
+
+config BR2_PACKAGE_LIBEXOSIP2_MULTITHREAD
+	bool "support multithread"
+	default y
+	help
+	  build with support multithread
+
+config BR2_PACKAGE_LIBEXOSIP2_MINIMIZE
+	bool "minimize build"
+	default n
+	help
+	  only compile minimal voip related code
+
+choice
+	prompt "Version"
+	default BR2_PACKAGE_LIBEXOSIP2_V5_1
+
+config BR2_PACKAGE_LIBEXOSIP2_V5_0
+	bool "v5.0.0"
+
+config BR2_PACKAGE_LIBEXOSIP2_V5_1
+	bool "v5.1.0"
+
+endchoice
+
+endif

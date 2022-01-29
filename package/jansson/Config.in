@@ -1,0 +1,4 @@
+config BR2_PACKAGE_JANSSON
+	bool "jansson"
+	help
+	   Build C library for encoding, decoding and manipulating JSON data.

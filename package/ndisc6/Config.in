@@ -1,0 +1,35 @@
+menuconfig BR2_PACKAGE_NDISC6
+	bool "ndisc6"
+	default n
+	help
+		Small collection of useful tools for IPv6 networking.
+
+		http://www.remlab.net/ndisc6/
+
+if BR2_PACKAGE_NDISC6
+
+config BR2_NDISC6_NAME2ADDR
+	bool "name2addr"
+	default n
+
+config BR2_NDISC6_NDISC6
+	bool "ndisc6"
+	default n
+
+config BR2_NDISC6_RDISC6
+	bool "rdisc6"
+	default y
+
+config BR2_NDISC6_TCPSPRAY
+	bool "tcpspray"
+	default n
+
+config BR2_NDISC6_TCPTRACEROUTE6
+	bool "tcptraceroute6"
+	default n
+
+config BR2_NDISC6_TRACEROUTE6
+	bool "traceroute6"
+	default n
+
+endif

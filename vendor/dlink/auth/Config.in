@@ -1,0 +1,18 @@
+menu "Default auth settings"
+
+config BR2_ALLOW_USER_MANAGEMENT
+	bool "Allow user management via config"
+
+config BR2_ADMINISTRATOR_NAME
+	string "Default user name"
+	default "admin"
+
+config BR2_ADMINISTRATOR_PASSWORD
+	string "Default user password"
+	default "admin"
+
+config BR2_PASSWORD_REGEX
+	string "Allowed password regex"
+	default ""
+
+endmenu

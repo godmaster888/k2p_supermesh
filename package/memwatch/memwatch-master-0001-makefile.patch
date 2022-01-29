@@ -1,0 +1,16 @@
+diff --git a/Makefile b/Makefile
+index bc1be19..d56d2f4 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1,2 +1,11 @@
++
++# farisey:
++CFLAGS += -DMEMWATCH -fPIC
++
++all: memwatch.o
++
++clean:
++	rm -f memwatch.o
++
+ test:
+ 	$(CC) -DMEMWATCH -DMW_STDIO test.c memwatch.c

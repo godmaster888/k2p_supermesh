@@ -1,0 +1,180 @@
+From ff95258fc3f61d7ed046dd1b71dcd35023349ce5 Mon Sep 17 00:00:00 2001
+From: Vladimir Yaichkin <vyaichkin@rzn.dlink.ru>
+Date: Fri, 14 Aug 2020 16:38:54 +0300
+Subject: strongswan: add ipsec service id
+Patch-from-hash: aff0e04810cefd30f3b489990d3fb96d07619951
+Patch-repo: strongswan
+Patch-branch: master
+Patch-version: 5
+
+Добавлена установка service_id для charon-демона, которая
+пробрасывается через starter.
+Данный id нужен для связи c dsysinit, после старта/остановки
+ipsec сервиса.
+
+Signed-off-by: Vladimir Yaichkin <vyaichkin@rzn.dlink.ru>
+---
+ src/charon/charon.c        | 21 +++++++++++++++++++++
+ src/libcharon/daemon.h     |  4 ++++
+ src/starter/confread.h     |  5 +++++
+ src/starter/invokecharon.c | 10 ++++++++++
+ src/starter/starter.c      | 18 ++++++++++++++++++
+ 5 files changed, 58 insertions(+)
+
+diff --git a/src/charon/charon.c b/src/charon/charon.c
+index 1d179ba..2576c67 100644
+--- a/src/charon/charon.c
++++ b/src/charon/charon.c
+@@ -314,6 +314,10 @@ int main(int argc, char *argv[])
+	/* logging for library during initialization, as we have no bus yet */
+	dbg = dbg_stderr;
+
++#ifdef DLINK_SOFTWARE
++	int service_id = 0;
++#endif /* DLINK_SOFTWARE */
++
+	/* initialize library */
+	if (!library_init(NULL, "charon"))
+	{
+@@ -348,6 +352,9 @@ int main(int argc, char *argv[])
+			{ "help", no_argument, NULL, 'h' },
+			{ "version", no_argument, NULL, 'v' },
+			{ "use-syslog", no_argument, NULL, 'l' },
++#ifdef DLINK_SOFTWARE
++			{ "service_id", required_argument, NULL, 'I' },
++#endif /* DLINK_SOFTWARE */
+			/* TODO: handle "debug-all" */
+			{ "debug-dmn", required_argument, &group, DBG_DMN },
+			{ "debug-mgr", required_argument, &group, DBG_MGR },
+@@ -385,6 +392,11 @@ int main(int argc, char *argv[])
+			case 'l':
+				use_syslog = TRUE;
+				continue;
++#ifdef DLINK_SOFTWARE
++			case 'I':
++				service_id = atoi(optarg);
++				continue;
++#endif /* DLINK_SOFTWARE */
+			case 0:
+				/* option is in group */
+				levels[group] = atoi(optarg);
+@@ -459,6 +471,15 @@ int main(int argc, char *argv[])
+	action.sa_handler = SIG_IGN;
+	sigaction(SIGPIPE, &action, NULL);
+
++#ifdef DLINK_SOFTWARE
++	if (service_id)
++	{
++		dlink_service_connect(service_id);
++		DBG1(DBG_DMN, "D-Link: send Service_ID [%d] => dsysinit", service_id);
++		dlink_service_update(json_pack("{s:b}", "Update", 1));
++	}
++#endif /* DLINK_SOFTWARE */
++
+	pthread_sigmask(SIG_SETMASK, &action.sa_mask, NULL);
+
+	/* start daemon (i.e. the threads in the thread-pool) */
+diff --git a/src/libcharon/daemon.h b/src/libcharon/daemon.h
+index 9ad985f..a75064a 100644
+--- a/src/libcharon/daemon.h
++++ b/src/libcharon/daemon.h
+@@ -194,6 +194,10 @@ typedef struct daemon_t daemon_t;
+ #include <config/backend_manager.h>
+ #include <sa/eap/eap_manager.h>
+ #include <sa/xauth/xauth_manager.h>
++#ifdef DLINK_SOFTWARE
++#include <d-link/d_service_notify.h>
++#include <jansson.h>
++#endif /* DLINK_SOFTWARE */
+
+ #ifdef ME
+ #include <sa/ikev2/connect_manager.h>
+diff --git a/src/starter/confread.h b/src/starter/confread.h
+index 0c22481..f7a2fb2 100644
+--- a/src/starter/confread.h
++++ b/src/starter/confread.h
+@@ -206,6 +206,11 @@ struct starter_config {
+		u_int err;
+		u_int non_fatal_err;
+
++#ifdef DLINK_SOFTWARE
++		/* IPsec service ID */
++		int service_id;
++#endif /* DLINK_SOFTWARE */
++
+		/* connections list */
+		starter_ca_t *ca_first, *ca_last;
+
+diff --git a/src/starter/invokecharon.c b/src/starter/invokecharon.c
+index e78e657..e696dab 100644
+--- a/src/starter/invokecharon.c
++++ b/src/starter/invokecharon.c
+@@ -174,6 +174,16 @@ int starter_start_charon (starter_config_t *cfg, bool no_fork, bool attach_gdb)
+		}
+	}
+
++#ifdef DLINK_SOFTWARE
++	if (cfg->service_id)
++	{
++		arg[argc++] = "--service_id";
++		snprintf(buffer, sizeof(buffer), "%d", cfg->service_id);
++		arg[argc++] = buffer;
++
++	}
++#endif /* DLINK_SOFTWARE */
++
+	if (_charon_pid)
+	{
+		DBG1(DBG_APP, "starter_start_charon(): %s already started...",
+diff --git a/src/starter/starter.c b/src/starter/starter.c
+index 8263661..3b5d829 100644
+--- a/src/starter/starter.c
++++ b/src/starter/starter.c
+@@ -43,6 +43,11 @@
+ #include "invokecharon.h"
+ #include "cmp.h"
+
++#ifdef DLINK_SOFTWARE
++#include <d-link/d_service_notify.h>
++#include <jansson.h>
++#endif /* DLINK_SOFTWARE */
++
+ #ifndef LOG_AUTHPRIV
+ #define LOG_AUTHPRIV LOG_AUTH
+ #endif
+@@ -351,6 +356,9 @@ int main (int argc, char **argv)
+
+	int i;
+	int id = 1;
++#ifdef DLINK_SOFTWARE
++	int service_id = 0;
++#endif /* DLINK_SOFTWARE */
+	struct timespec ts;
+	unsigned long auto_update = 0;
+	time_t last_reload;
+@@ -408,6 +416,12 @@ int main (int argc, char **argv)
+		{
+			conftest = TRUE;
+		}
++#ifdef DLINK_SOFTWARE
++		else if (streq(argv[i], "--service_id"))
++		{
++			service_id = atoi(argv[++i]);
++		}
++#endif /* DLINK_SOFTWARE */
+		else
+		{
+			usage(argv[0]);
+@@ -611,6 +625,10 @@ int main (int argc, char **argv)
+	/* empty mask for pselect() call below */
+	sigemptyset(&action.sa_mask);
+
++#ifdef DLINK_SOFTWARE
++	cfg->service_id = service_id;
++#endif /* DLINK_SOFTWARE */
++
+	for (;;)
+	{
+		/*
+--
+2.20.1

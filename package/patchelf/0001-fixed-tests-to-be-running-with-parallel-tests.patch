@@ -1,0 +1,36 @@
+From a6e524c418414717cee0c14e8e04a81088b7d9e7 Mon Sep 17 00:00:00 2001
+From: am813nt <am813nt@gmail.com>
+Date: Wed, 2 Aug 2017 16:57:33 +0500
+Subject: [PATCH] Fixed tests to be running with parallel-tests
+
+---
+ configure.ac               | 2 +-
+ tests/no-rpath-prebuild.sh | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/configure.ac b/configure.ac
+index d08a006..e25882e 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -1,7 +1,7 @@
+ AC_INIT([patchelf], m4_esyscmd([printf $(cat ./version)]))
+ AC_CONFIG_SRCDIR([src/patchelf.cc])
+ AC_CONFIG_AUX_DIR([build-aux])
+-AM_INIT_AUTOMAKE([-Wall -Werror dist-bzip2 foreign color-tests serial-tests])
++AM_INIT_AUTOMAKE([-Wall -Werror dist-bzip2 foreign color-tests parallel-tests])
+ 
+ AM_PROG_CC_C_O
+ AC_PROG_CXX
+diff --git a/tests/no-rpath-prebuild.sh b/tests/no-rpath-prebuild.sh
+index aa27b7a..c58cf8e 100755
+--- a/tests/no-rpath-prebuild.sh
++++ b/tests/no-rpath-prebuild.sh
+@@ -4,7 +4,7 @@ ARCH="$1"
+ PAGESIZE=4096
+ 
+ if [ -z "$ARCH" ]; then
+-  ARCH=$(basename $0 .sh | sed -e 's/.*-//')
++  ARCH=$(basename $0 .sh | sed -e 's/^no-rpath-//')
+ fi
+ 
+ SCRATCH=scratch/no-rpath-$ARCH

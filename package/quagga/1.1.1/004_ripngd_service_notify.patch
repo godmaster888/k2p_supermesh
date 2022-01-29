@@ -1,0 +1,70 @@
+--- a/ripngd/ripng_main.c
++++ b/ripngd/ripng_main.c
+@@ -38,6 +38,10 @@
+ 
+ #include "ripngd/ripngd.h"
+ 
++#ifdef DLINK_SOFTWARE
++#include <d-link/d_service_notify.h>
++#endif
++
+ /* Configuration filename and directory. */
+ char config_default[] = SYSCONFDIR RIPNG_DEFAULT_CONFIG;
+ char *config_file = NULL;
+@@ -57,6 +61,9 @@
+   { "user",        required_argument, NULL, 'u'},
+   { "group",       required_argument, NULL, 'g'},
+   { "version",     no_argument,       NULL, 'v'},
++#ifdef DLINK_SOFTWARE
++  { "service_id",  required_argument, NULL, 'I'},
++#endif
+   { 0 }
+ };
+ 
+@@ -194,6 +201,9 @@
+   char *progname;
+   struct thread thread;
+   int dryrun = 0;
++#ifdef DLINK_SOFTWARE
++  int service_id = -1;
++#endif
+ 
+   /* Set umask before anything for security */
+   umask (0027);
+@@ -208,7 +218,11 @@
+     {
+       int opt;
+ 
++#ifdef DLINK_SOFTWARE
++      opt = getopt_long (argc, argv, "df:i:z:hA:P:u:g:vCI:", longopts, 0);
++#else
+       opt = getopt_long (argc, argv, "df:i:z:hA:P:u:g:vC", longopts, 0);
++#endif
+     
+       if (opt == EOF)
+ 	break;
+@@ -263,6 +277,11 @@
+ 	case 'h':
+ 	  usage (progname, 0);
+ 	  break;
++#ifdef DLINK_SOFTWARE
++	case 'I':
++	  service_id = optarg ? atoi(optarg) : -1;
++	  break;
++#endif
+ 	default:
+ 	  usage (progname, 1);
+ 	  break;
+@@ -290,7 +309,11 @@
+   /* Start execution only if not in dry-run mode */
+   if(dryrun)
+     return(0);
+-  
++
++#ifdef DLINK_SOFTWARE
++  dlink_service_connect(service_id);
++#endif
++
+   /* Change to the daemon program. */
+   if (daemon_mode && daemon (0, 0) < 0)
+     {

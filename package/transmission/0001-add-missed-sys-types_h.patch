@@ -1,0 +1,24 @@
+From d30f16c4690c3904e295a18b2b6360ea8e3d62b8 Mon Sep 17 00:00:00 2001
+From: Alexandr Ivanov <alivanov@dlink.ru>
+Date: Tue, 22 Oct 2019 15:08:58 +0300
+Subject: [PATCH] Add missed sys/types.h
+
+---
+ libtransmission/transmission.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/libtransmission/transmission.h b/libtransmission/transmission.h
+index e213a8f..2ff9aa6 100644
+--- a/libtransmission/transmission.h
++++ b/libtransmission/transmission.h
+@@ -28,6 +28,7 @@ extern "C" {
+ 
+ #include <inttypes.h> /* uintN_t */
+ #include <time.h> /* time_t */
++#include <sys/types.h> /* ssize_t, off_t etc */
+ 
+ #if !defined (__cplusplus)
+  #ifdef HAVE_STDBOOL_H
+-- 
+2.20.1
+

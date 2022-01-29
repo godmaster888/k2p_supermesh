@@ -1,0 +1,109 @@
+menu "Kernel"
+
+config BR2_LINUX_KERNEL
+	bool "Linux Kernel"
+	help
+	  Enable this option if you want to build a Linux kernel for
+	  your embedded device
+
+if BR2_LINUX_KERNEL
+
+config BR2_LINUX_KERNEL_CUSTOM_REPO
+	string "Git repository"
+
+config BR2_LINUX_KERNEL_CUSTOM_BRANCH
+	string "Git branch (empty if default branch)"
+	default "master"
+
+config BR2_LINUX_KERNEL_3_10
+	bool "Kernel version 3.10+"
+	default n
+	help
+	  Enable this option if you have Linux kernel version 3.10 or greater.
+
+#
+# Configuration selection
+#
+
+config BR2_LINUX_KERNEL_USE_CUSTOM_CONFIG
+	# bool "Using a custom config file"
+	bool
+	default y
+
+config BR2_LINUX_KERNEL_CUSTOM_CONFIG_FILE
+	string "Configuration file path"
+	depends on BR2_LINUX_KERNEL_USE_CUSTOM_CONFIG
+	help
+	  Path to the kernel configuration file
+
+choice
+	prompt "Kernel modules install mode"
+	default BR2_LINUX_KERNEL_MODULES_FLAT
+
+config BR2_LINUX_KERNEL_MODULES_TREE
+	bool "Modules tree in /lib/modules/$(uname -r)"
+
+config BR2_LINUX_KERNEL_MODULES_FLAT
+	bool "Modules (flat) in /lib/modules/"
+
+endchoice
+
+#
+# Binary format
+#
+
+choice
+	prompt "Kernel binary format"
+
+config BR2_LINUX_KERNEL_UIMAGE
+	bool "uImage"
+
+config BR2_LINUX_KERNEL_BZIMAGE
+	bool "bzImage"
+
+config BR2_LINUX_KERNEL_ZIMAGE
+	bool "zImage"
+
+config BR2_LINUX_KERNEL_VMLINUX_BIN
+	bool "vmlinux.bin"
+
+config BR2_LINUX_KERNEL_LZIMAGE
+	bool "lzmaImage"
+
+config BR2_LINUX_KERNEL_VMLINUX
+	bool "vmlinux"
+
+endchoice
+
+config BR2_LINUX_KERNEL_WAR_UIMAGE
+	bool "Create uImage from vmlinux.bin"
+	default n if BR2_rtk_ms
+	default y
+	depends on BR2_LINUX_KERNEL_VMLINUX_BIN
+
+#
+# Debug
+#
+
+config BR2_LINUX_KERNEL_INSTALL_SYSTEM_MAP
+	bool "Install System.map into fw"
+	default n
+	help
+	  Places generated System.map to root
+	  of rootfs. For debug purposes (kernel profiling tools).
+
+endif # BR2_LINUX_KERNEL
+
+#
+# Arch-specific
+#
+
+if RLX_819X
+source "linux/rlx_819x/Config.in"
+endif
+
+if RLX_86XX
+source "linux/rlx_86xx/Config.in"
+endif
+
+endmenu

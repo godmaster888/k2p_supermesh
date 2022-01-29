@@ -1,0 +1,33 @@
+menu "Workarounds"
+
+config BR2_WAR_BROKEN_WIFI_FACTORY_MAC
+	bool "Broken factory MAC for Wi-Fi"
+
+config BR2_WAR_DENY_ODD_MAC
+	bool "Deny odd base mac"
+	depends on BR2_WIFI_OTHER
+
+config BR2_WAR_OLD_CONFSTORAGE
+	bool "Erase confstorage with old config"
+	help
+		Данную опцию стоит включать на устройствах, которые релизились до смены
+		метода хранения конфига на флешке.
+		При включении данной опции мы выполняем ресет confstorage если мы не нашли соответствующего раздела в TLV
+
+config BR2_WAR_HWNAT_MULTILAN
+	bool "Support multilan hw_nat"
+	depends on BR2_ralink
+	default n
+	help
+	  Для MTS требуются нормальные скорости для LAN-клиентов, которые находятся в отдельном VLAN'e [#42701].
+	  Для это пропатчено ядро, с возможностью указывать 4 VID в '/proc/sys/dru/ra_vlans/lan_vid'.
+	  На данный момент данная фича реализована в ветке kernel_3_10_14_SDK_5050-42701-multilan-hwnat
+
+config BR2_WAR_FORCE_VLAN_WIFI_MODE
+	bool "Add CPU port to WAN bridge"
+	depends on BR2_rlx
+	help
+	  Явное прописывание 1 в /proc/net/vlan/vlan_wan_with_cpu при настройке
+	  влан. Иначе wifi-клиенты не могут получить адрес от вышестоящего сервера
+
+endmenu

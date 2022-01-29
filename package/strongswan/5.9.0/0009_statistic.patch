@@ -1,0 +1,465 @@
+From b4c7f8ab625d770f963bfe8dcaa04d8236af0da5 Mon Sep 17 00:00:00 2001
+From: Vladimir Yaichkin <vyaichkin@rzn.dlink.ru>
+Date: Tue, 18 Aug 2020 16:22:52 +0300
+Subject: strongswan: add statistic method
+Patch-from-hash: aff0e04810cefd30f3b489990d3fb96d07619951
+Patch-repo: strongswan
+Patch-branch: master
+Patch-version: 5
+
+Добавлен метод 'Statistic', который отображает
+статистику IPsec-туннеля в json-формате. Информация
+о статистике можно выводить через stdout или перенаправлять
+в указанный файл.
+
+Signed-off-by: Vladimir Yaichkin <vyaichkin@rzn.dlink.ru>
+---
+ src/libcharon/plugins/stroke/stroke_list.c    | 256 ++++++++++++++++++
+ src/libcharon/plugins/stroke/stroke_list.h    |  10 +
+ src/libcharon/plugins/stroke/stroke_socket.c  |  18 ++
+ src/stroke/stroke.c                           |  15 ++
+ src/stroke/stroke_keywords.h                  |   3 +
+ src/stroke/stroke_keywords.h.in               |   3 +
+ src/stroke/stroke_keywords.txt                |   3 +
+ src/stroke/stroke_msg.h                       |  13 +
+ 8 files changed, 319 insertions(+)
+
+diff --git a/src/libcharon/plugins/stroke/stroke_list.c b/src/libcharon/plugins/stroke/stroke_list.c
+index 92b18a8..7846147 100644
+--- a/src/libcharon/plugins/stroke/stroke_list.c
++++ b/src/libcharon/plugins/stroke/stroke_list.c
+@@ -695,6 +695,259 @@ METHOD(stroke_list_t, status, void,
+	}
+ }
+
++#ifdef DLINK_SOFTWARE
++static void ike_sa_statistic(json_t *statistic, ike_sa_t *ike_sa)
++{
++	char str[BUF_LEN];
++	ike_sa_id_t *id = ike_sa->get_id(ike_sa);
++	const char *name = ike_sa->get_name(ike_sa);
++	ike_sa_state_t state = ike_sa->get_state(ike_sa);
++	proposal_t *ike_proposal = ike_sa->get_proposal(ike_sa);
++
++	uint8_t ike_version = id->get_ike_version(id);
++	uint32_t ike_id = ike_sa->get_unique_id(ike_sa);
++	uint64_t spi = be64toh(id->get_initiator_spi(id));
++	uint64_t peer_spi = be64toh(id->get_responder_spi(id));
++	bool initiatior = id->is_initiator(id);
++
++	host_t *host = ike_sa->get_my_host(ike_sa);
++	host_t *peer_host = ike_sa->get_other_host(ike_sa);
++	identification_t *my_id = ike_sa->get_my_id(ike_sa);
++	identification_t *peer_id = ike_sa->get_other_id(ike_sa);
++
++	json_object_set_new_nocheck(statistic, "Name", json_string(name));
++	json_object_set_new_nocheck(statistic, "VersionIKE", json_integer(ike_version));
++	json_object_set_new_nocheck(statistic, "IDIKE", json_integer(ike_id));
++	json_object_set_new_nocheck(statistic, "SPI", json_integer(spi));
++	json_object_set_new_nocheck(statistic, "PeerSPI", json_integer(peer_spi));
++	json_object_set_new_nocheck(statistic, "Initiator", json_boolean(initiatior));
++
++	snprintf(str, sizeof(str), "%N", ike_sa_state_names, state);
++	json_object_set_new_nocheck(statistic, "State", json_string(str));
++
++	if (host) {
++		snprintf(str, sizeof(str), "%H", host);
++		json_object_set_new_nocheck(statistic, "Host", json_string(str));
++	}
++
++	if (peer_host) {
++		snprintf(str, sizeof(str), "%H", peer_host);
++		json_object_set_new_nocheck(statistic, "PeerHost", json_string(str));
++	}
++
++	if (my_id) {
++		snprintf(str, sizeof(str), "%Y", my_id);
++		json_object_set_new_nocheck(statistic, "ID", json_string(str));
++	}
++
++	if (peer_id) {
++		snprintf(str, sizeof(str), "%Y", peer_id);
++		json_object_set_new_nocheck(statistic, "PeerID", json_string(str));
++	}
++
++	if (state == IKE_ESTABLISHED) {
++		time_t now = time_monotonic(NULL);
++		time_t established = ike_sa->get_statistic(ike_sa, STAT_ESTABLISHED);
++		time_t rekey = ike_sa->get_statistic(ike_sa, STAT_REKEY);
++		time_t reauth = ike_sa->get_statistic(ike_sa, STAT_REAUTH);
++
++		json_object_set_new_nocheck(statistic, "Established", json_integer(now - established));
++
++		if (rekey)
++			json_object_set_new_nocheck(statistic, "RekeyIKE", json_integer(rekey - now));
++
++		if (reauth)
++			json_object_set_new_nocheck(statistic, "ReauthIKE", json_integer(reauth - now));
++	}
++
++	if (ike_proposal) {
++		snprintf(str, sizeof(str), "%P", ike_proposal);
++		json_object_set_new_nocheck(statistic, "ProposalIKE", json_string(str + 4));
++	}
++}
++
++static void child_counters_statistic(json_t *statistic, child_sa_t *child_sa, time_t now, bool inbound)
++{
++	time_t last_time = 0;
++	uint64_t bytes = 0;
++	uint64_t packets = 0;
++
++	child_sa->get_usestats(child_sa, inbound, &last_time, &bytes, &packets);
++
++	if (last_time)
++		json_object_set_new_nocheck(statistic, inbound ? "TimeRX" : "TimeTX", json_integer(now - last_time));
++
++	if (bytes)
++		json_object_set_new_nocheck(statistic, inbound ? "BytesRX" : "BytesTX", json_integer(bytes));
++
++	if (packets)
++		json_object_set_new_nocheck(statistic, inbound ? "PacketsRX" : "PacketsTX", json_integer(packets));
++}
++
++static void child_sa_statistic(json_t *statistic, child_sa_t *child_sa)
++{
++	char str[BUF_LEN];
++	child_sa_state_t state = child_sa->get_state(child_sa);
++	ipsec_mode_t mode = child_sa->get_mode(child_sa);
++	uint32_t child_id = child_sa->get_unique_id(child_sa);
++	uint32_t reqid = child_sa->get_reqid(child_sa);
++
++	snprintf(str, sizeof(str), "%N", child_sa_state_names, state);
++	json_object_set_new_nocheck(statistic, "StateChild", json_string(str));
++	snprintf(str, sizeof(str), "%N", ipsec_mode_names, mode);
++	json_object_set_new_nocheck(statistic, "Mode", json_string(str));
++
++	json_object_set_new_nocheck(statistic, "IDChild", json_integer(child_id));
++	json_object_set_new_nocheck(statistic, "ReqID", json_integer(reqid));
++
++
++	linked_list_t *list = linked_list_create_from_enumerator(child_sa->create_ts_enumerator(child_sa, TRUE));
++	linked_list_t *peer_list = linked_list_create_from_enumerator(child_sa->create_ts_enumerator(child_sa, FALSE));
++
++	if (list) {
++		snprintf(str, sizeof(str), " %#R", list);
++		json_object_set_new_nocheck(statistic, "Subnet", json_string(str));
++	}
++
++	if (peer_list) {
++		snprintf(str, sizeof(str), "%#R", peer_list);
++		json_object_set_new_nocheck(statistic, "PeerSubnet", json_string(str));
++	}
++
++	list->destroy(list);
++	peer_list->destroy(peer_list);
++
++
++	if (state == CHILD_INSTALLED) {
++		time_t now = time_monotonic(NULL);
++		bool encap = child_sa->has_encap(child_sa);
++		protocol_id_t proto = child_sa->get_protocol(child_sa);
++		proposal_t *proposal = child_sa->get_proposal(child_sa);
++		time_t lifetime = child_sa->get_lifetime(child_sa, TRUE);
++		uint32_t spi = ntohl(child_sa->get_spi(child_sa, TRUE));
++		uint32_t peer_spi = ntohl(child_sa->get_spi(child_sa, FALSE));
++
++		json_object_set_new_nocheck(statistic, "Encap", json_boolean(encap));
++		json_object_set_new_nocheck(statistic, "ChildSPI", json_integer(spi));
++		json_object_set_new_nocheck(statistic, "ChildPeerSPI", json_integer(peer_spi));
++		json_object_set_new_nocheck(statistic, "RekeyChild", json_integer(lifetime - now));
++
++		child_counters_statistic(statistic, child_sa, now, TRUE);
++		child_counters_statistic(statistic, child_sa, now, FALSE);
++
++		snprintf(str, sizeof(str), "%N", protocol_id_names, proto);
++		json_object_set_new_nocheck(statistic, "Protocol", json_string(str));
++
++		if (proposal)
++		{
++			uint16_t alg, ks;
++
++			if (proposal->get_algorithm(proposal, ENCRYPTION_ALGORITHM, &alg, &ks) && alg != ENCR_UNDEFINED)
++			{
++				snprintf(str, sizeof(str), "%N%s", encryption_algorithm_names, alg, ks ? "_%u" : "");
++				json_object_set_new_nocheck(statistic, "Encrtyption", json_string(str));
++			}
++
++			if (proposal->get_algorithm(proposal, INTEGRITY_ALGORITHM, &alg, &ks) && alg != AUTH_UNDEFINED)
++			{
++				snprintf(str, sizeof(str), "%N%s", integrity_algorithm_names, alg, ks ? "_%u" : "");
++				json_object_set_new_nocheck(statistic, "Integrity", json_string(str));
++			}
++
++			if (proposal->get_algorithm(proposal, DIFFIE_HELLMAN_GROUP, &alg, NULL))
++			{
++				snprintf(str, sizeof(str), "%N", diffie_hellman_group_names, alg);
++				json_object_set_new_nocheck(statistic, "DHGroup", json_string(str));
++			}
++		}
++	}
++
++	child_cfg_t *config = child_sa->get_config(child_sa);
++
++	bool proxy_mode = config->has_option(config, OPT_PROXY_MODE);
++	bool ipcomp = config->has_option(config, OPT_IPCOMP);
++	bool hostaccess = config->has_option(config, OPT_HOSTACCESS);
++	bool no_policies = config->has_option(config, OPT_NO_POLICIES);
++	bool fwd_out_policies = config->has_option(config, OPT_FWD_OUT_POLICIES);
++	bool sha256_96 = config->has_option(config, OPT_SHA256_96);
++	bool mark_in_sa = config->has_option(config, OPT_MARK_IN_SA);
++	bool no_copy_df = config->has_option(config, OPT_NO_COPY_DF);
++	bool no_copy_ecn = config->has_option(config, OPT_NO_COPY_ECN);
++
++	json_object_set_new_nocheck(statistic, "proxy_mode", json_boolean(proxy_mode));
++	json_object_set_new_nocheck(statistic, "ipcomp", json_boolean(ipcomp));
++	json_object_set_new_nocheck(statistic, "hostaccess", json_boolean(hostaccess));
++	json_object_set_new_nocheck(statistic, "policies", json_boolean(no_policies));
++	json_object_set_new_nocheck(statistic, "fwd_out_policies", json_boolean(fwd_out_policies));
++	json_object_set_new_nocheck(statistic, "force_sha256_96", json_boolean(sha256_96));
++	json_object_set_new_nocheck(statistic, "mark", json_boolean(mark_in_sa));
++	json_object_set_new_nocheck(statistic, "df", json_boolean(no_copy_df));
++	json_object_set_new_nocheck(statistic, "ecn", json_boolean(no_copy_ecn));
++
++	/* TODO: more info */
++}
++
++METHOD(stroke_list_t, statistic, void,
++	private_stroke_list_t *this, stroke_msg_t *msg, FILE *out)
++{
++	ike_sa_t *ike_sa;
++	child_sa_t *child_sa;
++	const char *name = msg->statistic.name;
++	const char *filename = msg->statistic.filename;
++
++	if (!name)
++		return;
++
++	json_t *statistic = json_object();
++
++	enumerator_t *ike_sa_enum = charon->controller->create_ike_sa_enumerator(charon->controller, TRUE);
++
++	while (ike_sa_enum->enumerate(ike_sa_enum, &ike_sa))
++	{
++		const char *ike_sa_name = ike_sa->get_name(ike_sa);
++
++		if (!ike_sa_name || !streq(name, ike_sa_name))
++			continue;
++
++		ike_sa_statistic(statistic, ike_sa);
++
++		enumerator_t *child_enum = ike_sa->create_child_sa_enumerator(ike_sa);
++
++		while (child_enum->enumerate(child_enum, (void**)&child_sa))
++		{
++			const char *child_sa_name = child_sa->get_name(child_sa);
++
++			if (!child_sa_name || !streq(name, child_sa_name))
++				continue;
++
++			/* Пока что информацию берём только по 1 child_sa.
++			 * Если потребуется, то можно будет сделать с N-ым количеством
++			 * статистики от N-child_sa, добавив каждое с reqid номером и убрав 'break'.
++			 */
++			child_sa_statistic(statistic, child_sa);
++
++			if (child_sa->get_state(child_sa) == CHILD_INSTALLED)
++				break;
++		}
++
++		child_enum->destroy(child_enum);
++		break;
++	}
++
++	ike_sa_enum->destroy(ike_sa_enum);
++
++	if (filename && *filename) {
++		json_dump_file(statistic, filename, JSON_COMPACT);
++	} else {
++		char *statistic_str = json_dumps(statistic, JSON_INDENT(2));
++		fprintf(out, "Statistic [%s]: %s\n", name, statistic_str);
++		free(statistic_str);
++	}
++
++	json_decref(statistic);
++}
++#endif /* DLINK_SOFTWARE */
++
+ /**
+  * create a unique certificate list without duplicates
+  * certificates having the same issuer are grouped together.
+@@ -1139,6 +1390,9 @@ stroke_list_t *stroke_list_create(stroke_attribute_t *attribute)
+		.public = {
+			.list = _list,
+			.status = _status,
++#ifdef DLINK_SOFTWARE
++			.statistic = _statistic,
++#endif /* DLINK_SOFTWARE */
+			.leases = _leases,
+			.destroy = _destroy,
+		},
+diff --git a/src/libcharon/plugins/stroke/stroke_list.h b/src/libcharon/plugins/stroke/stroke_list.h
+index bf96e99..a0350bf 100644
+--- a/src/libcharon/plugins/stroke/stroke_list.h
++++ b/src/libcharon/plugins/stroke/stroke_list.h
+@@ -52,6 +52,16 @@ struct stroke_list_t {
+	void (*status)(stroke_list_t *this, stroke_msg_t *msg, FILE *out,
+				   bool all, bool wait);
+
++#ifdef DLINK_SOFTWARE
++	/**
++	 * Statistic information to update by servie_id.
++	 *
++	 * @param msg		stroke message
++	 * @param wait		TRUE to wait for IKE_SA entries, FALSE to skip if locked
++	 */
++	void (*statistic)(stroke_list_t *this, stroke_msg_t *msg, FILE *out);
++#endif /* DLINK_SOFTWARE */
++
+	/**
+	 * Log pool leases to stroke console.
+	 *
+diff --git a/src/libcharon/plugins/stroke/stroke_socket.c b/src/libcharon/plugins/stroke/stroke_socket.c
+index 3e0214b..92e4ef1 100644
+--- a/src/libcharon/plugins/stroke/stroke_socket.c
++++ b/src/libcharon/plugins/stroke/stroke_socket.c
+@@ -368,6 +368,19 @@ static void stroke_status(private_stroke_socket_t *this,
+	this->list->status(this->list, msg, out, all, wait);
+ }
+
++#ifdef DLINK_SOFTWARE
++/**
++ * show/send statistic of ike_sa/child_sa
++ */
++static void stroke_statistic(private_stroke_socket_t *this, stroke_msg_t *msg, FILE *out)
++{
++	pop_string(msg, &(msg->statistic.name));
++	pop_string(msg, &(msg->statistic.filename));
++
++	this->list->statistic(this->list, msg, out);
++}
++#endif /* DLINK_SOFTWARE */
++
+ /**
+  * list various information
+  */
+@@ -696,6 +709,11 @@ static bool on_accept(private_stroke_socket_t *this, stream_t *stream)
+		case STR_STATUS_ALL_NOBLK:
+			stroke_status(this, msg, out, TRUE, FALSE);
+			break;
++#ifdef DLINK_SOFTWARE
++		case STR_STATISTIC:
++			stroke_statistic(this, msg, out);
++			break;
++#endif /* DLINK_SOFTWARE */
+		case STR_ADD_CONN:
+			stroke_add_conn(this, msg);
+			break;
+diff --git a/src/stroke/stroke.c b/src/stroke/stroke.c
+index 285c6fc..e8c0c1e 100644
+--- a/src/stroke/stroke.c
++++ b/src/stroke/stroke.c
+@@ -269,6 +269,16 @@ static int show_status(stroke_keyword_t kw, char *connection)
+	return send_stroke_msg(msg);
+ }
+
++#ifdef DLINK_SOFTWARE
++static int show_statistic(char *connection, char *filename)
++{
++	stroke_msg_t *msg = create_stroke_msg(STR_STATISTIC);
++	push_string(&msg, statistic.name, connection);
++	push_string(&msg, statistic.filename, filename);
++	return send_stroke_msg(msg);
++}
++#endif /* DLINK_SOFTWARE */
++
+ static int list_flags[] = {
+	LIST_PUBKEYS,
+	LIST_CERTS,
+@@ -618,6 +628,11 @@ int main(int argc, char *argv[])
+		case STROKE_STATUSALL_NOBLK:
+			res = show_status(token->kw, argc ? argv[0] : NULL);
+			break;
++#ifdef DLINK_SOFTWARE
++		case STROKE_STATISTIC:
++			res = show_statistic(argv[0], argv[1]);
++			break;
++#endif /* DLINK_SOFTWARE */
+		case STROKE_LIST_PUBKEYS:
+		case STROKE_LIST_CERTS:
+		case STROKE_LIST_CACERTS:
+diff --git a/src/stroke/stroke_keywords.h b/src/stroke/stroke_keywords.h
+index fa86ccb..5666403 100644
+--- a/src/stroke/stroke_keywords.h
++++ b/src/stroke/stroke_keywords.h
+@@ -32,6 +32,9 @@ typedef enum {
+	STROKE_STATUS,
+	STROKE_STATUSALL,
+	STROKE_STATUSALL_NOBLK,
++#ifdef DLINK_SOFTWARE
++	STROKE_STATISTIC,
++#endif /* DLINK_SOFTWARE */
+	STROKE_LIST_PUBKEYS,
+	STROKE_LIST_CERTS,
+	STROKE_LIST_CACERTS,
+diff --git a/src/stroke/stroke_keywords.h.in b/src/stroke/stroke_keywords.h.in
+index 416c8f9..d3fb444 100644
+--- a/src/stroke/stroke_keywords.h.in
++++ b/src/stroke/stroke_keywords.h.in
+@@ -32,6 +32,9 @@ typedef enum {
+	STROKE_STATUS,
+	STROKE_STATUSALL,
+	STROKE_STATUSALL_NOBLK,
++#ifdef DLINK_SOFTWARE
++	STROKE_STATISTIC,
++#endif /* DLINK_SOFTWARE */
+	STROKE_LIST_PUBKEYS,
+	STROKE_LIST_CERTS,
+	STROKE_LIST_CACERTS,
+diff --git a/src/stroke/stroke_keywords.txt b/src/stroke/stroke_keywords.txt
+index 1d96ccd..b99c061 100644
+--- a/src/stroke/stroke_keywords.txt
++++ b/src/stroke/stroke_keywords.txt
+@@ -40,6 +40,9 @@ status,          STROKE_STATUS
+ statusall,       STROKE_STATUSALL
+ statusallnb,     STROKE_STATUSALL_NOBLK
+ statusall-nb,    STROKE_STATUSALL_NOBLK
++#ifdef DLINK_SOFTWARE
++statistic,       STROKE_STATISTIC
++#endif /* DLINK_SOFTWARE */
+ listpubkeys,     STROKE_LIST_PUBKEYS
+ listcerts,       STROKE_LIST_CERTS
+ listcacerts,     STROKE_LIST_CACERTS
+diff --git a/src/stroke/stroke_msg.h b/src/stroke/stroke_msg.h
+index 18dea0b..525fc74 100644
+--- a/src/stroke/stroke_msg.h
++++ b/src/stroke/stroke_msg.h
+@@ -209,6 +209,10 @@ struct stroke_msg_t {
+		STR_STATUS_ALL,
+		/* show verbose connection status, non-blocking variant */
+		STR_STATUS_ALL_NOBLK,
++#ifdef DLINK_SOFTWARE
++		/* send statistic ike_sa/child_sa by service_id */
++		STR_STATISTIC,
++#endif /* DLINK_SOFTWARE */
+		/* add a ca information record */
+		STR_ADD_CA,
+		/* delete ca information record */
+@@ -379,6 +383,15 @@ struct stroke_msg_t {
+			int reset;
+			char *name;
+		} counters;
++#ifdef DLINK_SOFTWARE
++		/* data for STR_STATISTIC */
++		struct {
++			/* unique tunnel name */
++			char *name;
++			/* file to upload statistic */
++			char *filename;
++		} statistic;
++#endif /* DLINK_SOFTWARE */
+	};
+	/* length of the string buffer */
+	uint16_t buflen;
+--
+2.20.1

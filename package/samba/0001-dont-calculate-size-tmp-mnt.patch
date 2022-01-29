@@ -1,0 +1,47 @@
+From e91c38a28aa16a5632016f1ce48deaecf23955c5 Mon Sep 17 00:00:00 2001
+From: Sergey Seliverstov <sseliverstov@dlink.ru>
+Date: Tue, 15 Sep 2020 09:22:53 +0300
+Subject: don't calculate size "/tmp/mnt"
+Patch-from-hash: 95c24c8817ccc6291bf9ca543f620538a10b3798
+Patch-repo: samba3
+Patch-branch: actual
+Patch-version: 1
+
+Signed-off-by: Sergey Seliverstov <sseliverstov@dlink.ru>
+---
+ source3/smbd/trans2.c | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/source3/smbd/trans2.c b/source3/smbd/trans2.c
+index 98fd2af..76cf824 100644
+--- a/source3/smbd/trans2.c
++++ b/source3/smbd/trans2.c
+@@ -40,6 +40,7 @@
+ #include "libsmb/libsmb.h"
+ 
+ #define DIR_ENTRY_SAFETY_MARGIN 4096
++#define MNT_REALPATH "/tmp/mnt"
+ 
+ static char *store_file_unix_basic(connection_struct *conn,
+ 				char *pdata,
+@@ -3432,6 +3433,7 @@ cBytesSector=%u, cUnitTotal=%u, cUnitAvail=%d\n", (unsigned int)bsize, (unsigned
+ 		{
+ 			int rc;
+ 			vfs_statvfs_struct svfs;
++			char real_path[PATH_MAX];
+ 
+ 			if (!lp_unix_extensions()) {
+ 				return NT_STATUS_INVALID_LEVEL;
+@@ -3439,6 +3441,9 @@ cBytesSector=%u, cUnitTotal=%u, cUnitAvail=%d\n", (unsigned int)bsize, (unsigned
+ 
+ 			rc = SMB_VFS_STATVFS(conn, filename, &svfs);
+ 
++			if (realpath(filename, real_path) && !strcmp(real_path, MNT_REALPATH))
++				rc = -1;
++
+ 			if (!rc) {
+ 				data_len = 56;
+ 				SIVAL(pdata,0,svfs.OptimalTransferSize);
+-- 
+2.20.1
+

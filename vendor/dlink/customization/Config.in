@@ -1,0 +1,252 @@
+if BR2_DLINK_DEVICE_IS_CUSTOM
+
+menu "Customization"
+config BR2_CUSTOMIZATION_RESET_FROM_GENERIC
+	bool "Reset config after flashing from generic"
+	default n
+
+if BR2_CUSTOMIZATION_RESET_FROM_GENERIC
+
+config BR2_CUSTOMIZATION_CONFIG_MARK
+	string "Customization config mark"
+	help
+	  Select the customization config mark. This goes written in the
+	  `Device.DeviceInfo.Customization` field when inited. The config mark
+	  should consist of the custom name and the first helpdesk customization
+	  ticket number, but it can be almost everything.
+
+endif
+
+config BR2_CUSTOMIZATION_DEBUG_PASSWORD
+	bool "Custom unlock password for Debug mode"
+	default n
+
+menuconfig BR2_SSIDGEN
+	bool "Generate Wi-Fi SSID"
+	default n
+	depends on BR2_SUPPORT_WIFI
+
+if BR2_SSIDGEN
+
+config BR2_SSIDGEN_TEMPLATE
+	string "SSID template"
+	default "%n%f"
+	help
+	  %n       - model name
+	  %f       - frequency prefix
+	  %Nm      - Nth (0-11) MAC symbol in lower case
+	  %NM      - Nth (0-11) MAC symbol in upper case
+	  %No      - Nth (0-5) MAC octet in lower case
+	  %NO      - Nth (0-5) MAC octet in upper case
+	  %M or %O - whole MAC address in upper case
+	  %m or %o - whole MAC address in lower case
+
+config BR2_SSIDGEN_2_4G_TEMPLATE
+	string "2,4 GHz prefix template (%f)"
+	default ""
+
+if BR2_SUPPORT_WIFI_5GHZ
+config BR2_SSIDGEN_5G_TEMPLATE
+	string "5 GHz prefix template (%f)"
+	default "-5G"
+endif
+
+config BR2_SSIDGEN_BASE_MAC_INC
+	int "Base MAC increase number"
+	default 1
+
+endif
+
+menuconfig BR2_PSKGEN
+	bool "Generate Wi-Fi PSK"
+	default n
+	depends on BR2_SUPPORT_WIFI
+
+if BR2_PSKGEN
+
+choice
+	prompt "PSK generation algorithm"
+	default BR2_PSKGEN_TEMPLATE_ALG
+
+	config BR2_PSKGEN_TEMPLATE_ALG
+		bool "Generate PSK from template"
+
+	config BR2_PSKGEN_READABLE_ALG
+		bool "Generate PSK with readable symbols only"
+		select BR2_WITH_CUSTOM_HOST
+		select BR2_WITH_READABLE_PSK_GENERATOR_HOST
+
+	config BR2_PSKGEN_RST_ALG
+		bool "Rostelekom PSK generation algorithm"
+		select BR2_WITH_CUSTOM_HOST
+		select BR2_WITH_RST_PSK_GENERATOR_HOST
+endchoice
+
+if BR2_PSKGEN_TEMPLATE_ALG
+
+config BR2_PSKGEN_TEMPLATE
+	string "PSK template"
+	default "%w"
+	help
+	  %n       - model name
+	  %w       - WPS PIN
+	  %Nm      - Nth (0-11) MAC symbol in lower case
+	  %NM      - Nth (0-11) MAC symbol in upper case
+	  %No      - Nth (0-5) MAC octet in lower case
+	  %NO      - Nth (0-5) MAC octet in upper case
+	  %M or %O - whole MAC address in upper case
+	  %m or %o - whole MAC address in lower case
+
+config BR2_PSKGEN_BASE_MAC_INC
+	int "Base MAC increase number"
+	default 1
+
+endif
+
+if BR2_PSKGEN_READABLE_ALG
+
+config BR2_PSKGEN_READABLE_LENGTH
+	int "PSK length (8-63)"
+	default 8
+
+endif
+
+endif
+
+choice
+	prompt "Wi-Fi channels customization"
+	default BR2_REGDB_CUSTOMIZATION_NONE
+	help
+	  Some customers ask to add or remove available Wi-Fi channels/frequencies.
+	  If a request doesn't match country's legal regulations, a custom flag
+	  should be added and enabled. The flag may consist of the custom name and
+	  the first helpdesk customization ticket number, but it may be almost
+	  everything.
+config BR2_REGDB_CUSTOMIZATION_NONE
+       bool "No customization"
+config BR2_REGDB_CUSTOMIZATION_KOREA
+       bool "Korea"
+config BR2_REGDB_CUSTOMIZATION_GCRP
+       bool "Grand China Router Plan"
+endchoice
+
+
+choice
+	prompt "Wi-Fi tx power limits customization"
+	default BR2_TXPWR_CUSTOMIZATION_NONE
+	depends on BR2_ralink
+	help
+	  Customization for tx power limits
+config BR2_TXPWR_CUSTOMIZATION_NONE
+       bool "No customization"
+config BR2_TXPWR_CUSTOMIZATION_FON
+       bool "FON"
+config BR2_TXPWR_CUSTOMIZATION_KOREA
+       bool "Korea"
+config BR2_TXPWR_CUSTOMIZATION_TUNISIA
+       bool "Tunisia"
+config BR2_TXPWR_CUSTOMIZATION_EGYPT
+       bool "Egypt"
+config BR2_TXPWR_CUSTOMIZATION_IRAN
+       bool "Iran"
+endchoice
+
+
+config BR2_USE_CUSTOM_LABEL
+	bool "Use a custom label for the bootloader"
+	default n
+
+if BR2_USE_CUSTOM_LABEL
+
+config BR2_CUSTOM_LABEL
+	string "Custom label"
+	default ""
+	help
+	  Extra magic signature.
+
+endif
+
+config BR2_SUPPORT_BUILD_CONFIG
+	bool "Enable build config feature"
+	default n
+
+config BR2_CUSTOM_HEALTHCHECK
+	bool "Enable custom healthcheck"
+	default n
+	select BR2_REDIRECT
+	help
+	  Healthcheck algorithms check whether the device is working in the providers network.
+	  If not, clients are redirected to the trouble wizard.
+
+if BR2_CUSTOM_HEALTHCHECK
+
+choice
+	prompt "Healthcheck algrithm:"
+	config BR2_CUSTOM_HEALTHCHECK_PAKT
+		bool "PAKT"
+		select BR2_PACKAGE_OPENSSL
+		select BR2_PACKAGE_LIBCURL
+		select BR2_PACKAGE_LIBCURL_WITH_HTTP
+		select BR2_PACKAGE_LIBCURL_WITH_OPENSSL
+		help
+		  Use PAKT healthcheck algorithm (GET-request to rcheck.pakt.spb.ru).
+	config BR2_CUSTOM_HEALTHCHECK_PODOLSKNET
+		bool "Podolsknet"
+		help
+		  Use Podolsknet healthcheck algorithm (ping to 109.94.1.17 every 20 seconds).
+endchoice
+
+endif
+
+config BR2_RST_ZEROCONF
+	bool "Use Rostelekom zeroconf algorithm"
+	depends on BR2_PACKAGE_TR069CLIENT
+	default n
+	help
+	  Use 3-phase zeroconf algorithm for simplified setup.
+
+config BR2_RST_PPPOE_DELAY_ALG
+	bool "Use Rostelekom PPPoE delaying algorithm"
+	depends on BR2_PACKAGE_PPPD_PPPOE
+	default n
+	help
+	  Use the algorithm that calculates the next delay in the PPPoE restart. BR2_PPPOE_MAX_PADI_ATTEMPTS should be set to 1.
+
+menuconfig BR2_ONLIME_VOIP_AUTOPROVISION
+	bool "Enable Rostelekom Onlime VoIP autoprovision algorithm"
+	depends on BR2_PACKAGE_RTL_9607_VOIP
+	default n
+	help
+	  Enable autoprovision algorithm to configure VoIP.
+
+if BR2_ONLIME_VOIP_AUTOPROVISION
+
+config BR2_ONLIME_VOIP_AUTOPROVISION_VENDOR
+	string "Vendor identifier"
+	default "DLNK"
+	help
+	  Vendor identifier for Rostelekom Onlime VoIP autoprovision algorithm (DLNK by default)
+
+config BR2_ONLIME_VOIP_AUTOPROVISION_PROFILE_NAME
+	string "Profile name"
+	default ""
+	help
+	  Profile name for Rostelekom Onlime VoIP autoprovision algorithm (if not set, BR2_PROFILE_NAME is used)
+
+endif
+
+config BR2_VENDOR_ID_PREDEFINED
+	string "Predefined vendor ID"
+	default "dslforum.org"
+	help
+	  Sets a predefined vendor ID string for each new DHCP connection.
+
+config BR2_DEUR_MARKED_CONNECTIONS
+	bool "Mark IPTV and VoIP connections for DEUR logic"
+	default n
+	help
+	  Gives an opportunity to mark one connection used for IPTV and one for VoIP.
+
+endmenu
+
+endif

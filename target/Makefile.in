@@ -1,0 +1,81 @@
+TARGET_CFLAGS += -D${PROFILE}
+TARGET_CFLAGS += -D$(call qstrip,$(BR2_DLINK_GENERIC_PROFILE))
+
+# farisey: экспорт DEVICEID
+TARGET_CFLAGS += -DFW_DEV_ID_$(subst -,_,$(call qstrip,$(DLINK_DEVICEID)))
+TARGET_MAKE_ENV += DLINK_DEVICEID=$(call qstrip,$(DLINK_DEVICEID))
+
+ifneq ($(findstring internal,${BUILDVER}),internal)
+export FW_VERSION := ${FW_VERSION}
+else
+export FW_VERSION :=$(subst ",,${FW_VERSION})${FW_BRANCH}
+endif
+
+
+ifneq ($(BR2_ar7240),)
+include target/ar7240/Makefile.in
+endif
+
+ifneq ($(BR2_qca),)
+include target/qca/Makefile.in
+endif
+
+ifneq ($(BR2_ralink),)
+BR2_ROOTFS_STATIC_DEVICE_TABLE += target/ralink/device_table_dev.txt
+include target/ralink/Makefile.in
+endif
+
+ifneq ($(BR2_rlx),)
+include target/rlx/Makefile.in
+endif
+
+ifneq ($(BR2_rlx_9607),)
+include target/rlx_9607/Makefile.in
+endif
+
+ifeq ($(BR2_DRU_BOOTSTRAP),y)
+  LIBSHARED_CFLAGS += -DBOOTSTRAP
+endif
+
+ifeq (${BR2_modems},y)
+  export MODEMS:=y
+  TARGET_CFLAGS += -DMODEMS
+endif
+
+ifeq (${BR2_DAP_MODE},y)
+  TARGET_CFLAGS += -DDAP_MODE
+endif
+
+ifeq (${BR2_NAND},y)
+  TARGET_CFLAGS += -DNAND_FLASH
+endif
+
+ifeq (${BR2_FIBER},y)
+  TARGET_CFLAGS += -DFIBER_WAN
+endif
+
+ifeq (${BR2_SUPPORT_ETHERWAN},y)
+  TARGET_CFLAGS += -DSUPPORT_ETHERWAN
+endif
+
+ifeq ($(BR2_SUPPORT_WIFI),y)
+  TARGET_CFLAGS += -DSUPPORT_WIFI
+  TARGET_MAKE_ENV += SUPPORT_WIFI=y
+ifeq (${BR2_rlx}${BR2_rtk_luna},y)
+  TARGETS += rtl_wifi rtl_wifi_config
+  TARGET_CFLAGS += -DNEW_RLX_WPS
+endif
+
+ifeq (${BR2_CAMEO_BULK_AGENT},y)
+	TARGETS += bulk_agent
+	TARGET_CFLAGS += -DAPP_CAMEO_BULK_AGENT=1
+endif
+endif
+
+ifeq ($(BR2_SUPPORT_VDSL),y)
+  TARGET_CFLAGS += -DSUPPORT_VDSL
+  TARGET_MAKE_ENV += SUPPORT_VDSL=y
+endif
+
+rtl_wifi_config:
+	ln -sf /tmp $(TARGET_DIR)/etc/Wireless

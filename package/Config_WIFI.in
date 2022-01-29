@@ -1,0 +1,245 @@
+if BR2_SUPPORT_WIFI
+menu "Wireless"
+
+config BR2_rlx_wifi
+	bool
+	default y
+	depends on BR2_SUPPORT_WIFI && (BR2_rlx || BR2_rtk_luna)
+
+if AR7240
+source "package/private/atheros/ar7240_wifi/Config.in"
+endif
+
+if AR934X
+source "package/private/atheros/atheros_drivers/Config.in"
+endif
+
+if BR2_qca
+source "package/private/qca/qca_wifi/Config.in"
+endif
+
+source "package/hostapd/Config.in"
+source "package/wireless_tools/Config.in"
+source "package/wireless-regdb/Config.in"
+source "package/iw/Config.in"
+
+config BR2_DEFAULT_COUNTRY_CODE
+	string "Default country code"
+	default "RU"
+
+config BR2_DEFAULT_COUNTRY_CODE_PRIORITY
+	bool "Use default country code instead of the mfc value."
+
+config BR2_DEFAULT_COUNTRY_CODE_REINIT
+	bool "Reinit default country code in mfc."
+	depends on BR2_DEFAULT_COUNTRY_CODE_PRIORITY
+
+config BR2_SUPPORT_WIFI_5GHZ
+	bool
+
+if BR2_SUPPORT_WIFI_5GHZ
+config BR2_SUPPORT_WIFI_5GHZ_BW80
+	bool
+
+config BR2_SUPPORT_WIFI_5GHZ_BW160
+	bool
+
+config BR2_SUPPORT_WIFI_5GHZ_BW8080
+	bool
+
+config BR2_SUPPORT_WIFI_AC
+	bool
+endif
+
+config BR2_SUPPORT_WIFI_AX
+	bool
+
+config BR2_SUPPORT_WIFI_AP
+	bool
+
+config BR2_SUPPORT_WIFI_CLIENT
+	bool
+
+config BR2_SUPPORT_WIFI_CLIENT_WPS
+	bool "WPS for wifi client"
+	default n
+	depends on BR2_SUPPORT_WIFI_CLIENT
+
+config BR2_SUPPORT_WIFI_WDS
+	bool
+
+config BR2_SUPPORT_WIFI_TXBF_2_4GHZ
+	bool "Support Tx Beamforming in 2.4 GHz"
+	depends on (!BR2_WIFI_2GHZ_RTL_8197G && \
+				!RALINK_MTK_WIFI_2GHZ_MT7603E)
+
+config BR2_SUPPORT_WIFI_TXBF_5GHZ
+	bool "Support Tx Beamforming in 5 GHz"
+	depends on BR2_SUPPORT_WIFI_5GHZ
+
+config BR2_SUPPORT_WIFI_STBC
+	bool "Support Space time block code"
+	default y
+
+config BR2_SUPPORT_WIFI_MU_MIMO
+	bool "Support MU-MIMO"
+	default y
+	depends on BR2_SUPPORT_WIFI_TXBF_5GHZ
+	depends on (BR2_WIFI_5GHZ_RTL_8822 || \
+				BR2_WIFI_5GHZ_RTL_8812F || \
+				BR2_WIFI_5GHZ_RTL_8814B || \
+				(RALINK_MTK_WIFI_5GHZ_MT7615EN && !BR2_WIFI_MT7615_SIMULT_DUALBAND))
+
+config BR2_PERIODIC_AUTOSELECT_CHANNEL
+	bool "Periodic autoselect channel"
+	default n
+
+config BR2_SUPPORT_WIFI_DROP_MULTICAST
+	bool "Support option 'DropMulticast'"
+	default y if RALINK_MT7620
+	default y if RALINK_MT7621
+	default y if BR2_rlx
+	default y if BR2_rlx_9607
+	default n
+
+config BR2_SUPPORT_WLAN_UTIL
+	bool "Enable WLAN utilization statistic"
+	depends on BR2_rlx_wifi
+	default n
+
+if BR2_rlx_wifi
+config BR2_WIFI_LED_TYPE
+	int "Led type for Wi-Fi"
+	default 12
+
+config BR2_WIFI_5G_LED_TYPE
+	int "Led type for 5G Wi-Fi"
+	default 50
+endif
+
+config BR2_RALINK_DELAYED_AUTOCHANNEL
+	bool "Delay autochannel scanning on Ralink/Mediatek"
+	default n
+	depends on BR2_ralink
+	help
+		Running of 'ifconfig ra0/rai0 up' becomes faster
+		because long autochannel scanning is delayed and
+		not being executed in up-time (#17519)
+
+config BR2_WIFI_BANDWIDTH_CONTROL
+	bool "Support bandwidth restriction"
+	default y
+	depends on (BR2_rlx_wifi || BR2_WIFI_MT7615)
+
+config BR2_WIFI_DUAL_MT7612E
+	bool "Dual MT7612E"
+	default n
+	depends on RALINK_MTK_WIFI_5GHZ_MT7612EN
+
+config BR2_SUPPORT_WIFI_LED_SCALE
+	bool "WiFi client signal strength indicator (LED-scale)"
+	default n
+
+config BR2_EXCLUDE_DFS_FROM_AUTOSELECT
+	bool "Exclude DFS channels from auto-selection"
+	default n
+	depends on (BR2_SUPPORT_DFS && BR2_SUPPORT_WIFI_5GHZ)
+
+config BR2_WIFI_ADAPTIVITY
+	bool "Support Wi-Fi adaptivity"
+	default n if RALINK_MT7620
+	default y
+	depends on (BR2_rlx && (!BR2_modems || RTL8685PB)) || RALINK_MT7620
+
+config BR2_WIFI_LOW_OFDM
+	bool "Support Low OFDM"
+	default y
+	depends on (BR2_rlx && BR2_SUPPORT_WIFI_5GHZ)
+
+config BR2_SUPPORT_STA_BANDWIDTH_CONTROL
+	bool "STA Bandwidth Control"
+	default y
+	depends on BR2_rlx_wifi
+
+config BR2_SUPPORT_WPS_FOR_MBSSID
+	bool "Enable WPS on MBSSID"
+	default y if (BR2_ralink)
+
+config BR2_SUPPORT_WIFI_HIGH_POWER_300
+	bool "Enable 300% power"
+
+config BR2_SUPPORT_WIFI_HIGH_POWER_1000
+	bool "Enable 1000% (max) power"
+
+config BR2_SUPPORT_WIFI_WPA3
+   default y
+   bool "Support WPA3"
+   depends on BR2_rlx_wifi || RALINK_MTK_WIFI_DRV_MT7603
+
+config BR2_SUPPORT_DFS
+	bool "Support DFS"
+	default y
+	depends on BR2_SUPPORT_WIFI_5GHZ
+
+config BR2_SUPPORT_WIFI_MIBSYNC
+	bool
+	default y
+	depends on RLX_819X || BR2_rtk_luna || RTL8685PB
+
+config BR2_WIFI_EBTABLES_GUEST_ACCESS
+	bool "Use EBTABLES for guest access settings"
+	depends on (BR2_ralink || BR2_modems || BR2_rtk_luna)
+	select BR2_PACKAGE_EBTABLES
+
+config BR2_SUPPORT_WIFI_PMF
+	bool "Support 802.11w"
+	default y
+	depends on BR2_rlx_wifi
+
+config BR2_WIFI_WPA2_CERT
+	bool "WPA2 certification's features"
+	default n
+	depends on BR2_SUPPORT_WIFI_PMF
+	help
+	  Current features:
+	  1. Change default value of WPA2 PMF from Disabled to Optional.
+
+config BR2_SUPPORT_WIFI_11K
+	bool "Support 802.11K"
+	default n if BR2_WIFI_MT7615
+	default y
+	depends on RLX_819X || RALINK_MTK_WIFI_2GHZ_MT7603E || BR2_WIFI_MT7615 || RTL8685PB
+	depends on !BR2_PACKAGE_RTK_MULTI_AP
+
+config BR2_MTK_DRU_WIFI_IOCTL
+	bool "Support DRU Mediatek Wi-Fi ioctl"
+	depends on BR2_ralink
+
+config BR2_MTK_WIFI_MULTI_POWER_LIMIT
+	bool "Support Multi-table power limit feature for Mediatek"
+	depends on RALINK_MT7620A
+
+config BR2_MTK_WIFI_HIGH_CHAN_DFS_DENY
+	bool "Deny High channels for DFS random selection"
+	depends on RALINK_MTK_WIFI_5GHZ_MT7615EN && BR2_SUPPORT_DFS
+	default y
+
+config BR2_SUPPORT_WIFI_TXPWR_LIMIT
+	bool "Support TX Power limit"
+	default n
+	depends on BR2_rlx_wifi
+
+config BR2_SUPPORT_WIFI_11V
+	bool "Support 802.11V"
+	default y
+	depends on RALINK_MTK_WIFI_2GHZ_MT7603E && \
+		(RALINK_MTK_WIFI_5GHZ_MT7615EN || RALINK_MTK_WIFI_5GHZ_MT7613AEN)
+	depends on !BR2_PACKAGE_RTK_MULTI_AP
+
+config BR2_WIFI_DRU_AUTO_CHANNEL
+	bool "Support D-Link autochannel algorithm"
+	depends on !BR2_rlx_wifi
+	default y
+
+endmenu # "Wireless"
+endif

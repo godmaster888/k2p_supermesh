@@ -1,0 +1,287 @@
+From 163d8fbbb00cec936baa6e691f94cfd1a3f8cd81 Mon Sep 17 00:00:00 2001
+From: Dmitriy Karaman <dkaraman@dlink.ru>
+Date: Wed, 24 Jul 2019 12:12:59 +0300
+Subject: [PATCH] bgpd: implement BGP as-override feature
+
+Allow the replacement of a specific AS with another.
+
+https://github.com/FRRouting/frr/commit/c7122e14246e4a2699b9e0b30cf05e111ac2e5d7
+---
+ bgpd/bgp_aspath.c | 52 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ bgpd/bgp_aspath.h |  2 ++
+ bgpd/bgp_route.c  | 19 +++++++++++++++++++
+ bgpd/bgp_vty.c    | 45 +++++++++++++++++++++++++++++++++++++++++++++
+ bgpd/bgpd.c       | 11 +++++++++++
+ bgpd/bgpd.h       |  4 +++-
+ 6 files changed, 132 insertions(+), 1 deletion(-)
+
+diff --git a/bgpd/bgp_aspath.c b/bgpd/bgp_aspath.c
+index b7af5e8..664db1c 100644
+--- a/bgpd/bgp_aspath.c
++++ b/bgpd/bgp_aspath.c
+@@ -1290,6 +1290,58 @@ aspath_private_as_check (struct aspath *aspath)
+   return 1;
+ }
+ 
++/* Return True if the entire ASPATH consist of the specified ASN */
++int
++aspath_single_asn_check (struct aspath *aspath, as_t asn)
++{
++  struct assegment *seg;
++
++  if ( !(aspath && aspath->segments) )
++    return 0;
++
++  seg = aspath->segments;
++
++  while (seg)
++    {
++      int i;
++
++      for (i = 0; i < seg->length; i++)
++  {
++    if (seg->as[i] != asn)
++      return 0;
++  }
++      seg = seg->next;
++    }
++  return 1;
++}
++
++/* Replace all instances of the target ASN with our own ASN */
++struct aspath *
++aspath_replace_specific_asn (struct aspath *aspath, as_t target_asn,
++                             as_t our_asn)
++{
++  struct aspath *new;
++  struct assegment *seg;
++
++  new = aspath_dup(aspath);
++  seg = new->segments;
++
++  while (seg)
++    {
++      int i;
++
++      for (i = 0; i < seg->length; i++)
++  {
++    if (seg->as[i] == target_asn)
++            seg->as[i] = our_asn;
++  }
++      seg = seg->next;
++    }
++
++  aspath_str_update(new);
++  return new;
++}
++
+ /* AS path confed check.  If aspath contains confed set or sequence then return 1. */
+ int
+ aspath_confed_check (struct aspath *aspath)
+diff --git a/bgpd/bgp_aspath.h b/bgpd/bgp_aspath.h
+index c8f929f..17c164b 100644
+--- a/bgpd/bgp_aspath.h
++++ b/bgpd/bgp_aspath.h
+@@ -99,6 +99,8 @@ extern void aspath_print_all_vty (struct vty *);
+ extern unsigned int aspath_key_make (void *);
+ extern int aspath_loop_check (struct aspath *, as_t);
+ extern int aspath_private_as_check (struct aspath *);
++extern int aspath_single_asn_check (struct aspath *, as_t asn);
++extern struct aspath *aspath_replace_specific_asn (struct aspath *aspath, as_t target_asn, as_t our_asn);
+ extern int aspath_firstas_check (struct aspath *, as_t);
+ extern int aspath_confed_check (struct aspath *);
+ extern int aspath_left_confed_check (struct aspath *);
+diff --git a/bgpd/bgp_route.c b/bgpd/bgp_route.c
+index 4cb6c14..4ed88ee 100644
+--- a/bgpd/bgp_route.c
++++ b/bgpd/bgp_route.c
+@@ -794,6 +794,19 @@ bgp_import_modifier (struct peer *rsclient, struct peer *peer,
+   return RMAP_PERMIT;
+ }
+ 
++/* If this is an EBGP peer with as-override */
++static void
++bgp_peer_as_override(struct bgp *bgp, afi_t afi, safi_t safi,
++                     struct peer *peer, struct attr *attr)
++{
++  if (peer->sort == BGP_PEER_EBGP &&
++      peer_af_flag_check (peer, afi, safi, PEER_FLAG_AS_OVERRIDE))
++    {
++      if (aspath_single_asn_check (attr->aspath, peer->as))
++        attr->aspath = aspath_replace_specific_asn (attr->aspath, peer->as, bgp->as);
++    }
++}
++
+ static int
+ bgp_announce_check (struct bgp_info *ri, struct peer *peer, struct prefix *p,
+ 		    struct attr *attr, afi_t afi, safi_t safi)
+@@ -1064,6 +1077,8 @@ bgp_announce_check (struct bgp_info *ri, struct peer *peer, struct prefix *p,
+       && aspath_private_as_check (attr->aspath))
+     attr->aspath = aspath_empty_get ();
+ 
++  bgp_peer_as_override(bgp, afi, safi, peer, attr);
++
+   /* Route map & unsuppress-map apply. */
+   if (ROUTE_MAP_OUT_NAME (filter)
+       || (ri->extra && ri->extra->suppress) )
+@@ -1113,10 +1128,12 @@ bgp_announce_check_rsclient (struct bgp_info *ri, struct peer *rsclient,
+   struct bgp_filter *filter;
+   struct bgp_info info;
+   struct peer *from;
++  struct bgp *bgp;
+   struct attr *riattr;
+ 
+   from = ri->peer;
+   filter = &rsclient->filter[afi][safi];
++  bgp = rsclient->bgp;
+   riattr = bgp_info_mpath_count (ri) ? bgp_info_mpath_attr (ri) : ri->attr;
+ 
+   if (DISABLE_BGP_ANNOUNCE)
+@@ -1268,6 +1285,8 @@ bgp_announce_check_rsclient (struct bgp_info *ri, struct peer *rsclient,
+       && aspath_private_as_check (attr->aspath))
+     attr->aspath = aspath_empty_get ();
+ 
++  bgp_peer_as_override(bgp, afi, safi, rsclient, attr);
++
+   /* Route map & unsuppress-map apply. */
+   if (ROUTE_MAP_OUT_NAME (filter) || (ri->extra && ri->extra->suppress) )
+     {
+diff --git a/bgpd/bgp_vty.c b/bgpd/bgp_vty.c
+index 7af4e81..ca1c08a 100644
+--- a/bgpd/bgp_vty.c
++++ b/bgpd/bgp_vty.c
+@@ -279,6 +279,9 @@ bgp_vty_return (struct vty *vty, int ret)
+     case BGP_ERR_NO_IBGP_WITH_TTLHACK:
+       str = "ttl-security only allowed for EBGP peers";
+       break;
++    case BGP_ERR_AS_OVERRIDE:
++      str = "as-override cannot be configured for IBGP peers";
++      break;
+     }
+   if (str)
+     {
+@@ -2309,6 +2312,32 @@ DEFUN (no_neighbor_nexthop_self,
+ 				 PEER_FLAG_NEXTHOP_SELF|PEER_FLAG_NEXTHOP_SELF_ALL);
+ }
+ 
++/* neighbor as-override */
++DEFUN (neighbor_as_override,
++       neighbor_as_override_cmd,
++       NEIGHBOR_CMD2 "as-override",
++       NEIGHBOR_STR
++       NEIGHBOR_ADDR_STR2
++       "Override ASNs in outbound updates if aspath equals remote-as\n")
++{
++  return peer_af_flag_set_vty (vty, argv[0], bgp_node_afi (vty),
++                               bgp_node_safi (vty),
++                               PEER_FLAG_AS_OVERRIDE);
++}
++
++DEFUN (no_neighbor_as_override,
++       no_neighbor_as_override_cmd,
++       NO_NEIGHBOR_CMD2 "as-override",
++       NO_STR
++       NEIGHBOR_STR
++       NEIGHBOR_ADDR_STR2
++       "Override ASNs in outbound updates if aspath equals remote-as\n")
++{
++  return peer_af_flag_unset_vty (vty, argv[0], bgp_node_afi (vty),
++                                 bgp_node_safi (vty),
++                                 PEER_FLAG_AS_OVERRIDE);
++}
++
+ /* neighbor remove-private-AS. */
+ DEFUN (neighbor_remove_private_as,
+        neighbor_remove_private_as_cmd,
+@@ -8223,6 +8252,8 @@ bgp_show_peer_afi (struct vty *vty, struct peer *p, afi_t afi, safi_t safi)
+     vty_out (vty, "  Inbound soft reconfiguration allowed%s", VTY_NEWLINE);
+   if (CHECK_FLAG (p->af_flags[afi][safi], PEER_FLAG_REMOVE_PRIVATE_AS))
+     vty_out (vty, "  Private AS number removed from updates to this neighbor%s", VTY_NEWLINE);
++  if (CHECK_FLAG (p->af_flags[afi][safi], PEER_FLAG_AS_OVERRIDE))
++    vty_out (vty, "  Override ASNs in outbound updates if aspath equals remote-as%s", VTY_NEWLINE);
+   if (CHECK_FLAG (p->af_flags[afi][safi], PEER_FLAG_NEXTHOP_SELF))
+     vty_out (vty, "  NEXT_HOP is always this router%s", VTY_NEWLINE);
+   if (CHECK_FLAG (p->af_flags[afi][safi], PEER_FLAG_AS_PATH_UNCHANGED))
+@@ -10441,6 +10472,20 @@ bgp_vty_init (void)
+   install_element (BGP_ENCAPV6_NODE, &neighbor_nexthop_self_cmd);
+   install_element (BGP_ENCAPV6_NODE, &no_neighbor_nexthop_self_cmd);
+ 
++  /* "neighbor as-override" commands. */
++  install_element (BGP_NODE, &neighbor_as_override_cmd);
++  install_element (BGP_NODE, &no_neighbor_as_override_cmd);
++  install_element (BGP_IPV4_NODE, &neighbor_as_override_cmd);
++  install_element (BGP_IPV4_NODE, &no_neighbor_as_override_cmd);
++  install_element (BGP_IPV4M_NODE, &neighbor_as_override_cmd);
++  install_element (BGP_IPV4M_NODE, &no_neighbor_as_override_cmd);
++  install_element (BGP_IPV6_NODE, &neighbor_as_override_cmd);
++  install_element (BGP_IPV6_NODE, &no_neighbor_as_override_cmd);
++  install_element (BGP_IPV6M_NODE, &neighbor_as_override_cmd);
++  install_element (BGP_IPV6M_NODE, &no_neighbor_as_override_cmd);
++  install_element (BGP_VPNV4_NODE, &neighbor_as_override_cmd);
++  install_element (BGP_VPNV4_NODE, &no_neighbor_as_override_cmd);
++
+   /* "neighbor remove-private-AS" commands. */
+   install_element (BGP_NODE, &neighbor_remove_private_as_cmd);
+   install_element (BGP_NODE, &no_neighbor_remove_private_as_cmd);
+diff --git a/bgpd/bgpd.c b/bgpd/bgpd.c
+index 018a599..085ebef 100644
+--- a/bgpd/bgpd.c
++++ b/bgpd/bgpd.c
+@@ -2520,6 +2520,7 @@ static const struct peer_flag_action peer_af_flag_action_list[] =
+     { PEER_FLAG_ORF_PREFIX_RM,            1, peer_change_reset },
+     { PEER_FLAG_NEXTHOP_LOCAL_UNCHANGED,  0, peer_change_reset_out },
+     { PEER_FLAG_NEXTHOP_SELF_ALL,         1, peer_change_reset_out },
++    { PEER_FLAG_AS_OVERRIDE,              1, peer_change_reset_out },
+     { 0, 0, 0 }
+   };
+ 
+@@ -2763,6 +2764,11 @@ peer_af_flag_modify (struct peer *peer, afi_t afi, safi_t safi, u_int32_t flag,
+       && peer_sort (peer) == BGP_PEER_IBGP)
+     return BGP_ERR_REMOVE_PRIVATE_AS;
+ 
++  /* as-override is not allowed for IBGP peers */
++  if (flag & PEER_FLAG_AS_OVERRIDE
++      && peer_sort (peer) == BGP_PEER_IBGP)
++    return BGP_ERR_AS_OVERRIDE;
++
+   /* When unset the peer-group member's flag we have to check
+      peer-group configuration.  */
+   if (! set && peer->af_group[afi][safi])
+@@ -5245,6 +5251,11 @@ bgp_config_write_peer (struct vty *vty, struct bgp *bgp,
+     vty_out (vty, " neighbor %s remove-private-AS%s",
+ 	     addr, VTY_NEWLINE);
+ 
++  /* as-override */
++  if (peer_af_flag_check (peer, afi, safi, PEER_FLAG_AS_OVERRIDE) &&
++      !peer->af_group[afi][safi])
++    vty_out (vty, " neighbor %s as-override%s", addr, VTY_NEWLINE);
++
+   /* send-community print. */
+   if (! peer->af_group[afi][safi])
+     {
+diff --git a/bgpd/bgpd.h b/bgpd/bgpd.h
+index 0058b58..af49f21 100644
+--- a/bgpd/bgpd.h
++++ b/bgpd/bgpd.h
+@@ -425,6 +425,7 @@ struct peer
+ #define PEER_FLAG_MAX_PREFIX_WARNING        (1 << 15) /* maximum prefix warning-only */
+ #define PEER_FLAG_NEXTHOP_LOCAL_UNCHANGED   (1 << 16) /* leave link-local nexthop unchanged */
+ #define PEER_FLAG_NEXTHOP_SELF_ALL          (1 << 17) /* next-hop-self all */
++#define PEER_FLAG_AS_OVERRIDE               (1 << 18) /* as-override */
+ 
+   /* MD5 password */
+   char *password;
+@@ -832,8 +833,9 @@ enum bgp_clear_type
+ #define BGP_ERR_TCPSIG_FAILED			-29
+ #define BGP_ERR_NO_EBGP_MULTIHOP_WITH_TTLHACK	-30
+ #define BGP_ERR_NO_IBGP_WITH_TTLHACK		-31
+-#define BGP_ERR_MAX				-32
+ #define BGP_ERR_CANNOT_HAVE_LOCAL_AS_SAME_AS_REMOTE_AS    -33
++#define BGP_ERR_AS_OVERRIDE                     -34
++#define BGP_ERR_MAX                             -35
+ 
+ extern struct bgp_master *bm;
+ 
+-- 
+2.1.4
+

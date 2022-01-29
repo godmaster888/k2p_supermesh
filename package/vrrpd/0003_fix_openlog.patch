@@ -1,0 +1,14 @@
+--- Vrrpd-master/vrrpd.c
++++ vrrpd-master/vrrpd.c
+@@ -1821,9 +1827,9 @@
+             /* Log any failures here */
+             exit(EXIT_FAILURE);
+     	}
+-			
++
+ 	//open log missing *AA*
+-	openlog ("vrrpd", LOG_CONS | LOG_PID | LOG_NDELAY, LOG_LOCAL1);
++	openlog ("vrrpd", LOG_PID | LOG_NDELAY, LOG_LOCAL1);
+ 	vrrpd_log(LOG_WARNING, "vrrpd version %s starting...\n", VRRPD_VERSION);
+ 	snprintf( PidDir, sizeof(PidDir), "%s", VRRP_PIDDIR_DFL );
+ 	

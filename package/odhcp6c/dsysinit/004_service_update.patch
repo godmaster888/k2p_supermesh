@@ -1,0 +1,48 @@
+diff --git a/src/script.c b/src/script.c
+index 613872a..93b94b9 100644
+--- a/src/script.c
++++ b/src/script.c
+@@ -28,6 +28,10 @@
+ 
+ #include "odhcp6c.h"
+ 
++#ifdef DLINK_SOFTWARE
++#include <d-link/d_service_notify.h>
++#endif /* DLINK_SOFTWARE */
++
+ static const char hexdigits[] = "0123456789abcdef";
+ static const int8_t hexvals[] = {
+     -1, -1, -1, -1, -1, -1, -1, -1, -1, -2, -2, -1, -1, -2, -1, -1,
+@@ -481,6 +485,32 @@ void script_call(const char *status, int delay, bool resume)
+ 		script_hexlify(&buf[9], passthru, passthru_len);
+ 		putenv(buf);
+ 
++#ifdef DLINK_SOFTWARE
++		const char *dlink_ra_addresses = getenv("RA_ADDRESSES");
++		const char *dlink_addresses = getenv("ADDRESSES");
++		const char *dlink_ra_routes = getenv("RA_ROUTES");
++		const char *dlink_prefixes = getenv("PREFIXES");
++		const char *dlink_rdnss = getenv("RDNSS");
++		const char *dlink_ra_dns = getenv("RA_DNS");
++		const char *dlink_domains = getenv("DOMAINS");
++		const char *dlink_ra_domains = getenv("RA_DOMAINS");
++		const char *dlink_aftr = getenv("AFTR");
++
++		json_t *dlink_pack_obj = json_pack("{s:s, s:s, s:s, s:s, s:s, s:s, s:s, s:s, s:s, s:s}",
++		                                   "action", action,
++		                                   "ra_addresses", dlink_ra_addresses ? dlink_ra_addresses : "",
++		                                   "addresses", dlink_addresses ? dlink_addresses : "",
++		                                   "ra_routes", dlink_ra_routes ? dlink_ra_routes : "",
++		                                   "prefixes", dlink_prefixes ? dlink_prefixes : "",
++		                                   "rdnss", dlink_rdnss ? dlink_rdnss : "",
++		                                   "ra_dns", dlink_ra_dns ? dlink_ra_dns : "",
++		                                   "domains", dlink_domains ? dlink_domains : "",
++		                                   "ra_domains", dlink_ra_domains ? dlink_ra_domains : "",
++		                                   "aftr", dlink_aftr ? dlink_aftr : "");
++
++		dlink_service_update(dlink_pack_obj);
++#endif /* DLINK_SOFTWARE */
++
+ 		execv(argv[0], argv);
+ 		_exit(128);
+ 	}

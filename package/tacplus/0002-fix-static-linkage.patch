@@ -1,0 +1,31 @@
+--- pam_tacplus-v1.5.0-beta.2/Makefile.am	2019-05-30 17:21:33.541119700 +0300
++++ pam_tacplus-v1.5.0-beta.2-bak/Makefile.am	2019-05-30 17:21:05.549320763 +0300
+@@ -52,7 +52,7 @@
+ libtac/lib/md5.h
+ endif
+ libtac_la_CFLAGS = $(AM_CFLAGS) -I $(top_srcdir)/libtac/include @rt_debug_defines@
+-libtac_la_LDFLAGS = -version-info 2:0:0 -shared
++libtac_la_LDFLAGS = -version-info 2:0:0
+ 
+ MAINTAINERCLEANFILES = Makefile.in config.h.in configure aclocal.m4 \
+                        config/config.guess  config/config.sub  config/depcomp \
+--- pam_tacplus-v1.5.0-beta.2/tacc.c	2018-01-23 21:21:56.000000000 +0300
++++ pam_tacplus-v1.5.0-beta.2-bak/tacc.c	2019-05-30 17:27:08.155374204 +0300
+@@ -78,7 +78,7 @@
+ #define USE_SYSTEM	1
+ 
+ /* globals */
+-int tac_encryption = 1;
++extern int tac_encryption;
+ typedef unsigned char flag;
+ flag quiet = 0;
+ char *user = NULL; /* global, because of signal handler */
+@@ -150,6 +150,8 @@
+ 		exit(EXIT_ERR);
+ 	}
+ 
++	tac_encryption = 1; /* default is sensible */
++
+ 	/* check for login mode */
+ 	if (argc == 2 && isalpha(*argv[1])) {
+ 		user = argv[1];

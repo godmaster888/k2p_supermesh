@@ -1,0 +1,15 @@
+choice
+	prompt "Kernel WiFi driver"
+	depends on BR2_SUPPORT_WIFI
+	default BR2_RTL8192CD_VER_406
+
+	config BR2_RTL8192CD_VER_405
+		bool "4.0.5"
+		depends on RTL8685PB
+
+	config BR2_RTL8192CD_VER_406
+		bool "4.0.6"
+		depends on RTL8685PB || RTL8685FB
+
+endchoice
+

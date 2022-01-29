@@ -1,0 +1,18 @@
+diff --git a/CPU/run.c b/CPU/run.c
+index a3127fe..513d5cd 100755
+--- a/CPU/run.c
++++ b/CPU/run.c
+@@ -32,8 +32,11 @@
+ 
+ 
+ #ifdef mips
+-#define _IEEE 1
+-#include <nan.h>
++//#define _IEEE 1
++//#include <nan.h>
++#define __USE_ISOC99 1	/* for include bits/nan.h in math.h to get NAN(x) */
++#include <math.h>
++#define NaN(X) (X == NAN)
+ #else
+ #define NaN(X) ((X) != (X))
+ #endif

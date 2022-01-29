@@ -1,0 +1,1 @@
+"use strict";!function(){angular.module("app").constant("statsDHCPConstants",{servers:"Device.Network.Server.",hostnames:"Device.Hostnames."})}();

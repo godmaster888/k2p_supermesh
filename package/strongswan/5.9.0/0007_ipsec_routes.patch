@@ -1,0 +1,113 @@
+From 9fd99a13b6df4ca55f49f3b7488f3fa3672d498e Mon Sep 17 00:00:00 2001
+From: Vladimir Yaichkin <vyaichkin@rzn.dlink.ru>
+Date: Mon, 17 Aug 2020 12:10:55 +0300
+Subject: strongswan: add send tunnel route to dsysinit
+Patch-from-hash: aff0e04810cefd30f3b489990d3fb96d07619951
+Patch-repo: strongswan
+Patch-branch: master
+Patch-version: 5
+
+Добавлена отправка аргументов маршрута для IPsec-туннеля
+в dsysinit.
+
+Signed-off-by: Vladimir Yaichkin <vyaichkin@rzn.dlink.ru>
+---
+ .../kernel_netlink/kernel_netlink_ipsec.c     | 55 +++++++++++++++++++
+ 1 file changed, 55 insertions(+)
+
+diff --git a/src/libcharon/plugins/kernel_netlink/kernel_netlink_ipsec.c b/src/libcharon/plugins/kernel_netlink/kernel_netlink_ipsec.c
+index ef0d424..4482a93 100644
+--- a/src/libcharon/plugins/kernel_netlink/kernel_netlink_ipsec.c
++++ b/src/libcharon/plugins/kernel_netlink/kernel_netlink_ipsec.c
+@@ -70,6 +70,10 @@
+ #include <collections/hashtable.h>
+ #include <collections/linked_list.h>
+
++#ifdef DLINK_SOFTWARE
++#include <d-link/d_service_notify.h>
++#endif /* DLINK_SOFTWARE */
++
+ /** Required for Linux 2.6.26 kernel and later */
+ #ifndef XFRM_STATE_AF_UNSPEC
+ #define XFRM_STATE_AF_UNSPEC 32
+@@ -2553,6 +2557,40 @@ static void policy_change_done(private_kernel_netlink_ipsec_t *this,
+	this->mutex->unlock(this->mutex);
+ }
+
++#ifdef DLINK_SOFTWARE
++static void send_update_route(const char *ifname, void *dst, void *src, void *gateway)
++{
++	char str[INET6_ADDRSTRLEN + 16];    /* like in src/libstrongswan/networking/host.c */
++	json_t *object = json_object();
++
++	if (ifname && *ifname)
++		json_object_set_new_nocheck(object, "ifname", json_string(ifname));
++
++	if (dst) {
++		snprintf(str, sizeof(str), "%R", dst);
++		json_object_set_new_nocheck(object, "dest", json_string(str));
++	}
++
++	if (src) {
++		snprintf(str, sizeof(str), "%H", src);
++		json_object_set_new_nocheck(object, "source", json_string(str));
++	}
++
++	if (gateway) {
++		snprintf(str, sizeof(str), "%H", gateway);
++		json_object_set_new_nocheck(object, "gw", json_string(str));
++	}
++
++	if (!json_object_size(object)) {
++		json_decref(object);
++		return;
++	}
++
++	json_t *params = json_pack("{s:o}", "route", object);
++	dlink_service_update(params);
++}
++#endif /* DLINK_SOFTWARE */
++
+ /**
+  * Install a route for the given policy if enabled and required
+  */
+@@ -2573,6 +2611,13 @@ static void install_route(private_kernel_netlink_ipsec_t *this,
+	{
+		if (!route->pass)
+		{
++#ifdef DLINK_SOFTWARE
++			route->gateway = charon->kernel->get_nexthop(charon->kernel, ipsec->dst, -1,
++			                                             ipsec->src, &route->if_name);
++			send_update_route(route->if_name, out->dst_ts, NULL, route->gateway);
++			DESTROY_IF(route->gateway);
++			free(route->if_name);
++#endif /* DLINK_SOFTWARE */
+			free(route);
+			return;
+		}
+@@ -2639,6 +2684,15 @@ static void install_route(private_kernel_netlink_ipsec_t *this,
+
+	DBG2(DBG_KNL, "installing route: %R via %H src %H dev %s", out->dst_ts,
+		 route->gateway, route->src_ip, route->if_name);
++
++#ifdef DLINK_SOFTWARE
++		send_update_route(route->if_name, out->dst_ts, route->src_ip, route->gateway);
++
++		if (policy->route)
++			route_entry_destroy(policy->route);
++
++		policy->route = route;
++#else /* DLINK_SOFTWARE */
+	switch (charon->kernel->add_route(charon->kernel, route->dst_net,
+									  route->prefixlen, route->gateway,
+									  route->src_ip, route->if_name,
+@@ -2657,6 +2711,7 @@ static void install_route(private_kernel_netlink_ipsec_t *this,
+			policy->route = route;
+			break;
+	}
++#endif /* DLINK_SOFTWARE */
+ }
+
+ /**
+--
+2.20.1

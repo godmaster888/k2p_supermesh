@@ -1,0 +1,6 @@
+config BR2_PACKAGE_GPP
+	bool "gpp"
+	help
+	  General-purpose preprocessor with customizable syntax
+
+	  https://logological.org/gpp

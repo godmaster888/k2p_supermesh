@@ -1,0 +1,1 @@
+"use strict";!function(){angular.module("app").constant("summaryLinks",{firmware:"system.firmware",lan4:"network.lan",lan6:'network.lan({ipversion:"IPv6"})',ap24:'wifi.ap.edit({freq: "2.4GHz", inx: 1})',ap5:'wifi.ap.edit({freq: "5GHz", inx: 1})'})}();

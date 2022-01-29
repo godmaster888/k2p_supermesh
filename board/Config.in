@@ -1,0 +1,176 @@
+menu "Board options"
+
+menu "Config settings"
+
+config BR2_DLINK_CONFIG_SHARED_MEMORY_SIZE
+	int "Size in bytes for shared memory storage"
+	default 262144
+
+config BR2_DLINK_CONFIG_FLASH_SIZE
+	int "Size in bytes for flash storage"
+	default 61440 if BR2_ralink
+	default 1048576 if (BR2_i386 || BR2_x86_64)
+	default 65536 if BR2_qca
+	default 65536 if BR2_rlx
+
+	default 65536
+
+endmenu
+
+config BR2_modems
+	bool "DSL Modem support"
+
+config BR2_NAND
+	bool "NAND flash support"
+	default n
+
+config BR2_NAND_BLOCK_SIZE
+	string "NAND block size"
+	default "128"
+	depends on BR2_NAND
+
+config BR2_PSK_ON_FLASH
+	bool "Storage base WPA PSK on flash"
+	depends on BR2_SUPPORT_WIFI
+
+config BR2_SSID_ON_FLASH
+	bool "Storage base SSID on flash"
+	depends on BR2_SUPPORT_WIFI
+
+config BR2_FIBER
+	bool "FIBER WAN support"
+	default n
+
+config BR2_GPON
+	bool "Support GPON WAN"
+	default n
+	depends on BR2_rlx_9607
+
+config BR2_SUPPORT_ETHERWAN
+	bool "Support ETHERWAN"
+	default n
+	depends on BR2_modems || BR2_rlx_9607
+	help
+	  Converting LAN to WAN port (ethernet)
+
+config BR2_SUPPORT_GIGABIT_ETHERNET
+	bool "Support gigabit ethernet"
+	default n
+
+config BR2_SUPPORT_ADSL
+	bool "Support ADSL"
+	default y
+	depends on BR2_modems
+
+config BR2_SUPPORT_VDSL
+	bool "Support VDSL"
+	default n
+	depends on BR2_modems
+
+config BR2_SUPPORT_VDSL_PROFILE_35B
+	bool "Support VDSL profile 35B"
+	default n
+	depends on BR2_SUPPORT_VDSL
+
+config BR2_SUPPORT_ADSL_GINP
+	bool "Support VDSL/ADSL G.inp"
+	default n
+	depends on BR2_modems && (BR2_SUPPORT_VDSL || BR2_SUPPORT_ADSL)
+
+config BR2_SUPPORT_VDSL_GVECTOR
+	bool "Support VDSL G.vector"
+	default n
+	depends on BR2_modems && BR2_SUPPORT_VDSL
+
+source board/Config.wifi.in
+
+menu "USB"
+choice
+	prompt "Embedded modem"
+	default BR2_EMBEDDED_MODEM_NO
+	help
+	  Select the embedded modem type
+
+config BR2_EMBEDDED_MODEM_NO
+	bool "None"
+
+config BR2_EMBEDDED_MODEM_3G
+	bool "3G"
+
+config BR2_EMBEDDED_MODEM_LTE
+	bool "LTE"
+endchoice
+
+config BR2_SUPPORT_EMBEDDED_MODEM_PM
+	bool "Support modem PM"
+	depends on BR2_EMBEDDED_MODEM_LTE
+	help
+		Select embedded modem power management
+endmenu
+
+menu "WAN/LAN Configuration"
+config BR2_ARCH_BASE_INTERFACE
+	string "Name for interface WAN (WAN_IFNAME)"
+	default "eth2"
+config SWITCH_WAN_PHY
+	int "Index WAN port in switch table (WAN_PHY)"
+	default 4
+config SWITCH_COUNT_PHY_PORTS
+	int "Count physical ports (COUNT_PHY_PORTS)"
+	default 5
+menu "Partition WAN/LAN"
+config BR2_SUPPORT_REMAPPING_WAN
+	bool "WAN port reassignment support."
+	default y if BR2_ralink
+	default y if BR2_qca
+	default y if BR2_i386
+	default y if BR2_x86_64
+	default y if RLX_86XX
+
+config BR2_SUPPORT_MULTI_WAN
+	bool "WAN port reassignment support."
+	default y if BR2_ralink
+	default y if BR2_qca
+	default y if BR2_i386
+	default y if BR2_x86_64
+endmenu
+
+
+config BR2_TARGET_MAC_COUNT
+	int "Count of alloted MAC-addresses per device"
+	default 8 if BR2_SUPPORT_WIFI_5GHZ
+	default 4
+
+endmenu
+
+config BR2_SUPPORT_VLAN_PRIORITY
+	bool "Support vlan priority 802.1p"
+	default n
+
+config BR2_SUPPORT_VLAN_TRUNKING
+	bool "Vlan trunk support"
+
+config BR2_DLINK_ALLOW_DUPLICATE_VID
+	bool "Allow duplicate vlan id"
+
+config BR2_CHECK_FLASH_SIZE
+	bool "Check flash size"
+	help
+		Для того, чтобы добавить поддержку своей архитектуры требуется
+		- заполнить BR2_FLASH_SIZE - размер флешки в целом
+		- добавить дефайн GET_FW_OFFSET в своём target/pack.mk, который будет выдавать смещение на флешке, по которому будет записываться прошивка
+		- включить BR2_CHECK_FLASH_SIZE
+
+config BR2_FLASH_SIZE
+	int "Flash size (Bytes)"
+	depends on BR2_CHECK_FLASH_SIZE
+	default 4194304
+	range 1048576 134217728
+	help
+		Flash size in Mbytes.
+
+config BR2_SUPPORT_VIRTUAL_COM
+	bool "Virtual COM"
+	default n
+
+endmenu

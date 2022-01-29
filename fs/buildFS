@@ -1,0 +1,28 @@
+#!/bin/bash
+
+ROOTFS=${2}
+SINGLE_SKU=${3}
+
+ln -sf /tmp/etc/default $ROOTFS/etc/default
+ln -sf /etc/default/passwd $ROOTFS/etc/passwd
+ln -sf /tmp/shells $ROOTFS/etc/shells
+
+ln -sf /tmp/hosts $ROOTFS/etc/hosts
+ln -sf /tmp/ethers $ROOTFS/etc/ethers
+ln -sf /tmp/log $ROOTFS/dev/log
+ln -sf /tmp/Wireless $ROOTFS/etc/Wireless
+ln -sf /tmp/Wireless $ROOTFS/etc/wireless
+if [ -n "$SINGLE_SKU" ]; then
+       ln -sf /tmp/Wireless $ROOTFS/etc_ro/Wireless
+fi
+
+if [ -n "$BR2_USB_SUPPORT" ]; then
+       ln -sf tmp/mnt ${ROOTFS}/mnt
+fi
+
+if [ -n "$BR2_SUPPORT_FS" ]; then
+       mkdir -p        $ROOTFS/dev/misc
+fi
+if [ -n "BR2_PACKAGE_MADWIMAX" ]; then
+       mkdir -p $ROOTFS/dev/net
+fi

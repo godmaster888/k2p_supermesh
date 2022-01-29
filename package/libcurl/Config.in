@@ -1,0 +1,65 @@
+menuconfig BR2_PACKAGE_LIBCURL
+	bool "libcurl"
+	default n
+
+if BR2_PACKAGE_LIBCURL
+
+config BR2_PACKAGE_LIBCURL_WITH_HTTP
+	bool "Enable libcurl HTTP support"
+	default y
+
+config BR2_PACKAGE_LIBCURL_WITH_FTP
+	bool "Enable libcurl FTP support"
+	default n
+
+config BR2_PACKAGE_LIBCURL_WITH_TFTP
+	bool "Enable libcurl TFTP support"
+	default n
+
+config BR2_PACKAGE_LIBCURL_WITH_FILE
+	bool "Enable libcurl FILE support"
+	default n
+
+config BR2_PACKAGE_LIBCURL_WITH_COOKIES
+	bool "Enable libcurl cookies support"
+	default n
+
+config BR2_PACKAGE_LIBCURL_WITH_CRYPTO_AUTH
+	bool "Enable libcurl cryptographic authentication"
+	default n
+
+config BR2_PACKAGE_LIBCURL_WITH_SMTP
+	bool "Enable libcurl SMTP support"
+	default n
+
+config BR2_PACKAGE_LIBCURL_WITH_SMTPS
+	depends on BR2_PACKAGE_LIBCURL_WITH_OPENSSL || BR2_PACKAGE_LIBCURL_WITH_AXTLS || BR2_PACKAGE_LIBCURL_WITH_CYASSL
+	bool "Enable libcurl SMTPS support"
+	default n
+
+comment "to use libcurl SMTPS, enable crypto lib first"
+	depends on !BR2_PACKAGE_LIBCURL_WITH_OPENSSL && !BR2_PACKAGE_LIBCURL_WITH_AXTLS && !BR2_PACKAGE_LIBCURL_WITH_CYASSL
+
+choice
+	prompt "crypto lib:"
+	default BR2_PACKAGE_LIBCURL_NO_SSL
+	config BR2_PACKAGE_LIBCURL_NO_SSL
+		bool "no"
+	config BR2_PACKAGE_LIBCURL_WITH_OPENSSL
+		#depends on BR2_PACKAGE_OPENSSL
+		bool "openssl"
+	config BR2_PACKAGE_LIBCURL_WITH_AXTLS
+		depends on BR2_PACKAGE_AXTLS
+		bool "axtls"
+	config BR2_PACKAGE_LIBCURL_WITH_CYASSL
+		depends on BR2_PACKAGE_LIBCYASSL
+		bool "cyassl"
+endchoice
+
+config BR2_PACKAGE_LIBCURL_BIN
+	bool "install libcurl bin"
+	default n
+	help
+	  Install executable libcurl.
+
+endif

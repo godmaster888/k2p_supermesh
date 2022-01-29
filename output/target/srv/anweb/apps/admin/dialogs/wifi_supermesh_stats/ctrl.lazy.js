@@ -1,0 +1,1 @@
+"use strict";angular.module("app").controllerProvider.register("wifiSupermeshStatCtrl",function($scope){$scope.data=$scope.ngDialogData.data,$scope.isEmpty=function(value){return _.isEmpty(value)},$scope.has=function(param){return _.has($scope.data,param)}});

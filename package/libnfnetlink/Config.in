@@ -1,0 +1,4 @@
+config BR2_PACKAGE_LIBNFNETLINK
+	bool "libnfnetlink"
+	help
+		A low-level library for netfilter related kernel/userspace communication.

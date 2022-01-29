@@ -1,0 +1,3 @@
+config BR2_PACKAGE_TZ
+	bool "TZ Data"
+	default y

@@ -1,0 +1,232 @@
+From a81c41161bae1892d5ac3af4e8ff3e2cadf98d80 Mon Sep 17 00:00:00 2001
+From: Maxim Zhukov <mzhukov@dlink.ru>
+Date: Fri, 27 Sep 2019 18:07:29 +0300
+Subject: [#37166] fix include usage for cmakefile
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Отвязал umqtt от явного хардкода на инклуд папки umqtt
+
+Signed-off-by: Maxim Zhukov <mzhukov@dlink.ru>
+---
+ CMakeLists.txt                 |  5 ++++-
+ example/example.c              |  2 +-
+ {src => include/umqtt}/log.h   |  0
+ {src => include/umqtt}/ssl.h   |  2 +-
+ {src => include/umqtt}/umqtt.h |  8 ++++----
+ {src => include/umqtt}/utils.h |  2 +-
+ src/CMakeLists.txt             | 16 ++--------------
+ src/log.c                      |  2 +-
+ src/lua/umqtt_lua.h            |  2 +-
+ src/ssl.c                      |  6 +++---
+ src/umqtt.c                    |  6 +++---
+ src/utils.c                    |  4 ++--
+ 12 files changed, 23 insertions(+), 32 deletions(-)
+ rename {src => include/umqtt}/log.h (100%)
+ rename {src => include/umqtt}/ssl.h (98%)
+ rename {src => include/umqtt}/umqtt.h (98%)
+ rename {src => include/umqtt}/utils.h (98%)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 1b7b0e7..64b11c4 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -4,7 +4,10 @@ project(libumqtt C)
+ 
+ list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/Modules/")
+ 
++include_directories(include)
++install(DIRECTORY include/umqtt DESTINATION include)
++
+ #set(CMAKE_VERBOSE_MAKEFILE ON)
+ 
+ add_subdirectory(src)
+-add_subdirectory(example)
++# add_subdirectory(example)
+diff --git a/example/example.c b/example/example.c
+index d0ff503..7dfd326 100644
+--- a/example/example.c
++++ b/example/example.c
+@@ -22,7 +22,7 @@
+ #include <string.h>
+ #include <unistd.h>
+ 
+-#include "umqtt.h"
++#include <umqtt/umqtt.h>
+ 
+ #define RECONNECT_INTERVAL  5
+ 
+diff --git a/src/log.h b/include/umqtt/log.h
+similarity index 100%
+rename from src/log.h
+rename to include/umqtt/log.h
+diff --git a/src/ssl.h b/include/umqtt/ssl.h
+similarity index 98%
+rename from src/ssl.h
+rename to include/umqtt/ssl.h
+index 227ff32..9ebbc50 100644
+--- a/src/ssl.h
++++ b/include/umqtt/ssl.h
+@@ -28,7 +28,7 @@
+ #include <stdint.h>
+ #include <sys/types.h>
+ 
+-#include "config.h"
++#include <umqtt/config.h>
+ 
+ #if UMQTT_SSL_SUPPORT
+ 
+diff --git a/src/umqtt.h b/include/umqtt/umqtt.h
+similarity index 98%
+rename from src/umqtt.h
+rename to include/umqtt/umqtt.h
+index 3dd96d1..c88dc2d 100644
+--- a/src/umqtt.h
++++ b/include/umqtt/umqtt.h
+@@ -29,10 +29,10 @@
+ #include <stdint.h>
+ #include <stdbool.h>
+ 
+-#include "log.h"
+-#include "utils.h"
+-#include "config.h"
+-#include "buffer.h"
++#include <umqtt/log.h>
++#include <umqtt/utils.h>
++#include <umqtt/config.h>
++#include <umqtt/buffer.h>
+ 
+ #define UMQTT_PKT_HDR_LEN   1
+ #define UMQTT_PKT_MID_LEN   2
+diff --git a/src/utils.h b/include/umqtt/utils.h
+similarity index 98%
+rename from src/utils.h
+rename to include/umqtt/utils.h
+index 630f3a2..4c8c2de 100644
+--- a/src/utils.h
++++ b/include/umqtt/utils.h
+@@ -29,7 +29,7 @@
+ #include <stdbool.h>
+ #include <inttypes.h>
+ 
+-#include "config.h"
++#include <umqtt/config.h>
+ 
+ #ifndef container_of
+ #define container_of(ptr, type, member)                 \
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index 31059f7..66a9eae 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -8,7 +8,7 @@ set(UMQTT_VERSION_PATCH 2)
+ # Check the third party Libraries
+ find_package(Libev REQUIRED)
+ 
+-include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/buffer ${CMAKE_CURRENT_BINARY_DIR} ${LIBEV_INCLUDE_DIR})
++include_directories(${CMAKE_CURRENT_SOURCE_DIR}/buffer ${CMAKE_CURRENT_BINARY_DIR} ${LIBEV_INCLUDE_DIR})
+ 
+ set(EXTRA_LIBS ${LIBEV_LIBRARY} dl)
+ set(SOURCE_FILES umqtt.c log.c utils.c buffer/buffer.c ssl.c)
+@@ -90,22 +90,10 @@ set_target_properties(umqtt PROPERTIES VERSION ${UMQTT_VERSION_MAJOR}.${UMQTT_VE
+ target_link_libraries(umqtt ${EXTRA_LIBS})
+ 
+ # configure a header file to pass some of the CMake settings to the source code
+-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h)
++configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${PROJECT_SOURCE_DIR}/include/umqtt/config.h)
+ 
+ add_subdirectory(lua)
+ 
+-install(
+-    FILES
+-        log.h
+-        ssl.h
+-        umqtt.h
+-        utils.h
+-        buffer/buffer.h
+-        ${CMAKE_CURRENT_BINARY_DIR}/config.h
+-    DESTINATION
+-        include/umqtt
+-)
+-
+ install(
+     TARGETS umqtt LIBRARY
+     DESTINATION lib
+diff --git a/src/log.c b/src/log.c
+index 22c723e..ad27d77 100644
+--- a/src/log.c
++++ b/src/log.c
+@@ -30,7 +30,7 @@
+ #include <string.h>
+ #include <stdbool.h>
+ 
+-#include "log.h"
++#include <umqtt/log.h>
+ 
+ static int log_threshold = LOG_INFO;
+ static bool log_initialized;
+diff --git a/src/lua/umqtt_lua.h b/src/lua/umqtt_lua.h
+index ce0ff57..7e612d2 100644
+--- a/src/lua/umqtt_lua.h
++++ b/src/lua/umqtt_lua.h
+@@ -31,7 +31,7 @@
+ #include <lauxlib.h>
+ #include <lualib.h>
+ 
+-#include "umqtt.h"
++#include <umqtt/umqtt.h>
+ 
+ /* Compatibility defines */
+ #if LUA_VERSION_NUM <= 501
+diff --git a/src/ssl.c b/src/ssl.c
+index 08b69ce..34b488b 100644
+--- a/src/ssl.c
++++ b/src/ssl.c
+@@ -25,9 +25,9 @@
+ #include <errno.h>
+ #include <stdlib.h>
+ 
+-#include "log.h"
+-#include "ssl.h"
+-#include "buffer.h"
++#include <umqtt/log.h>
++#include <umqtt/ssl.h>
++#include <umqtt/buffer.h>
+ 
+ #if UMQTT_SSL_SUPPORT
+ 
+diff --git a/src/umqtt.c b/src/umqtt.c
+index e6d8c82..9dc0d8a 100644
+--- a/src/umqtt.c
++++ b/src/umqtt.c
+@@ -31,9 +31,9 @@
+ #include <stdio.h>
+ #include <fcntl.h>
+ 
+-#include "ssl.h"
+-#include "utils.h"
+-#include "umqtt.h"
++#include <umqtt/ssl.h>
++#include <umqtt/utils.h>
++#include <umqtt/umqtt.h>
+ 
+ static const char *umqtt_packet_type_to_string(int type)
+ {
+diff --git a/src/utils.c b/src/utils.c
+index f116726..49b839a 100644
+--- a/src/utils.c
++++ b/src/utils.c
+@@ -32,8 +32,8 @@
+ #include <sys/socket.h>
+ #include <fcntl.h>
+ 
+-#include "log.h"
+-#include "utils.h"
++#include <umqtt/log.h>
++#include <umqtt/utils.h>
+ 
+ static const char *port2str(int port)
+ {
+-- 
+2.23.0
+

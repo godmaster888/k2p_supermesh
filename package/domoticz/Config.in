@@ -1,0 +1,59 @@
+menuconfig BR2_PACKAGE_DOMOTICZ
+	bool "domoticz"
+	depends on BR2_USE_MMU # mosquitto
+	depends on BR2_TOOLCHAIN_HAS_THREADS_NPTL
+	depends on BR2_INSTALL_LIBSTDCPP
+	depends on BR2_USE_WCHAR
+	depends on BR2_PACKAGE_LUA_5_3
+	select BR2_PACKAGE_BOOST
+	select BR2_PACKAGE_BOOST_DATE_TIME
+	select BR2_PACKAGE_BOOST_SYSTEM
+	select BR2_PACKAGE_BOOST_THREAD
+	select BR2_PACKAGE_LIBCURL
+	select BR2_PACKAGE_LIBCURL_WITH_SMTP
+	select BR2_PACKAGE_LIBCURL_WITH_SMTPS
+	select BR2_PACKAGE_OPENSSL
+	select BR2_PACKAGE_OPENZWAVE
+	select BR2_PACKAGE_SQLITE
+	select BR2_PACKAGE_ZLIB
+	select BR2_BUSYBOX_FLASH_ERASEALL # jffs2
+	select BR2_PACKAGE_CEREAL
+	help
+	  Domoticz is a Home Automation System that lets you monitor
+	  and configure various devices like: Lights, Switches,
+	  various sensors/meters like Temperature, Rain, Wind, UV,
+	  Electra, Gas, Water and much more. Notifications/Alerts can
+	  be sent to any mobile device.
+
+	  http://domoticz.com
+
+if BR2_PACKAGE_DOMOTICZ
+
+config BR2_PACKAGE_DOMOTICZ_SQLITEDB_PAGESIZE
+	int "Set the page size for the SQLite database (512 - 65536 (degree 2), 0 - default/auto)"
+	default 0
+	help
+	  To set the page size for the database.
+	  The page size must be a power of two between 512 and 65536 inclusive.
+	  0 - default.
+
+config BR2_PACKAGE_DOMOTICZ_COMPRESS_DB_WITH_COPY_SETTINGS
+	bool "Use compression for DB with copy of the settings."
+	help
+	  To use compression for the database with a copy of the settings.
+
+config BR2_PACKAGE_DOMOTICZ_VERSION
+	string "Domoticz version (used branch)"
+	default "dlink-main"
+	help
+	  The branch used to build the package.
+
+config BR2_PACKAGE_DOMOTICZ_USE_PRECOMPILED_HEADER
+	bool "Use a precompiled header when building."
+	default n
+	help
+	  To use a precompiled header when building Domoticz.
+	  Enabling this option will shorten build time
+	  (requires CMake version 3.16 or higher).
+
+endif

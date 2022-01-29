@@ -1,0 +1,34 @@
+diff --git a/.gitignore b/.gitignore
+index abceee2..0002453 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -61,3 +61,4 @@ libstrophe.project
+ libs/
+ obj/
+ expat/
++/Default/
+diff --git a/src/ctx.c b/src/ctx.c
+index cb19b29..9c6395d 100644
+--- a/src/ctx.c
++++ b/src/ctx.c
+@@ -451,3 +451,8 @@ void xmpp_ctx_set_timeout(xmpp_ctx_t * const ctx, const unsigned long timeout)
+ {
+     ctx->timeout = timeout;
+ }
++
++unsigned long xmpp_ctx_get_timeout(xmpp_ctx_t * const ctx)
++{
++    return ctx->timeout;
++}
+diff --git a/strophe.h b/strophe.h
+index 8ca53fd..ae1bae4 100644
+--- a/strophe.h
++++ b/strophe.h
+@@ -399,6 +399,7 @@ void xmpp_run_once(xmpp_ctx_t *ctx, const unsigned long  timeout);
+ void xmpp_run(xmpp_ctx_t *ctx);
+ void xmpp_stop(xmpp_ctx_t *ctx);
+ void xmpp_ctx_set_timeout(xmpp_ctx_t * const ctx, const unsigned long timeout);
++unsigned long xmpp_ctx_get_timeout(xmpp_ctx_t * const ctx);
+ 
+ /* UUID */
+ 

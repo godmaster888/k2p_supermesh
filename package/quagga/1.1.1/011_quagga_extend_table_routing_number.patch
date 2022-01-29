@@ -1,0 +1,101 @@
+From d5143485c7c94ec1009a8e152ba86a86e97cb193 Mon Sep 17 00:00:00 2001
+From: Dmitriy Karaman <dkaraman@dlink.ru>
+Date: Fri, 19 Jul 2019 17:13:48 +0300
+Subject: [PATCH] zebra: netlink routing table
+
+Extent table routing number from u_char to u_int32_t.
+
+https://github.com/FRRouting/frr/commit/ca46a78e872a8a991e7dc262d44c6e68860cf127
+---
+ zebra/rt_netlink.c | 33 +++++++++++++++++++++++++++++++++
+ 1 file changed, 33 insertions(+)
+
+diff --git a/zebra/rt_netlink.c b/zebra/rt_netlink.c
+index 09af05b..3739803 100644
+--- a/zebra/rt_netlink.c
++++ b/zebra/rt_netlink.c
+@@ -747,7 +747,10 @@ netlink_routing_table (struct sockaddr_nl *snl, struct nlmsghdr *h,
+   if (rtm->rtm_type != RTN_UNICAST)
+     return 0;
+ 
++#ifndef DLINK_SOFTWARE
+   table = rtm->rtm_table;
++#endif /* DLINK_SOFTWARE */
++
+ #if 0                           /* we weed them out later in rib_weed_tables () */
+   if (table != RT_TABLE_MAIN && table != zebrad.rtm_table_default)
+     return 0;
+@@ -760,6 +763,14 @@ netlink_routing_table (struct sockaddr_nl *snl, struct nlmsghdr *h,
+   memset (tb, 0, sizeof tb);
+   netlink_parse_rtattr (tb, RTA_MAX, RTM_RTA (rtm), len);
+ 
++#ifdef DLINK_SOFTWARE
++  /* Table corresponding to route. */
++  if (tb[RTA_TABLE])
++    table = *(int *)RTA_DATA(tb[RTA_TABLE]);
++  else
++    table = rtm->rtm_table;
++#endif /* DLINK_SOFTWARE */
++
+   if (rtm->rtm_flags & RTM_F_CLONED)
+     return 0;
+   if (rtm->rtm_protocol == RTPROT_REDIRECT)
+@@ -952,11 +963,13 @@ netlink_route_change (struct sockaddr_nl *snl, struct nlmsghdr *h,
+       return 0;
+     }
+ 
++#ifndef DLINK_SOFTWARE
+   table = rtm->rtm_table;
+   if (table != RT_TABLE_MAIN && table != zebrad.rtm_table_default)
+     {
+       return 0;
+     }
++#endif /* DLINK_SOFTWARE */
+ 
+   len = h->nlmsg_len - NLMSG_LENGTH (sizeof (struct rtmsg));
+   if (len < 0)
+@@ -965,6 +978,14 @@ netlink_route_change (struct sockaddr_nl *snl, struct nlmsghdr *h,
+   memset (tb, 0, sizeof tb);
+   netlink_parse_rtattr (tb, RTA_MAX, RTM_RTA (rtm), len);
+ 
++#ifdef DLINK_SOFTWARE
++  /* Table corresponding to route. */
++  if (tb[RTA_TABLE])
++    table = *(int *)RTA_DATA(tb[RTA_TABLE]);
++  else
++    table = rtm->rtm_table;
++#endif /* DLINK_SOFTWARE */
++
+   if (rtm->rtm_flags & RTM_F_CLONED)
+     return 0;
+   if (rtm->rtm_protocol == RTPROT_REDIRECT)
+@@ -1705,7 +1726,9 @@ netlink_route_multipath (int cmd, struct prefix *p, struct rib *rib)
+   req.n.nlmsg_flags = NLM_F_CREATE | NLM_F_REPLACE | NLM_F_REQUEST;
+   req.n.nlmsg_type = cmd;
+   req.r.rtm_family = family;
++#ifndef DLINK_SOFTWARE
+   req.r.rtm_table = rib->table;
++#endif /* DLINK_SOFTWARE */
+   req.r.rtm_dst_len = p->prefixlen;
+   req.r.rtm_protocol = RTPROT_ZEBRA;
+   req.r.rtm_scope = RT_SCOPE_LINK;
+@@ -1735,6 +1758,16 @@ netlink_route_multipath (int cmd, struct prefix *p, struct rib *rib)
+   /* Metric. */
+   addattr32 (&req.n, sizeof req, RTA_PRIORITY, rib->metric);
+ 
++#ifdef DLINK_SOFTWARE
++  /* Table corresponding to this route. */
++  if (rib->table < 256) {
++    req.r.rtm_table = rib->table;
++  } else {
++    req.r.rtm_table = RT_TABLE_UNSPEC;
++    addattr32(&req.n, sizeof req, RTA_TABLE, rib->table);
++  }
++#endif /* DLINK_SOFTWARE */
++
+   if (rib->mtu || rib->nexthop_mtu)
+     {
+       char buf[NL_PKT_BUF_SIZE];
+-- 
+2.1.4
+

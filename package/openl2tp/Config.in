@@ -1,0 +1,4 @@
+config BR2_PACKAGE_OPENL2TP
+	bool "openl2tp"
+	select BR2_LEGACY
+	default n

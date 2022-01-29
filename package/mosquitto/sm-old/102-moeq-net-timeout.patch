@@ -1,0 +1,62 @@
+--- a/lib/net_mosq.c	2017-07-11 06:46:01.000000000 +0800
++++ b/lib/net_mosq.c	2018-05-23 18:28:18.165060914 +0800
+@@ -428,7 +428,58 @@
+			}
+		}
+
+-		rc = connect(*sock, rp->ai_addr, rp->ai_addrlen);
++        // 102 patch
++        {
++            int         n, error;
++            fd_set      rset, wset;
++            struct      timeval  tval;
++            socklen_t   len;
++
++            if(blocking){
++			/* Set non-blocking */
++                if(_mosquitto_socket_nonblock(*sock)){
++                    COMPAT_CLOSE(*sock);
++                    continue;
++                }
++            }
++
++            if((rc = connect(*sock, rp->ai_addr, rp->ai_addrlen)) == 0)
++            {
++                return rc;
++            }
++
++            FD_ZERO(&rset);
++            FD_SET(*sock, &rset);
++            wset = rset;
++            tval.tv_sec = 3; // select wait 3 seconds for connect.
++            tval.tv_usec = 0;
++            if ((n = select(*sock+1, &rset, &wset, NULL, &tval)) == 0) {
++                close(*sock);
++                errno = ETIMEDOUT;
++                return MOSQ_ERR_CONN_LOST;
++            }
++            else if (n == -1){
++                close(*sock);
++                perror("select");
++                return MOSQ_ERR_CONN_LOST;
++            }
++
++            if (FD_ISSET(*sock, &rset) || FD_ISSET(*sock, &wset)) {
++                len = sizeof(error);
++                if(getsockopt(*sock, SOL_SOCKET, SO_ERROR, &error, &len) < 0){
++                    return MOSQ_ERR_CONN_LOST;
++                }
++                else
++                {
++                    rc = MOSQ_ERR_CONN_PENDING;
++                    break;
++                }
++            }
++            else {
++                fprintf(stderr, "select error: socket not set");
++            }
++        }
++
+ #ifdef WIN32
+		errno = WSAGetLastError();
+ #endif

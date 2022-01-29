@@ -1,0 +1,40 @@
+menuconfig BR2_PACKAGE_XL2TP
+	bool "xl2tp"
+	select BR2_PACKAGE_PPPD_L2TP if RLX_819X=n
+	help
+		Layer 2 Tunnelling Protocol (RFC2661).
+		xl2tpd is an open source implementation of the L2TP tunneling
+		protocol. xl2tpd is forked from l2tpd and is maintained by
+		Xelerance Corporation.
+
+		http://www.xelerance.com/software/xl2tpd/
+
+if BR2_PACKAGE_XL2TP
+
+config BR2_PACKAGE_XL2TP_VERSION
+	string "xl2tp version"
+	default "1.3.7"
+	help
+		L2TPD version
+
+config BR2_PACKAGE_XL2TP_KERNEL_SUPPORT
+	bool "Kernel support"
+	default y if !RLX_819X
+	help
+	  Build daemon with enabled L2TP kernel support
+
+config BR2_PACKAGE_XL2TP_CTRL
+	bool "xl2tpd-control"
+	default y
+
+config BR2_PACKAGE_XL2TP_PFC
+	bool "pfc"
+	default n
+
+config BR2_PACKAGE_XL2TP_AS_PTY
+	bool "pty functionality"
+	default n
+	help
+		for use xl2tpd as pty for pppd (need for l2tp on-demand)
+
+endif

@@ -1,0 +1,208 @@
+menuconfig BR2_PACKAGE_BUSYBOX
+	bool "BusyBox"
+	default y
+	help
+	  The Swiss Army Knife of embedded Linux.  It slices, it dices, it
+	  makes Julian Fries.
+
+	  http://busybox.net/
+
+	  Most people will answer Y.
+
+if BR2_PACKAGE_BUSYBOX
+
+config BR2_BUSYBOX_VERSION
+	string "branch (master if empty)"
+
+config BR2_PACKAGE_BUSYBOX_CONFIG
+	string "BusyBox configuration file to use?"
+	default "package/busybox/mts.config"
+	help
+		Some people may wish to use their own modified BusyBox configuration
+		file, and will specify their config file location with this option.
+		Most people will just use the default BusyBox configuration file.
+
+config BR2_BUSYBOX_ARP
+	bool "arp"
+	default n
+
+config BR2_BUSYBOX_BPF_IN_UDHCP
+	bool "bpf filter in udhcp"
+	default y
+
+config BR2_BUSYBOX_CHMOD
+	bool "chmod"
+
+config BR2_BUSYBOX_DMESG
+	bool "dmesg"
+
+config BR2_BUSYBOX_GZIP
+	bool "gZip"
+
+config BR2_BUSYBOX_HTTPD_AUTH
+	bool "http authentication (with crypted passwords)"
+
+config BR2_BUSYBOX_IFCONFIG
+	bool "ifconfig"
+	default y
+
+config BR2_BUSYBOX_INETD
+	bool "inetd"
+
+config BR2_BUSYBOX_INIT
+	bool "init"
+	depends on !BR2_DSYSINIT
+	default y
+
+config BR2_BUSYBOX_IP_UTILS
+	bool "ip_utils"
+	default y
+
+if BR2_BUSYBOX_IP_UTILS
+
+	config BR2_BUSYBOX_IP
+		bool "ip"
+		default y
+
+	config BR2_BUSYBOX_IPADDR
+		bool "ipaddr"
+		default y
+
+	config BR2_BUSYBOX_IPLINK
+		bool "iplink"
+		default y
+
+	config BR2_BUSYBOX_IPROUTE
+		bool "iproute"
+		default y
+
+	config BR2_BUSYBOX_IPTUNNEL
+		bool "iptunnel"
+		default y
+
+	config BR2_BUSYBOX_IPRULE
+		bool "iprule"
+		default y
+
+	config BR2_BUSYBOX_IPNEIGH
+		bool "ipneigh"
+		default y
+endif
+
+config BR2_BUSYBOX_LSPCI
+	bool "lspci"
+	depends on BR2_USB_SUPPORT
+	depends on !BR2_PACKAGE_HOTPLUG # hotplug поставляет lspci
+
+config BR2_BUSYBOX_LSUSB
+	bool "lsusb"
+	depends on BR2_USB_SUPPORT
+	depends on !BR2_PACKAGE_HOTPLUG # hotplug поставляет lsusb
+
+config BR2_BUSYBOX_NICE
+	bool "nice"
+
+config BR2_BUSYBOX_NTP
+	bool "ntp (client)"
+
+if BR2_BUSYBOX_NTP
+config BR2_BUSYBOX_NTP_SERVER
+	bool "ntp (server)"
+	help
+	  Is used to add an NTP-server to the NTP-client
+
+config BR2_BUSYBOX_NTP_CONFIG_FILE
+	bool "ntp config file"
+	help
+	  To use the configuration file /etc/ntp.conf
+endif
+
+config BR2_BUSYBOX_SWAP
+	bool "swap"
+
+config BR2_BUSYBOX_TAR
+	bool "tar"
+
+config BR2_BUSYBOX_TELNETD
+	bool "telnetd"
+	default y
+
+config BR2_BUSYBOX_TFTP
+	bool "tftp client"
+
+config BR2_BUSYBOX_SYNC
+	bool "sync"
+	default n
+
+config BR2_BUSYBOX_FLASH_ERASEALL
+	bool "flash_eraseall"
+	default n
+
+config BR2_BUSYBOX_MKNOD
+	bool "mknod"
+	default n
+	help
+	  mknod is used to create FIFOs or block/character special
+	  files with the specified names.
+
+menu "UBI tools"
+
+config BR2_BUSYBOX_NANDWRITE
+	bool "nandwrite"
+	default n
+	help
+	  Write to the specified MTD device, with bad blocks awareness
+
+config BR2_BUSYBOX_NANDDUMP
+	bool "nanddump"
+	default n
+	help
+	  Dump the content of raw NAND chip
+
+config BR2_BUSYBOX_UBIATTACH
+	bool "ubiattach"
+	default n
+	help
+	  Attach MTD device to an UBI device.
+
+config BR2_BUSYBOX_UBIDETACH
+	bool "ubidetach"
+	default n
+	help
+	  Detach MTD device from an UBI device.
+
+config BR2_BUSYBOX_UBIMKVOL
+	bool "ubimkvol"
+	default n
+	help
+	  Create a UBI volume.
+
+config BR2_BUSYBOX_UBIRMVOL
+	bool "ubirmvol"
+	default n
+	help
+	  Delete a UBI volume.
+
+config BR2_BUSYBOX_UBIRSVOL
+	bool "ubirsvol"
+	default n
+	help
+	  Resize a UBI volume.
+
+config BR2_BUSYBOX_UBIUPDATEVOL
+	bool "ubiupdatevol"
+	default n
+	help
+	  Update a UBI volume.
+
+endmenu
+
+config BR2_BUSYBOX_SMP_TOP
+	bool "SMP top"
+	default n
+
+config BR2_BUSYBOX_ASH_BASH_COMPAT
+	bool "enable bashisms for ash"
+	default y
+
+endif

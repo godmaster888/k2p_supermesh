@@ -1,0 +1,40 @@
+From f67bcc27805b547ff74c5c8facd3841b58d53f66 Mon Sep 17 00:00:00 2001
+From: farisey <anikulin@dlink.ru>
+Date: Mon, 19 Nov 2018 11:27:35 +0300
+Subject: [#22564, dru] Optional connect to D-Link Russia dsysinit software.
+
+Is selected by the build flags.
+
+Signed-off-by: farisey <anikulin@dlink.ru>
+---
+ wpa_supplicant/wpa_supplicant.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/wpa_supplicant/wpa_supplicant.c b/wpa_supplicant/wpa_supplicant.c
+index 185a8d50f..c6b284b0c 100644
+--- a/wpa_supplicant/wpa_supplicant.c
++++ b/wpa_supplicant/wpa_supplicant.c
+@@ -66,6 +66,10 @@
+ #include "ap/hostapd.h"
+ #endif /* CONFIG_MESH */
+
++#ifdef DLINK_SOFTWARE
++#include <d-link/d_service_notify.h>
++#endif
++
+ const char *const wpa_supplicant_version =
+ "wpa_supplicant v" VERSION_STR "\n"
+ "Copyright (c) 2003-2017, Jouni Malinen <j@w1.fi> and contributors";
+@@ -6229,6 +6233,10 @@ int wpa_supplicant_run(struct wpa_global *global)
+		return -1;
+ #endif
+
++#ifdef DLINK_SOFTWARE
++	dlink_service_connect(0);
++#endif /* DLINK_SOFTWARE*/
++
+	if (global->params.wait_for_monitor) {
+		for (wpa_s = global->ifaces; wpa_s; wpa_s = wpa_s->next)
+			if (wpa_s->ctrl_iface && !wpa_s->p2p_mgmt)
+--
+2.19.1

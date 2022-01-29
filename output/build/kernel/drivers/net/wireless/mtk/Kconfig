@@ -1,0 +1,49 @@
+menuconfig WIFI_MT7603E
+    bool "MT7603E WiFi"
+    default n
+if WIFI_MT7603E
+    source "drivers/net/wireless/mtk/mt7603e/mt7603_wifi/Kconfig"
+endif
+
+menuconfig WIFI_MT7610E
+    bool "MT7610E WiFi"
+    default n
+if WIFI_MT7610E
+    source "drivers/net/wireless/mtk/mt7610e/mt7610_wifi/Kconfig"
+endif
+
+menuconfig WIFI_MT7615E
+    bool "MT7615E WiFi"
+    default n
+if WIFI_MT7615E
+    source "drivers/net/wireless/mtk/mt7615e/mt_wifi/embedded/Kconfig"
+endif
+
+menuconfig WIFI_MT7663E
+    bool "MT7663E WiFi"
+    default n
+if WIFI_MT7663E
+    source "drivers/net/wireless/mtk/mt7663e/mt_wifi/embedded/Kconfig"
+endif
+
+menuconfig WIFI_MT7620
+    bool "MT7620 WiFi"
+    default n
+if WIFI_MT7620
+    source "drivers/net/wireless/mtk/mt7620/mt7620_wifi_ap/Kconfig"
+endif
+
+menuconfig WIFI_MT7628
+    bool "MT7628 WiFi"
+    default n
+if WIFI_MT7628
+    source "drivers/net/wireless/mtk/mt7628/mt7628_wifi/embedded/Kconfig"
+endif
+
+menuconfig WIFI_MT76X2E
+    bool "MT76X2E WiFi"
+    default n
+if WIFI_MT76X2E
+    source "drivers/net/wireless/mtk/mt76x2e/mt76x2_wifi/Kconfig"
+endif
+

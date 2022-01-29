@@ -1,0 +1,148 @@
+From b6d841f16b2202865425c19ada172e4b852a2d00 Mon Sep 17 00:00:00 2001
+From: Vladimir Yaichkin <vyaichkin@rzn.dlink.ru>
+Date: Thu, 20 Aug 2020 17:43:39 +0300
+Subject: strongswan: exclude unused files in build
+Patch-from-hash: aff0e04810cefd30f3b489990d3fb96d07619951
+Patch-repo: strongswan
+Patch-branch: master
+Patch-version: 5
+
+Исключены неиспользуемые файлы из сборки пакета.
+Изменилась генерация конфигурационных файлов:
+теперь за место /etc/ipsec.conf и /etc/ipsec.secrets
+создаються symlinks на /tmp/ipsec/ipsec.conf и
+/tmp/ipsec/ipsec.secrets.
+Так же создается symlink /etc/ipsec.d -> /tmp/ipsec.d
+для расположения сертификатов.
+Для настройки swan-опций добавлено чтение файла из
+/tmp/ipsec/swan.conf.
+
+Signed-off-by: Vladimir Yaichkin <vyaichkin@rzn.dlink.ru>
+---
+ conf/Makefile.in           |  6 +++---
+ conf/strongswan.conf       |  1 +
+ src/_copyright/Makefile.in |  3 ++-
+ src/starter/Makefile.am    | 22 ++++++++++-----------
+ src/starter/Makefile.in    | 22 ++++++++++-----------
+ src/xfrmi/Makefile.in      |  3 ++-
+ 6 files changed, 30 insertions(+), 27 deletions(-)
+
+diff --git a/conf/Makefile.in b/conf/Makefile.in
+index 6f40309..30d44c7 100644
+--- a/conf/Makefile.in
++++ b/conf/Makefile.in
+@@ -788,9 +788,9 @@ info: info-am
+
+ info-am:
+
+-install-data-am: install-data-local install-man \
+-	install-optionstemplateDATA install-pluginstemplateDATA \
+-	install-templatesDATA
++install-data-am: install-data-local install-man
++#	install-optionstemplateDATA install-pluginstemplateDATA \
++#	install-templatesDATA
+
+ install-dvi: install-dvi-am
+
+diff --git a/conf/strongswan.conf b/conf/strongswan.conf
+index d906728..5bada08 100644
+--- a/conf/strongswan.conf
++++ b/conf/strongswan.conf
+@@ -12,3 +12,4 @@ charon {
+ }
+
+ include strongswan.d/*.conf
++include /tmp/ipsec/swan.conf
+diff --git a/src/_copyright/Makefile.in b/src/_copyright/Makefile.in
+index 2b83c46..84c261b 100644
+--- a/src/_copyright/Makefile.in
++++ b/src/_copyright/Makefile.in
+@@ -698,7 +698,8 @@ info: info-am
+
+ info-am:
+
+-install-data-am: install-ipsecPROGRAMS
++install-data-am: \
++# install-ipsecPROGRAMS
+
+ install-dvi: install-dvi-am
+
+diff --git a/src/starter/Makefile.am b/src/starter/Makefile.am
+index 298a1fb..3b8cc98 100644
+--- a/src/starter/Makefile.am
++++ b/src/starter/Makefile.am
+@@ -58,14 +58,14 @@ keywords.c:	$(srcdir)/keywords.txt keywords.h
+			--output-file=$@ $(srcdir)/keywords.txt
+
+ install-exec-local :
+-		test -e "$(DESTDIR)${sysconfdir}/ipsec.d" || $(INSTALL) -d "$(DESTDIR)$(sysconfdir)/ipsec.d" || true
+-		test -e "$(DESTDIR)${sysconfdir}/ipsec.d/cacerts" || $(INSTALL) -d "$(DESTDIR)$(sysconfdir)/ipsec.d/cacerts" || true
+-		test -e "$(DESTDIR)${sysconfdir}/ipsec.d/ocspcerts" || $(INSTALL) -d "$(DESTDIR)$(sysconfdir)/ipsec.d/ocspcerts" || true
+-		test -e "$(DESTDIR)${sysconfdir}/ipsec.d/certs" || $(INSTALL) -d "$(DESTDIR)$(sysconfdir)/ipsec.d/certs" || true
+-		test -e "$(DESTDIR)${sysconfdir}/ipsec.d/acerts" || $(INSTALL) -d "$(DESTDIR)$(sysconfdir)/ipsec.d/acerts" || true
+-		test -e "$(DESTDIR)${sysconfdir}/ipsec.d/aacerts" || $(INSTALL) -d "$(DESTDIR)$(sysconfdir)/ipsec.d/aacerts" || true
+-		test -e "$(DESTDIR)${sysconfdir}/ipsec.d/crls" || $(INSTALL) -d "$(DESTDIR)$(sysconfdir)/ipsec.d/crls" || true
+-		test -e "$(DESTDIR)${sysconfdir}/ipsec.d/reqs" || $(INSTALL) -d "$(DESTDIR)$(sysconfdir)/ipsec.d/reqs" || true
+-		test -e "$(DESTDIR)${sysconfdir}/ipsec.d/private" || $(INSTALL) -d -m 750 "$(DESTDIR)$(sysconfdir)/ipsec.d/private" || true
+-		test -e "$(DESTDIR)$(sysconfdir)/ipsec.conf" || $(INSTALL) -m 644 $(srcdir)/ipsec.conf $(DESTDIR)$(sysconfdir)/ipsec.conf || true
+-		test -e "$(DESTDIR)$(sysconfdir)/ipsec.secrets" || $(INSTALL) -m 600 $(srcdir)/ipsec.secrets $(DESTDIR)$(sysconfdir)/ipsec.secrets || true
++		test -e "$(DESTDIR)${sysconfdir}/ipsec.d" || ln -s /tmp/ipsec.d $(DESTDIR)$(sysconfdir)/ipsec.d || true
++		#test -e "$(DESTDIR)${sysconfdir}/ipsec.d/cacerts" || $(INSTALL) -d "$(DESTDIR)$(sysconfdir)/ipsec.d/cacerts" || true
++		#test -e "$(DESTDIR)${sysconfdir}/ipsec.d/ocspcerts" || $(INSTALL) -d "$(DESTDIR)$(sysconfdir)/ipsec.d/ocspcerts" || true
++		#test -e "$(DESTDIR)${sysconfdir}/ipsec.d/certs" || $(INSTALL) -d "$(DESTDIR)$(sysconfdir)/ipsec.d/certs" || true
++		#test -e "$(DESTDIR)${sysconfdir}/ipsec.d/acerts" || $(INSTALL) -d "$(DESTDIR)$(sysconfdir)/ipsec.d/acerts" || true
++		#test -e "$(DESTDIR)${sysconfdir}/ipsec.d/aacerts" || $(INSTALL) -d "$(DESTDIR)$(sysconfdir)/ipsec.d/aacerts" || true
++		#test -e "$(DESTDIR)${sysconfdir}/ipsec.d/crls" || $(INSTALL) -d "$(DESTDIR)$(sysconfdir)/ipsec.d/crls" || true
++		#test -e "$(DESTDIR)${sysconfdir}/ipsec.d/reqs" || $(INSTALL) -d "$(DESTDIR)$(sysconfdir)/ipsec.d/reqs" || true
++		#test -e "$(DESTDIR)${sysconfdir}/ipsec.d/private" || $(INSTALL) -d -m 750 "$(DESTDIR)$(sysconfdir)/ipsec.d/private" || true
++		test -e "$(DESTDIR)$(sysconfdir)/ipsec.conf" || ln -s /tmp/ipsec/ipsec.conf $(DESTDIR)$(sysconfdir)/ipsec.conf || true
++		test -e "$(DESTDIR)$(sysconfdir)/ipsec.secrets" || ln -s /tmp/ipsec/ipsec.secrets $(DESTDIR)$(sysconfdir)/ipsec.secrets || true
+diff --git a/src/starter/Makefile.in b/src/starter/Makefile.in
+index fcd4106..b1f64f0 100644
+--- a/src/starter/Makefile.in
++++ b/src/starter/Makefile.in
+@@ -1013,17 +1013,17 @@ keywords.c:	$(srcdir)/keywords.txt keywords.h
+			--output-file=$@ $(srcdir)/keywords.txt
+
+ install-exec-local :
+-		test -e "$(DESTDIR)${sysconfdir}/ipsec.d" || $(INSTALL) -d "$(DESTDIR)$(sysconfdir)/ipsec.d" || true
+-		test -e "$(DESTDIR)${sysconfdir}/ipsec.d/cacerts" || $(INSTALL) -d "$(DESTDIR)$(sysconfdir)/ipsec.d/cacerts" || true
+-		test -e "$(DESTDIR)${sysconfdir}/ipsec.d/ocspcerts" || $(INSTALL) -d "$(DESTDIR)$(sysconfdir)/ipsec.d/ocspcerts" || true
+-		test -e "$(DESTDIR)${sysconfdir}/ipsec.d/certs" || $(INSTALL) -d "$(DESTDIR)$(sysconfdir)/ipsec.d/certs" || true
+-		test -e "$(DESTDIR)${sysconfdir}/ipsec.d/acerts" || $(INSTALL) -d "$(DESTDIR)$(sysconfdir)/ipsec.d/acerts" || true
+-		test -e "$(DESTDIR)${sysconfdir}/ipsec.d/aacerts" || $(INSTALL) -d "$(DESTDIR)$(sysconfdir)/ipsec.d/aacerts" || true
+-		test -e "$(DESTDIR)${sysconfdir}/ipsec.d/crls" || $(INSTALL) -d "$(DESTDIR)$(sysconfdir)/ipsec.d/crls" || true
+-		test -e "$(DESTDIR)${sysconfdir}/ipsec.d/reqs" || $(INSTALL) -d "$(DESTDIR)$(sysconfdir)/ipsec.d/reqs" || true
+-		test -e "$(DESTDIR)${sysconfdir}/ipsec.d/private" || $(INSTALL) -d -m 750 "$(DESTDIR)$(sysconfdir)/ipsec.d/private" || true
+-		test -e "$(DESTDIR)$(sysconfdir)/ipsec.conf" || $(INSTALL) -m 644 $(srcdir)/ipsec.conf $(DESTDIR)$(sysconfdir)/ipsec.conf || true
+-		test -e "$(DESTDIR)$(sysconfdir)/ipsec.secrets" || $(INSTALL) -m 600 $(srcdir)/ipsec.secrets $(DESTDIR)$(sysconfdir)/ipsec.secrets || true
++		test -e "$(DESTDIR)${sysconfdir}/ipsec.d" || ln -s /tmp/ipsec.d $(DESTDIR)$(sysconfdir)/ipsec.d || true
++		#test -e "$(DESTDIR)${sysconfdir}/ipsec.d/cacerts" || $(INSTALL) -d "$(DESTDIR)$(sysconfdir)/ipsec.d/cacerts" || true
++		#test -e "$(DESTDIR)${sysconfdir}/ipsec.d/ocspcerts" || $(INSTALL) -d "$(DESTDIR)$(sysconfdir)/ipsec.d/ocspcerts" || true
++		#test -e "$(DESTDIR)${sysconfdir}/ipsec.d/certs" || $(INSTALL) -d "$(DESTDIR)$(sysconfdir)/ipsec.d/certs" || true
++		#test -e "$(DESTDIR)${sysconfdir}/ipsec.d/acerts" || $(INSTALL) -d "$(DESTDIR)$(sysconfdir)/ipsec.d/acerts" || true
++		#test -e "$(DESTDIR)${sysconfdir}/ipsec.d/aacerts" || $(INSTALL) -d "$(DESTDIR)$(sysconfdir)/ipsec.d/aacerts" || true
++		#test -e "$(DESTDIR)${sysconfdir}/ipsec.d/crls" || $(INSTALL) -d "$(DESTDIR)$(sysconfdir)/ipsec.d/crls" || true
++		#test -e "$(DESTDIR)${sysconfdir}/ipsec.d/reqs" || $(INSTALL) -d "$(DESTDIR)$(sysconfdir)/ipsec.d/reqs" || true
++		#test -e "$(DESTDIR)${sysconfdir}/ipsec.d/private" || $(INSTALL) -d -m 750 "$(DESTDIR)$(sysconfdir)/ipsec.d/private" || true
++		test -e "$(DESTDIR)$(sysconfdir)/ipsec.conf" || ln -s /tmp/ipsec/ipsec.conf $(DESTDIR)$(sysconfdir)/ipsec.conf || true
++		test -e "$(DESTDIR)$(sysconfdir)/ipsec.secrets" || ln -s /tmp/ipsec/ipsec.secrets $(DESTDIR)$(sysconfdir)/ipsec.secrets || true
+
+ # Tell versions [3.59,3.63) of GNU make to not export all variables.
+ # Otherwise a system limit (for SysV at least) may be exceeded.
+diff --git a/src/xfrmi/Makefile.in b/src/xfrmi/Makefile.in
+index 343899c..7261a33 100644
+--- a/src/xfrmi/Makefile.in
++++ b/src/xfrmi/Makefile.in
+@@ -705,7 +705,8 @@ info: info-am
+
+ info-am:
+
+-install-data-am: install-ipsecPROGRAMS
++install-data-am: \
++# install-ipsecPROGRAMS
+
+ install-dvi: install-dvi-am
+
+--
+2.20.1

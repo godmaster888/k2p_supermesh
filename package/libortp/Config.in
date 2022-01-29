@@ -1,0 +1,7 @@
+config BR2_PACKAGE_LIBORTP
+	bool "libortp"
+	default n
+	help
+	  oRTP is a library implemeting Real-time Transport Protocol (RFC 3550), distributed under GNU GPLv2 or proprietary license.
+
+	  http://www.linphone.org

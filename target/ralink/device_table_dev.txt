@@ -1,0 +1,10 @@
+# vim: noexpandtab:ts=8:sw=8
+
+# RALINK
+/dev/hwnat0	c	666	0	0	220	0
+/dev/acl0	c	666	0	0	230	0
+/dev/ac0	c	666	0	0	240	0
+/dev/mtr0	c	666	0	0	250	0
+/dev/rdm0	c	666	0	0	253	0
+/dev/pcm0	c	666	0	0	233	0
+/dev/nvram	c	666	0	0	251	0

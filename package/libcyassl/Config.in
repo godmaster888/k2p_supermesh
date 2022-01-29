@@ -1,0 +1,5 @@
+config BR2_PACKAGE_LIBCYASSL
+	bool "libcyassl (enables HTTPS)"
+	default n
+	help
+		http://www.yassl.com/cyassl-2.8.0.zip

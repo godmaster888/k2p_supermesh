@@ -1,0 +1,18 @@
+menuconfig BR2_PACKAGE_SPIM
+	bool "spim"
+	default n
+	select BR2_LEGACY
+	help
+		MIPS emulator from http://spimsimulator.sourceforge.net/
+		You definitely do not need this.
+
+
+if BR2_PACKAGE_SPIM
+
+
+config BR2_PACKAGE_SPIM_BRANCH
+	string "spim branch (default if empty)"
+	default "master"
+
+
+endif

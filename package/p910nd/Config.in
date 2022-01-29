@@ -1,0 +1,8 @@
+config BR2_PACKAGE_P910ND
+	  bool "print server"
+	  help
+	  Tiny print server
+
+config BR2_PACKAGE_P910ND_FIRMWARE
+	  depends on BR2_PACKAGE_P910ND && BR2_USE_JFFS2_PARTITION_512K
+	  bool "Support printserver firmware"

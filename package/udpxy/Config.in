@@ -1,0 +1,11 @@
+menuconfig BR2_PACKAGE_UDPXY
+	bool "udpxy"
+
+if BR2_PACKAGE_UDPXY
+	config BR2_UDPXY_KERNEL_MULTICAST
+	bool "HW multicast table in kernel"
+	default y
+	depends on RLX_819X
+	help
+		Set multicast group address to hw kernel multicast table
+endif

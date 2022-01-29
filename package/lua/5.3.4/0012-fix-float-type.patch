@@ -1,0 +1,12 @@
+diff --git a/src/luaconf.h b/src/luaconf.h
+index b65fee2..f262cf3 100644
+--- a/src/luaconf.h
++++ b/src/luaconf.h
+@@ -124,7 +124,6 @@
+ #else  /* otherwise use 'long' */
+ #define LUA_INT_TYPE	LUA_INT_LONG
+ #endif
+-#define LUA_FLOAT_TYPE	LUA_FLOAT_FLOAT
+ 
+ #elif defined(LUA_C89_NUMBERS)	/* }{ */
+ /*

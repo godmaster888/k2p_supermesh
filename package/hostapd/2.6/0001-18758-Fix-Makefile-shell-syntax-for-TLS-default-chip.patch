@@ -1,0 +1,41 @@
+From ae1981751eef978785613a9958b5a5a3842f8c7e Mon Sep 17 00:00:00 2001
+From: farisey <anikulin@dlink.ru>
+Date: Wed, 8 Nov 2017 11:33:29 +0300
+Subject: [#18758] Fix Makefile/shell syntax for TLS default chipers
+ define.
+
+-DTLS_DEFAULT_CIPHERS=\""DEFAULT:!EXP:!LOW"\" drove to unexpected because of '!'.
+It was single-quoted.
+---
+ hostapd/Makefile        | 2 +-
+ wpa_supplicant/Makefile | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/hostapd/Makefile b/hostapd/Makefile
+index eb3567293..42b850205 100644
+--- a/hostapd/Makefile
++++ b/hostapd/Makefile
+@@ -672,7 +672,7 @@ endif
+ ifndef CONFIG_TLS_DEFAULT_CIPHERS
+ CONFIG_TLS_DEFAULT_CIPHERS = "DEFAULT:!EXP:!LOW"
+ endif
+-CFLAGS += -DTLS_DEFAULT_CIPHERS=\"$(CONFIG_TLS_DEFAULT_CIPHERS)\"
++CFLAGS += -DTLS_DEFAULT_CIPHERS='$(CONFIG_TLS_DEFAULT_CIPHERS)'
+ endif
+
+ ifeq ($(CONFIG_TLS), gnutls)
+diff --git a/wpa_supplicant/Makefile b/wpa_supplicant/Makefile
+index 65205d8eb..a436494e5 100644
+--- a/wpa_supplicant/Makefile
++++ b/wpa_supplicant/Makefile
+@@ -1077,7 +1077,7 @@ endif
+ ifndef CONFIG_TLS_DEFAULT_CIPHERS
+ CONFIG_TLS_DEFAULT_CIPHERS = "DEFAULT:!EXP:!LOW"
+ endif
+-CFLAGS += -DTLS_DEFAULT_CIPHERS=\"$(CONFIG_TLS_DEFAULT_CIPHERS)\"
++CFLAGS += -DTLS_DEFAULT_CIPHERS='$(CONFIG_TLS_DEFAULT_CIPHERS)'
+ endif
+
+ ifeq ($(CONFIG_TLS), gnutls)
+--
+2.13.2

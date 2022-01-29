@@ -1,0 +1,3 @@
+config BR2_PACKAGE_AXTLS
+	bool "axTLS"
+	default n

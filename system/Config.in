@@ -1,0 +1,81 @@
+menu "System configuration"
+
+choice
+	prompt "/dev management"
+	default BR2_ROOTFS_DEVICE_CREATION_DYNAMIC_DEVTMPFS
+
+config BR2_ROOTFS_DEVICE_CREATION_STATIC
+	bool "Static using device table"
+
+config BR2_ROOTFS_DEVICE_CREATION_DYNAMIC_DEVTMPFS
+	bool "Dynamic using devtmpfs only"
+	depends on BR2_DEUTERON_APPS_INIT_WITH_DEVTMPFS
+
+endchoice
+
+config BR2_ROOTFS_DEVICE_TABLE
+	string "Path to the permission tables"
+	default "system/device_table.txt"
+	help
+	  Specify a space-separated list of permission table locations,
+	  that will be passed to the makedevs utility to assign
+	  correct owners and permissions on various files in the
+	  target filesystem.
+
+	  See package/makedevs/README for details on the usage and
+	  syntax of these files.
+
+config BR2_ROOTFS_STATIC_DEVICE_TABLE
+	string "Path to the device tables"
+	default "system/device_table_dev.txt"
+	depends on BR2_ROOTFS_DEVICE_CREATION_STATIC
+	help
+	  Specify a space-separated list of device table locations,
+	  that will be passed to the makedevs utility to create all
+	  the special device files under /dev.
+
+	  See package/makedevs/README for details on the usage and
+	  syntax of these files.
+
+config BR2_ROOTFS_POST_BUILD_SCRIPT
+	string "Custom scripts to run before creating filesystem images"
+	default ""
+	help
+	  Specify a space-separated list of scripts to be run after the
+	  build has finished and before Buildroot starts packing the
+	  files into selected filesystem images.
+
+	  This gives users the opportunity to do board-specific
+	  cleanups, add-ons and the like, so the generated files can be
+	  used directly without further processing.
+
+	  These scripts are called with the target directory name as
+	  first argument. Make sure the exit code of those scripts are
+	  0, otherwise make will stop after calling them.
+
+if BR2_ROOTFS_DEVICE_CREATION_STATIC
+menu "device table tune"
+
+config BR2_DEVICE_TABLE_MTD_COUNT
+	int "mtd device count"
+	default 8
+	range 1 24
+
+endmenu
+endif
+
+config BR2_SYSTEM_DEFAULT_PATH
+	string "Set the system's default PATH"
+	default "/bin:/sbin:/usr/bin:/usr/sbin"
+	help
+	  Sets the system's default PATH. It is being used in
+	  /etc/profile in the skeleton-init-common package and by some
+	  daemons.
+
+	  The default should work in most cases.
+
+config BR2_PARTS_FILE
+	string "firmware parts file"
+	default ""
+
+endmenu

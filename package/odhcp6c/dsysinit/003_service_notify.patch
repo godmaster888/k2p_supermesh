@@ -1,0 +1,54 @@
+diff --git a/src/odhcp6c.c b/src/odhcp6c.c
+index 666af5c..424eeaf 100644
+--- a/src/odhcp6c.c
++++ b/src/odhcp6c.c
+@@ -35,6 +35,10 @@
+ #include "odhcp6c.h"
+ #include "ra.h"
+ 
++#ifdef DLINK_SOFTWARE
++#include <d-link/d_service_notify.h>
++#endif /* DLINK_SOFTWARE */
++
+ #ifndef IN6_IS_ADDR_UNIQUELOCAL
+ #define IN6_IS_ADDR_UNIQUELOCAL(a) \
+ 	((((__const uint32_t *) (a))[0] & htonl (0xfe000000)) \
+@@ -83,7 +87,11 @@ int main(_unused int argc, char* const argv[])
+ 	unsigned int ra_options = RA_RDNSS_DEFAULT_LIFETIME;
+ 	unsigned int ra_holdoff_interval = RA_MIN_ADV_INTERVAL;
+ 
+-	while ((c = getopt(argc, argv, "S::N:V:P:FB:c:i:r:Ru:s:kt:m:Lhedp:fav")) != -1) {
++#ifdef DLINK_SOFTWARE
++	int dlink_service_id = -1;
++#endif /* DLINK_SOFTWARE */
++
++	while ((c = getopt(argc, argv, "S::N:V:P:FB:c:i:r:Ru:s:kt:m:Lhedp:favI:")) != -1) {
+ 		switch (c) {
+ 		case 'S':
+ 			allow_slaac_only = (optarg) ? atoi(optarg) : -1;
+@@ -226,6 +234,14 @@ int main(_unused int argc, char* const argv[])
+ 			++verbosity;
+ 			break;
+ 
++		case 'I':
++#ifdef DLINK_SOFTWARE
++			dlink_service_id = optarg ? atoi(optarg) : -1;
++#else
++			syslog(LOG_WARNING, "'I' is ignored since DLINK_SOFTWARE is disabled");
++#endif
++			break;
++
+ 		default:
+ 			help = true;
+ 			break;
+@@ -279,6 +295,10 @@ int main(_unused int argc, char* const argv[])
+ 		}
+ 	}
+ 
++#ifdef DLINK_SOFTWARE
++	dlink_service_connect(dlink_service_id);
++#endif /* DLINK_SOFTWARE */
++
+ 	script_call("started", 0, false);
+ 
+ 	while (!signal_term) { // Main logic

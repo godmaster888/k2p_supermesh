@@ -1,0 +1,10 @@
+config BR2_PACKAGE_GPERF
+	bool "gperf"
+	default n
+	help
+	  GNU gperf is a perfect hash function generator.
+	  The hash function is perfect, which means that
+	  the hash table has no collisions, and the hash
+	  table lookup needs a single string comparison only.
+
+	  https://www.gnu.org/software/gperf/

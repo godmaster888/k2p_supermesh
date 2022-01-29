@@ -1,0 +1,108 @@
+#!/bin/sh -e
+
+# farisey: дабы выгадать ещё несколько процентов, как в православном 3110
+
+
+# требуется:
+# $HOST_DIR
+# $TARGET_DIR
+# $STRIP
+
+# а имеем
+
+#HOST_DIR =
+#TARGET_DIR = /home/sanya/projects/work/REPO/sdk/output/target
+#TOPDIR =
+#BUILD_DIR =
+#pwd = /home/sanya/projects/work/REPO/sdk
+###exit 0
+#придётся самому
+PWD=`pwd`
+HOST_DIR=${PWD}/output/host
+# TARGET_DIR есть
+TARGET_STRIP=`find ${PWD}/output/toolchains -type f -executable -name '*-strip'`
+SSTRIP=${HOST_DIR}/usr/bin/sstrip
+
+is_elf()
+{
+# $1 - filename
+	if [ `dd if=$1 bs=4 count=1 2>/dev/null | md5sum  | awk '{print $1}'` != d1531b1622de54fe3a0187c3344600e9 ]; then
+		return 1
+	fi
+	return 0
+}
+
+elf_is_corrupted()
+{
+# $1 filename of ELF
+	[ -n "`file $1 | grep corrupted`" ] && return 0
+	return 1
+}
+
+SZ=`du -bs ${TARGET_DIR}`
+
+
+echo "strip modules"
+find $TARGET_DIR/lib/modules -type f -name '*.ko' | while read fn; do
+	$TARGET_STRIP --strip-unneeded $fn
+done
+
+echo "strip all other"
+# модули пропускаем. их нельзя просто так стрипать. они обработаны выше
+find $TARGET_DIR -type f | grep -v ^${TARGET_DIR}/lib/modules | while read fn; do
+	if ! is_elf $fn; then continue; fi
+	if elf_is_corrupted $fn; then continue; fi
+	#echo "strip $fn ..."
+	$TARGET_STRIP $fn # || true # сстрипнутые тут не работают
+done
+
+DIRS="bin sbin usr/bin usr/sbin lib usr/lib webs/www"
+
+echo "trying to sstrip ..."
+for dir in $DIRS; do
+	if [ ! -d $dir ]; then
+		echo "$dir does not exist"
+		continue
+	fi
+	chmod u+rwx ${TARGET_DIR}/${dir}
+	echo $dir
+#	find ${TARGET_DIR}/${dir} -maxdepth 1 -type f -executable | while read fn; do
+	find ${TARGET_DIR}/${dir} -maxdepth 1 -type f             | while read fn; do
+		chmod u+r $fn
+		if ! is_elf $fn; then
+			echo $fn is not ELF file >&2
+			continue #skip non ELF
+		fi
+		if elf_is_corrupted $fn; then
+			echo $fn is already sstripped >&2
+			continue #skip already sstripped
+		fi
+		chmod u+w $fn
+		echo sstripping $fn >&2
+		$SSTRIP $fn
+	done
+done
+
+echo "wipe other crap"
+rm -rf ${TARGET_DIR}/share
+#TODO это сборка iptables должна делать, а не этот скрипт
+find $TARGET_DIR -name '*.la' -exec rm -f {} \;
+find $TARGET_DIR -name '*.pc' -exec rm -f {} \;
+
+
+
+echo "farisey minimizing:"
+echo "  Before : $SZ"
+echo "  After  : `du -bs ${TARGET_DIR}`"
+
+exit 0
+
+
+
+
+#echo HOST_DIR = $HOST_DIR
+#echo TARGET_DIR = $TARGET_DIR
+#echo TOPDIR = $TOPDIR
+#echo BUILD_DIR = $BUILD_DIR
+#echo pwd = `pwd`
+#exit 3

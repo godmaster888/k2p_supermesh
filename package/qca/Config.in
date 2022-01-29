@@ -1,0 +1,13 @@
+config BR2_PACKAGE_QCA_SSDK
+	bool "ssdk"
+	depends on BR2_qca && QCA956X
+	default y
+	help
+	  For qca hnat feature.
+
+config BR2_PACKAGE_SSDK_SHELL
+	bool "ssdk shell"
+	depends on BR2_PACKAGE_QCA_SSDK
+	default y
+	help
+	  Userspace utility to deal with qca ssdk.

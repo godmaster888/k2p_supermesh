@@ -1,0 +1,49 @@
+menuconfig BR2_USB_SUPPORT
+	bool "USB Packages"
+
+if BR2_USB_SUPPORT
+
+source "package/private/dlink/usbmodem/Config.in"
+
+menuconfig BR2_SUPPORT_STORAGE
+	bool "Support storage"
+
+config BR2_USB_PORT_3
+	string "Name of USB 3.0 port"
+	default ''
+
+config BR2_USB_PORT_2
+	string "Name of USB 2.0 port"
+	default ''
+
+if BR2_SUPPORT_STORAGE
+source "package/ntfs-3g/Config.in"
+source "package/pure-ftpd/Config.in"
+source "package/transmission/Config.in"
+
+source "package/samba/Config.in"
+source "package/minidlna/Config.in"
+
+source "package/xupnpd/Config.in"
+
+config BR2_SUPPORT_SYSUSERS
+	depends on BR2_PACKAGE_PURE_FTPD || BR2_PACKAGE_SAMBA
+	bool "Sysusers"
+endif
+
+source "package/libusb/Config.in"
+source "package/libusb-compat/Config.in"
+source "package/usb_modeswitch/Config.in"
+source "package/usbtest/Config.in"
+
+source "package/p910nd/Config.in"
+source "package/private/dlink/hotplug/Config.in"
+
+config BR2_SUPPORT_USB_HDMI
+	bool "Support HDMI cable"
+	depends on BR2_PACKAGE_USBMODEM
+	select BR2_PACKAGE_EBTABLES
+	help
+		Support for USB HDMI cables like EZCast MagicLink
+
+endif

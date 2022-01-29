@@ -1,0 +1,33 @@
+
+# set VPLS in kernel
+
+#@$(call KCONFIG_ENABLE_OPT,CONFIG_MPLS,$(LINUX_CONFIG))
+#@$(call KCONFIG_SET_OPT,CONFIG_MPLS_ROUTING,m,$(LINUX_CONFIG))
+
+define VPLS_ENABLE
+@$(call MESSAGE,"Enabling kernel VPLS feature")
+@$(call MESSAGE,'MPLS[+ROUTING +IPTUNNEL] and LWTUNNEL must be enabled ALREADY')
+@$(call KCONFIG_SET_OPT,CONFIG_VPLS,m,$(LINUX_CONFIG))
+	@
+endef
+
+define VPLS_CRYPTO_ENABLE
+@$(call MESSAGE,"Enabling kernel VPLS Crypto feature")
+@$(call KCONFIG_ENABLE_OPT,CONFIG_VPLS_CRYPTO,$(LINUX_CONFIG))
+	@
+endef
+
+define VPLS_DISABLE
+@$(call MESSAGE,"Disabling kernel VPLS feature")
+@$(call KCONFIG_DISABLE_OPT,CONFIG_VPLS,$(LINUX_CONFIG))
+	@
+endef
+
+define VPLS_CRYPTO_DISABLE
+@$(call MESSAGE,"Disabling kernel VPLS Crypto feature")
+@$(call KCONFIG_DISABLE_OPT,CONFIG_VPLS_CRYPTO,$(LINUX_CONFIG))
+	@
+endef
+
+VPLS_ADDON += $(if $(BR2_SUPPORT_VPLS),VPLS_ENABLE,VPLS_DISABLE)
+VPLS_ADDON += $(if $(BR2_SUPPORT_VPLS_CRYPTO),VPLS_CRYPTO_ENABLE,VPLS_CRYPTO_DISABLE)

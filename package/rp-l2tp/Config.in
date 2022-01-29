@@ -1,0 +1,4 @@
+config BR2_PACKAGE_RP_L2TP
+	bool "rp-l2tp"
+	select BR2_PACKAGE_LIBPCAP
+

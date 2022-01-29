@@ -1,0 +1,112 @@
+From b317cd63df4665efc834d8722055ea8cd28f6bba Mon Sep 17 00:00:00 2001
+From: Dmitriy Karaman <dkaraman@dlink.ru>
+Date: Fri, 19 Jul 2019 17:11:11 +0300
+Subject: [PATCH] bgp: add new option -T
+
+Add to BGP a new option -T that allows to specify the routing table
+---
+ bgpd/bgp_main.c  |  6 +++++-
+ bgpd/bgp_zebra.c | 20 ++++++++++++++++++++
+ bgpd/bgpd.h      |  3 +++
+ 3 files changed, 28 insertions(+), 1 deletion(-)
+
+diff --git a/bgpd/bgp_main.c b/bgpd/bgp_main.c
+index 0967103..b4e49ae 100644
+--- a/bgpd/bgp_main.c
++++ b/bgpd/bgp_main.c
+@@ -79,6 +79,7 @@ static const struct option longopts[] =
+   { "service_id",  required_argument, NULL, 'I'},
+   { "listen",      required_argument, NULL, 'L'},
+   { "mark",        required_argument, NULL, 'M'},
++  { "table",       required_argument, NULL, 'T'},
+ #endif
+   { 0 }
+ };
+@@ -379,7 +380,7 @@ main (int argc, char **argv)
+   while (1) 
+     {
+ #ifdef DLINK_SOFTWARE
+-      opt = getopt_long (argc, argv, "df:i:z:hp:l:A:P:rnu:g:vCSI:L:M:", longopts, 0);
++      opt = getopt_long (argc, argv, "df:i:z:hp:l:A:P:rnu:g:vCSI:L:M:T:", longopts, 0);
+ #else
+       opt = getopt_long (argc, argv, "df:i:z:hp:l:A:P:rnu:g:vCS", longopts, 0);
+ #endif
+@@ -463,6 +464,9 @@ main (int argc, char **argv)
+   case 'M':
+     bm->mark = optarg ? atoi(optarg) : 0;
+     break;
++  case 'T':
++    bm->table = optarg ? atoi(optarg) : 0;
++    break;
+ #endif
+ 	default:
+ 	  usage (progname, 1);
+diff --git a/bgpd/bgp_zebra.c b/bgpd/bgp_zebra.c
+index 45d502a..585a70a 100644
+--- a/bgpd/bgp_zebra.c
++++ b/bgpd/bgp_zebra.c
+@@ -792,6 +792,11 @@ bgp_zebra_announce (struct prefix *p, struct bgp_info *info, struct bgp *bgp, sa
+ 				    sizeof(buf[1])));
+ 	}
+ 
++#ifdef DLINK_SOFTWARE
++      SET_FLAG (api.message, ZAPI_MESSAGE_TABLE);
++      api.table = bm->table;
++#endif /* DLINK_SOFTWARE */
++
+       zapi_ipv4_route (ZEBRA_IPV4_ROUTE_ADD, zclient, 
+                        (struct prefix_ipv4 *) p, &api);
+     }
+@@ -965,6 +970,11 @@ bgp_zebra_announce (struct prefix *p, struct bgp_info *info, struct bgp *bgp, sa
+ 		     api.metric, api.tag);
+ 	}
+ 
++#ifdef DLINK_SOFTWARE
++      SET_FLAG (api.message, ZAPI_MESSAGE_TABLE);
++      api.table = bm->table;
++#endif /* DLINK_SOFTWARE*/
++
+       zapi_ipv6_route (ZEBRA_IPV6_ROUTE_ADD, zclient, 
+                        (struct prefix_ipv6 *) p, &api);
+     }
+@@ -1026,6 +1036,11 @@ bgp_zebra_withdraw (struct prefix *p, struct bgp_info *info, safi_t safi)
+ 		     api.tag);
+ 	}
+ 
++#ifdef DLINK_SOFTWARE
++      SET_FLAG (api.message, ZAPI_MESSAGE_TABLE);
++      api.table = bm->table;
++#endif /* DLINK_SOFTWARE */
++
+       zapi_ipv4_route (ZEBRA_IPV4_ROUTE_DELETE, zclient, 
+                        (struct prefix_ipv4 *) p, &api);
+     }
+@@ -1061,6 +1076,11 @@ bgp_zebra_withdraw (struct prefix *p, struct bgp_info *info, safi_t safi)
+ 		     api.tag);
+ 	}
+ 
++#ifdef DLINK_SOFTWARE
++      SET_FLAG (api.message, ZAPI_MESSAGE_TABLE);
++      api.table = bm->table;
++#endif /* DLINK_SOFTWARE */
++
+       zapi_ipv6_route (ZEBRA_IPV6_ROUTE_DELETE, zclient, 
+                        (struct prefix_ipv6 *) p, &api);
+     }
+diff --git a/bgpd/bgpd.h b/bgpd/bgpd.h
+index 61ade26..d071487 100644
+--- a/bgpd/bgpd.h
++++ b/bgpd/bgpd.h
+@@ -54,6 +54,9 @@ struct bgp_master
+ #ifdef DLINK_SOFTWARE
+   /* Mark number */
+   int mark;
++
++  /* Table routing number */
++  int table;
+ #endif /* DLINK_SOFTWARE */
+ 
+   /* BGP start time.  */
+-- 
+2.1.4
+

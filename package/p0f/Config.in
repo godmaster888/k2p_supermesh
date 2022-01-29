@@ -1,0 +1,3 @@
+config BR2_PACKAGE_P0F
+	bool "p0f"
+	default n

@@ -1,0 +1,25 @@
+From 64ba03434c40b33e7671547de6830044e42173ab Mon Sep 17 00:00:00 2001
+From: Alexander farisey Nickulin <anikulin@dlink.ru>
+Date: Fri, 5 Oct 2018 11:50:35 +0300
+Subject: Makefile: use external CFLAGS.
+
+You can add your CFLAGS while 'make' is being invoked.
+---
+ Makefile | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/Makefile b/Makefile
+index 77bfd0c..6d69deb 100644
+--- a/Makefile
++++ b/Makefile
+@@ -343,7 +343,7 @@ GCC_DEBUG_FLAGS = -DGCC_LINT -g3 -O3 -fno-common \
+ # January's first Monday when a "%V" format is used and January 1
+ # falls on a Friday, Saturday, or Sunday.
+
+-CFLAGS=
++#CFLAGS=
+
+ # Linker flags.  Default to $(LFLAGS) for backwards compatibility
+ # to release 2012h and earlier.
+--
+2.19.0.rc1

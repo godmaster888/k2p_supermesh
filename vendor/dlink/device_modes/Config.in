@@ -1,0 +1,46 @@
+menu "Device Modes"
+config BR2_DIR_MODE
+	bool "DIR Mode"
+	default y
+
+config BR2_DAP_MODE
+	bool "DAP Mode"
+	default n
+
+config BR2_FIREWALL_MODE
+	bool "Firewall Mode"
+	default n
+
+config BR2_SWITCH_MODE
+	bool "Switch Mode"
+	default n
+
+choice
+	prompt "Default device mode"
+
+config BR2_DEFAULT_DIR_MODE
+	bool "Default mode Router"
+	depends on BR2_DIR_MODE
+
+config BR2_DEFAULT_DAP_MODE
+	bool "Default mode Access Point"
+	depends on BR2_DAP_MODE
+
+config BR2_DEFAULT_FIREWALL_MODE
+	bool "Default mode Firewall"
+	depends on BR2_FIREWALL_MODE
+
+config BR2_DEFAULT_SWITCH_MODE
+	bool "Default mode Switch"
+	depends on BR2_SWITCH_MODE
+
+endchoice
+
+config BR2_DEFAULT_DEVICE_MODE
+	string
+	default "dir"      if BR2_DEFAULT_DIR_MODE
+	default "dap"      if BR2_DEFAULT_DAP_MODE
+	default "firewall" if BR2_DEFAULT_FIREWALL_MODE
+	default "switch"   if BR2_DEFAULT_SWITCH_MODE
+
+endmenu

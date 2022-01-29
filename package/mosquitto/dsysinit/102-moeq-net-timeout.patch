@@ -1,0 +1,64 @@
+diff --git a/lib/net_mosq.c b/lib/net_mosq.c
+index 35650024..626fa90c 100644
+--- a/lib/net_mosq.c
++++ b/lib/net_mosq.c
+@@ -431,7 +431,58 @@ int net__try_connect(const char *host, uint16_t port, mosq_sock_t *sock, const c
+ 			}
+ 		}
+ 
+-		rc = connect(*sock, rp->ai_addr, rp->ai_addrlen);
++        // 102 patch
++        {
++            int         n, error;
++            fd_set      rset, wset;
++            struct      timeval  tval;
++            socklen_t   len;
++
++            if(blocking){
++			/* Set non-blocking */
++                if(net__socket_nonblock(sock)){
++                    COMPAT_CLOSE(*sock);
++                    continue;
++                }
++            }
++
++            if((rc = connect(*sock, rp->ai_addr, rp->ai_addrlen)) == 0)
++            {
++                return rc;
++            }
++
++            FD_ZERO(&rset);
++            FD_SET(*sock, &rset);
++            wset = rset;
++            tval.tv_sec = 3; // select wait 3 seconds for connect.
++            tval.tv_usec = 0;
++            if ((n = select(*sock+1, &rset, &wset, NULL, &tval)) == 0) {
++                close(*sock);
++                errno = ETIMEDOUT;
++                return MOSQ_ERR_CONN_LOST;
++            }
++            else if (n == -1){
++                close(*sock);
++                perror("select");
++                return MOSQ_ERR_CONN_LOST;
++            }
++
++            if (FD_ISSET(*sock, &rset) || FD_ISSET(*sock, &wset)) {
++                len = sizeof(error);
++                if(getsockopt(*sock, SOL_SOCKET, SO_ERROR, &error, &len) < 0){
++                    return MOSQ_ERR_CONN_LOST;
++                }
++                else
++                {
++                    rc = MOSQ_ERR_CONN_PENDING;
++                    break;
++                }
++            }
++            else {
++                fprintf(stderr, "select error: socket not set");
++            }
++        }
++
+ #ifdef WIN32
+ 		errno = WSAGetLastError();
+ #endif

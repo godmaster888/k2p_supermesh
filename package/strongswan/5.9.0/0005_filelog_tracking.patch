@@ -1,0 +1,89 @@
+From 773d79a8ac1b5ebbe755762d1b74a1478821ea80 Mon Sep 17 00:00:00 2001
+From: Vladimir Yaichkin <vyaichkin@rzn.dlink.ru>
+Date: Mon, 17 Aug 2020 11:25:03 +0300
+Subject: strongswan, logger: add filelog size tracking
+Patch-from-hash: aff0e04810cefd30f3b489990d3fb96d07619951
+Patch-repo: strongswan
+Patch-branch: master
+Patch-version: 5
+
+Добавлена функция, которая будет следить за размером log-файла.
+Если размер превысит 512 килобайт, из файла будут удаленны устарелые
+log-сообщения.
+
+Signed-off-by: Vladimir Yaichkin <vyaichkin@rzn.dlink.ru>
+---
+ .../src/libcharon/bus/listeners/file_logger.c | 51 +++++++++++++++++++
+ 1 file changed, 51 insertions(+)
+
+diff --git a/src/libcharon/bus/listeners/file_logger.c b/src/libcharon/bus/listeners/file_logger.c
+index 704c4a5..0cc94fd 100644
+--- a/src/libcharon/bus/listeners/file_logger.c
++++ b/src/libcharon/bus/listeners/file_logger.c
+@@ -85,6 +85,53 @@ struct private_file_logger_t {
+	rwlock_t *lock;
+ };
+
++#ifdef DLINK_SOFTWARE
++
++#include <sys/stat.h>
++#include <sys/mman.h>
++#include <fcntl.h>
++
++static void check_log_file(private_file_logger_t *this)
++{
++	struct stat info;
++	off_t max = 512 * 1024;               /* 512 Kbyte */
++
++	stat(this->filename, &info);
++
++	if (info.st_size < max)
++		return;
++
++	if (this->out)
++		fclose(this->out);
++
++	this->mutex->lock(this->mutex);
++
++	int fd = open(this->filename, O_RDWR);
++
++	if (fd == -1)
++		return;
++
++	off_t new_size = info.st_size / 2;
++	char *dst = mmap(0, info.st_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
++	char *src = dst + new_size;
++
++	char *next_newline = strchr(src, '\n');
++
++	if (next_newline) {
++		new_size -= (next_newline - src);
++		src = next_newline;
++	}
++
++	memmove(dst, src, (info.st_size - new_size));
++	int ret_munmap = munmap(dst, info.st_size);
++	int ret_trun = ftruncate(fd, new_size);
++	close(fd);
++
++	this->out = fopen(this->filename, "a");
++	this->mutex->unlock(this->mutex);
++}
++#endif /* DLINK_SOFTWARE */
++
+ METHOD(logger_t, log_, void,
+	private_file_logger_t *this, debug_t group, level_t level, int thread,
+	ike_sa_t* ike_sa, const char *message)
+@@ -167,6 +214,10 @@ METHOD(logger_t, log_, void,
+ #endif /* !HAVE_SETLINEBUF */
+	this->mutex->unlock(this->mutex);
+	this->lock->unlock(this->lock);
++
++#ifdef DLINK_SOFTWARE
++	check_log_file(this);
++#endif /* DLINK_SOFTWARE */
+ }
+
+ METHOD(logger_t, get_level, level_t,
+--
+2.20.1

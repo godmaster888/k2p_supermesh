@@ -1,0 +1,55 @@
+From b0cec11f1bffe560fbdde881b6ddc5375abc3eb1 Mon Sep 17 00:00:00 2001
+From: Maxim Zhukov <mzhukov@dlink.ru>
+Date: Tue, 3 Nov 2020 14:28:16 +0300
+Subject: [PATCH] syswrap generic: fix get_shm_size for x86
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+После коммита a9fc7bceeb0b ("Update Linux x86 system call number definitions")
+начал выполняться не тот syscall. Решил пока оставить такой фикс.
+
+Fixes: a9fc7bceeb0b ("Update Linux x86 system call number definitions")
+Signed-off-by: Maxim Zhukov <mzhukov@dlink.ru>
+---
+ coregrind/m_syswrap/syswrap-generic.c | 21 ---------------------
+ 1 file changed, 21 deletions(-)
+
+diff --git a/coregrind/m_syswrap/syswrap-generic.c b/coregrind/m_syswrap/syswrap-generic.c
+index 280c48f1b..94f080e52 100644
+--- a/coregrind/m_syswrap/syswrap-generic.c
++++ b/coregrind/m_syswrap/syswrap-generic.c
+@@ -1961,30 +1961,9 @@ ML_(generic_POST_sys_semctl) ( ThreadId tid,
+ static
+ SizeT get_shm_size ( Int shmid )
+ {
+-#if defined(__NR_shmctl)
+-#  ifdef VKI_IPC_64
+-   struct vki_shmid64_ds buf;
+-#    if defined(VGP_amd64_linux) || defined(VGP_arm64_linux)
+-     /* See bug 222545 comment 7 */
+-     SysRes __res = VG_(do_syscall3)(__NR_shmctl, shmid, 
+-                                     VKI_IPC_STAT, (UWord)&buf);
+-#    else
+-     SysRes __res = VG_(do_syscall3)(__NR_shmctl, shmid,
+-                                     VKI_IPC_STAT|VKI_IPC_64, (UWord)&buf);
+-#    endif
+-#  else /* !def VKI_IPC_64 */
+-   struct vki_shmid_ds buf;
+-   SysRes __res = VG_(do_syscall3)(__NR_shmctl, shmid, VKI_IPC_STAT, (UWord)&buf);
+-#  endif /* def VKI_IPC_64 */
+-#elif defined(__NR_shmsys) /* Solaris */
+-   struct vki_shmid_ds buf;
+-   SysRes __res = VG_(do_syscall4)(__NR_shmsys, VKI_SHMCTL, shmid, VKI_IPC_STAT,
+-                         (UWord)&buf);
+-#else
+    struct vki_shmid_ds buf;
+    SysRes __res = VG_(do_syscall5)(__NR_ipc, 24 /* IPCOP_shmctl */, shmid,
+                                  VKI_IPC_STAT, 0, (UWord)&buf);
+-#endif
+    if (sr_isError(__res))
+       return 0;
+  
+-- 
+2.29.2
+

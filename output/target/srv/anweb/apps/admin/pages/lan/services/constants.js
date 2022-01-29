@@ -1,0 +1,1 @@
+"use strict";!function(){angular.module("app").constant("lanConstants",{REBOOT_TIME:autoconf.BR2_PACKAGE_ANWEB_DEVICE_REBOOT_TIME?parseInt(autoconf.BR2_PACKAGE_ANWEB_DEVICE_REBOOT_TIME):void 0,DSYSINIT:autoconf.BR2_PACKAGE_ANWEB_DSYSINIT})}();

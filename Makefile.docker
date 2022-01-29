@@ -1,0 +1,57 @@
+docker32_build:
+	$(Q)docker build \
+		-t sdkbuilder \
+		--no-cache \
+		--build-arg BUILDER_NAME=builder \
+		--build-arg BUILDER_GID=`id -g` \
+		--build-arg BUILDER_UID=`id -u` \
+		-f $(TOPDIR)/support/docker/Debian_GPL_32 .
+
+docker64_build:
+	$(Q)docker build \
+		-t sdkbuilder \
+		--no-cache \
+		--build-arg BUILDER_NAME=builder \
+		--build-arg BUILDER_GID=`id -g` \
+		--build-arg BUILDER_UID=`id -u` \
+		-f $(TOPDIR)/support/docker/Debian_GPL_64 .
+
+gpl_prepare:
+ifneq ($(GETRELEASE),)
+	$(Q)cp $(GETRELEASE) $(TOPDIR)/.hashes_release
+endif
+	$(Q)docker run \
+		--add-host="rd:$$(getent hosts rd | awk '{ print $$1 }')" \
+		-h "buildserver" \
+		-v /home/$$USER/.ssh:/home/builder/.ssh:ro \
+		-v $(TOPDIR):/home/builder/sdk \
+		-e PROFILE=$(PROFILE) \
+		-e BR2_BUILD_GPL=y \
+		-e GETRELEASE=$(GETRELEASE) \
+		-e DOCKER_GPL_BUILD=y \
+		-ti sdkbuilder \
+		make gpl_release
+
+gpl_build:
+	$(Q)docker run \
+		-v $(TOPDIR):/home/builder/sdk \
+		--network none \
+		-ti sdkbuilder \
+		make
+
+ifeq (docker_run,$(firstword $(MAKECMDGOALS)))
+# собираем все параметры после docker_run
+DOCKER_ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
+# делаем, чтобы эти параметры ничего не вызывали
+$(eval $(DOCKER_ARGS):;@:)
+endif
+
+docker_run:
+	$(Q)docker run \
+		--add-host="rd:$$(getent hosts rd | awk '{ print $$1 }')" \
+		-h "buildserver" \
+		-v /home/$$USER/.ssh:/home/builder/.ssh:ro \
+		-v $(TOPDIR):/home/builder/sdk \
+		-e PROFILE=$(PROFILE) \
+		-ti sdkbuilder \
+		make $(DOCKER_ARGS)

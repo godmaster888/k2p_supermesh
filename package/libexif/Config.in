@@ -1,0 +1,3 @@
+config BR2_PACKAGE_LIBEXIF
+	bool
+	default n

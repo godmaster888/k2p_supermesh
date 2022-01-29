@@ -1,0 +1,54 @@
+--- pam_tacplus-v1.5.0-beta.2/tacc.c	2019-05-30 17:47:21.833389495 +0300
++++ pam_tacplus-v1.5.0-beta.2-bak/tacc.c	2019-05-30 17:46:34.171678741 +0300
+@@ -108,6 +108,7 @@
+ 				"protocol", required_argument, NULL, 'P' }, { "remote",
+ 				required_argument, NULL, 'r' }, { "login", required_argument,
+ 				NULL, 'L' }, { "tty", required_argument, NULL, 'y' },
++				{ "port", required_argument, NULL, 'i' },
+ 
+ 		/* modifiers */
+ 		{ "quiet", no_argument, NULL, 'q' },
+@@ -116,7 +117,7 @@
+ 						0, 0, 0, 0 } };
+ 
+ /* command line letters */
+-char *opt_string = "TRAVhu:p:s:k:c:qr:wnS:P:L:y:";
++char *opt_string = "TRAVhu:p:s:k:c:qr:wnS:P:L:y:i:";
+ 
+ int main(int argc, char **argv) {
+ 	char *pass = NULL;
+@@ -128,6 +129,7 @@
+ 	struct addrinfo *tac_server;
+ 	char *tac_server_name = NULL;
+ 	char *tac_secret = NULL;
++	char *port = "tacacs";
+ 	int tac_fd;
+ 	short int task_id = 0;
+ 	char buf[40];
+@@ -222,6 +224,9 @@
+ 			case 'y':
+ 				tty = optarg;
+ 				break;
++			case 'i':
++				port = optarg;
++				break;
+ 			}
+ 		}
+ 	}
+@@ -261,7 +266,7 @@
+ 	memset(&hints, 0, sizeof hints);
+ 	hints.ai_family = AF_UNSPEC;
+ 	hints.ai_socktype = SOCK_STREAM;
+-	ret = getaddrinfo(tac_server_name, "tacacs", &hints, &tac_server);
++	ret = getaddrinfo(tac_server_name, port, &hints, &tac_server);
+ 	if (ret != 0) {
+ 		printf("error: resolving name %s: %s", tac_server_name,
+ 				gai_strerror(ret));
+@@ -561,6 +566,7 @@
+ 	printf("  -p, --password      remote user password\n");
+ 	printf("  -s, --server        server IP address or FQDN\n");
+ 	printf("  -r, --remote        remote client's IP address\n");
++	printf("  -i, --port          remote client's port\n");
+ 	printf("  -S, --service       requested service (e.g. ppp)\n");
+ 	printf("  -P, --protocol      requested protocl (e.g. ip)\n");
+ 	printf("  -L, --login         TACACS+ login mode (e.g. chap, login)\n");

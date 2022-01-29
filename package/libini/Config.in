@@ -1,0 +1,4 @@
+config BR2_PACKAGE_LIBINI
+	bool "libini"
+	select BR2_LEGACY
+	default n

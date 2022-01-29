@@ -1,0 +1,8 @@
+config BR2_PACKAGE_DARKSTAT
+	bool "darkstat"
+	select BR2_LEGACY
+	select BR2_PACKAGE_LIBPCAP
+	help
+	  Captures network traffic, calculates statistics about usage, and serves reports over HTTP.
+
+	  https://unix4lyfe.org/darkstat/

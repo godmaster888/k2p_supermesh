@@ -1,0 +1,6 @@
+config BR2_PACKAGE_MIREDO
+	bool "miredo"
+	depends on BR2_INET_IPV6
+	default n
+	help
+	  Teredo

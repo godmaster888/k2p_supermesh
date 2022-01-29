@@ -1,0 +1,20 @@
+menuconfig BR2_PACKAGE_INADYN
+	bool "inadyn - DDNS update client"
+	default n
+	select BR2_PACKAGE_LIBCONFUSE
+	select BR2_PACKAGE_LIBITE
+	help
+	  INADYN is a free DynDNS client. It gives the possibility
+	  to have your own fixed hostname registered on the internet,
+	  although your IP might be changing.
+
+	  https://github.com/troglobit/inadyn
+
+if BR2_PACKAGE_INADYN
+
+config BR2_PACKAGE_INADYN_SSL
+	bool "Enable Openssl"
+	default n
+	depends on BR2_PACKAGE_OPENSSL
+
+endif

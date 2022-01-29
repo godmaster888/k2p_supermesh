@@ -1,0 +1,5 @@
+# vim: noexpandtab:ts=8:sw=8
+
+# ADSL
+
+/dev/adsl0	c	666	0	0	100	0	0	0	-

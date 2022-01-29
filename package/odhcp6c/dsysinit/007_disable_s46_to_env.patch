@@ -1,0 +1,38 @@
+diff --git a/src/script.c b/src/script.c
+index 93b94b9..29dfbd9 100644
+--- a/src/script.c
++++ b/src/script.c
+@@ -262,6 +262,13 @@ static void int_to_env(const char *name, int value)
+ 	putenv(buf);
+ }
+ 
++#if 0
++/*
++ * Убрал функции s46_to_env и связанную с ней s46_to_env_portparams,
++ * т.к. они ломают сборку использованием open_memstream, которую
++ * тулчейн реалтек модемов это не поддерживает.
++ * Т.к. выяснилось что эти функции никому не нужны то убираем для всех.
++ */
+ static void s46_to_env_portparams(const uint8_t *data, size_t len, FILE *fp)
+ {
+ 	uint8_t *odata;
+@@ -390,6 +397,7 @@ static void s46_to_env(enum odhcp6c_state state, const uint8_t *data, size_t len
+ 	fclose(fp);
+ 	putenv(str);
+ }
++#endif
+ 
+ void script_call(const char *status, int delay, bool resume)
+ {
+@@ -460,9 +468,11 @@ void script_call(const char *status, int delay, bool resume)
+ 		fqdn_to_env("SIP_DOMAIN", sip_fqdn, sip_fqdn_len);
+ 		fqdn_to_env("AFTR", aftr_name, aftr_name_len);
+ 		ipv6_to_env("CER", cer, cer_len / sizeof(*cer));
++#if 0   // Убираем использование s46_to_env, причины в описании выше
+ 		s46_to_env(STATE_S46_MAPE, s46_mape, s46_mape_len);
+ 		s46_to_env(STATE_S46_MAPT, s46_mapt, s46_mapt_len);
+ 		s46_to_env(STATE_S46_LW, s46_lw, s46_lw_len);
++#endif
+ 		bin_to_env(custom, custom_len);
+ 
+ 		if (odhcp6c_is_bound()) {

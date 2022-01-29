@@ -1,0 +1,1 @@
+"use strict";!function(){angular.module("app").controller("DetailsSimCtrl",function($scope){$scope.sim=$scope.ngDialogData.data})}();

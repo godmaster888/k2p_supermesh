@@ -1,0 +1,13 @@
+diff --git a/src/sock.c b/src/sock.c
+index 78a3d1f..0d50b49 100644
+--- a/src/sock.c
++++ b/src/sock.c
+@@ -71,7 +71,7 @@ static int _in_progress(int error)
+ 
+ sock_t sock_connect(const char * const host, const unsigned short port)
+ {
+-    sock_t sock;
++    sock_t sock = 0;
+     char service[6];
+     struct addrinfo *res, *ainfo, hints;
+     int err;

@@ -1,0 +1,1 @@
+"use strict";function EtherwanConfirmDialogCtrl($scope,$state){$scope.confirm=function(){$state.go($scope.pageDetails.wanInfo[0].state),$scope.closeThisDialog(!0)},$scope.cancel=function(){$scope.closeThisDialog(!1)}}EtherwanConfirmDialogCtrl.$inject=["$scope","$state"];

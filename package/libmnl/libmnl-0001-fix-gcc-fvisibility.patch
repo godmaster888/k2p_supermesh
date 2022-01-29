@@ -1,0 +1,33 @@
+From b8043b84dc1b8e5efa66de26c5a09bbabd1a5118 Mon Sep 17 00:00:00 2001
+From: Alexander Safonov <asafonov@dlink.ru>
+Date: Thu, 27 Apr 2017 14:35:41 +0300
+Subject: [PATCH] [#19570]: remove gcc fvisibility check
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Выключил проверку атрибутов visibility, иначе при некоторых условиях не
+экспортируются функции.
+
+Signed-off-by: Alexander Safonov <asafonov@dlink.ru>
+---
+ configure.ac | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/configure.ac b/configure.ac
+index cc573d8..1816e9d 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -15,7 +15,8 @@ AM_PROG_CC_C_O
+ AC_EXEEXT
+ AC_DISABLE_STATIC
+ LT_INIT
+-CHECK_GCC_FVISIBILITY
++# D-Link: remove fvisibility check (#19570)
++#CHECK_GCC_FVISIBILITY
+ case "$host" in
+ *-*-linux* | *-*-uclinux*) ;;
+ *) AC_MSG_ERROR([Linux only, dude!]);;
+-- 
+2.1.4
+

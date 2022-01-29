@@ -1,0 +1,43 @@
+menu "Target filesystem options"
+
+choice
+	prompt "Root FS skeleton"
+
+config BR2_ROOTFS_SKELETON_DEFAULT
+	bool "default target skeleton"
+	help
+	  Use default target skeleton
+
+config BR2_ROOTFS_SKELETON_CUSTOM
+	bool "custom target skeleton"
+	help
+	  Use custom target skeleton.
+
+endchoice
+
+if BR2_ROOTFS_SKELETON_CUSTOM
+config BR2_ROOTFS_SKELETON_CUSTOM_PATH
+	string "custom target skeleton path"
+	default "fs/skeleton"
+	help
+	  Path custom target skeleton.
+endif
+
+source "fs/cramfs/Config.in"
+source "fs/cloop/Config.in"
+source "fs/ext2/Config.in"
+source "fs/jffs2/Config.in"
+source "fs/ubifs/Config.in"
+source "fs/squashfs/Config.in"
+source "fs/tar/Config.in"
+source "fs/cpio/Config.in"
+source "fs/iso9660/Config.in"
+source "fs/initramfs/Config.in"
+source "fs/romfs/Config.in"
+
+config BR2_USE_JFFS2_PARTITION_512K
+	bool "Use additional jffs2 partition"
+	help
+	  Use additional jffs2 partition (name = "JFFS2" size = 512K)
+
+endmenu

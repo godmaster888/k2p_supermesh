@@ -1,0 +1,44 @@
+From db0b99dfa6fa568c0cab10d1d9d70553fc4a320d Mon Sep 17 00:00:00 2001
+From: Dmitriy Karaman <dkaraman@dlink.ru>
+Date: Fri, 19 Jul 2019 16:52:24 +0300
+Subject: [PATCH] bgp: add new option -L
+
+Add a new option -L which is analog -l, but without implies -n
+---
+ bgpd/bgp_main.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/bgpd/bgp_main.c b/bgpd/bgp_main.c
+index 3809ac8..7fe49e0 100644
+--- a/bgpd/bgp_main.c
++++ b/bgpd/bgp_main.c
+@@ -77,6 +77,7 @@ static const struct option longopts[] =
+   { "help",        no_argument,       NULL, 'h'},
+ #ifdef DLINK_SOFTWARE
+   { "service_id",  required_argument, NULL, 'I'},
++  { "listen",      required_argument, NULL, 'L'},
+ #endif
+   { 0 }
+ };
+@@ -377,7 +378,7 @@ main (int argc, char **argv)
+   while (1) 
+     {
+ #ifdef DLINK_SOFTWARE
+-      opt = getopt_long (argc, argv, "df:i:z:hp:l:A:P:rnu:g:vCSI:", longopts, 0);
++      opt = getopt_long (argc, argv, "df:i:z:hp:l:A:P:rnu:g:vCSI:L:", longopts, 0);
+ #else
+       opt = getopt_long (argc, argv, "df:i:z:hp:l:A:P:rnu:g:vCS", longopts, 0);
+ #endif
+@@ -455,6 +456,9 @@ main (int argc, char **argv)
+   case 'I':
+     service_id = optarg ? atoi(optarg) : 0;
+     break;
++  case 'L':
++    bm->address = optarg;
++    break;
+ #endif
+ 	default:
+ 	  usage (progname, 1);
+-- 
+2.1.4
+

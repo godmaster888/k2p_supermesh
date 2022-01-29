@@ -1,0 +1,39 @@
+menu "DeviceInfo"
+
+config DLINK_DEVICEID
+	string "Device ID"
+
+config DLINK_VENDOR
+	string "Device Vendor"
+	default "D-Link Russia"
+
+config PROFILE_ALIAS
+	string "Custom firmware name"
+	default ""
+	help
+	  if PROFILE_ALIAS is empty PROFILE is used as fw name.
+	  Custom firmware name used in /VERSION: NAME, SUMMARY and binary fw file.
+
+menu "Bugs report info"
+config DLINK_BUGS
+	string "Device Support"
+	default "<support@dlink.ru>"
+
+config DLINK_BUGS_PHONE
+	string "Device Support: phone number"
+	default ""
+endmenu
+
+config DLINK_FACTORY_NAME
+	string "Device factory name"
+	default ""
+
+config BR2_DEVICE_HOSTNAME
+	string "It's only hostname. Default device domain name: addn_hostname field in default config."
+	default "dlinkrouter"
+
+config BR2_DEVICE_LAN_DOMAIN
+	string "Device LAN top-domain"
+	default "Dlink.local"
+
+endmenu

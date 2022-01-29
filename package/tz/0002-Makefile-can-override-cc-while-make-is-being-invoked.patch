@@ -1,0 +1,25 @@
+From 4fe88f95936ebf851f8c46a77ff643eabc6a3814 Mon Sep 17 00:00:00 2001
+From: Alexander farisey Nickulin <anikulin@dlink.ru>
+Date: Fri, 5 Oct 2018 11:37:02 +0300
+Subject: Makefile: can override 'cc' while make is being invoked.
+
+Cool for cross-compiling.
+---
+ Makefile | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/Makefile b/Makefile
+index 44b9b36..77bfd0c 100644
+--- a/Makefile
++++ b/Makefile
+@@ -455,7 +455,7 @@ GZIPFLAGS=	-9n
+
+ #MAKE=		make
+
+-cc=		cc
++cc ?=		cc
+ CC=		$(cc) -DTZDIR='"$(TZDIR)"'
+
+ AR=		ar
+--
+2.19.0.rc1

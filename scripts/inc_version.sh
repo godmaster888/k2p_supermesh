@@ -1,0 +1,51 @@
+#!/bin/sh
+
+SCRIPT_PATH=$(dirname "$0")
+BASE_DIR=$(realpath "$SCRIPT_PATH/..")
+DEUTERON_DIR=$(realpath "$BASE_DIR/output/build/deuteron-"* | head -n 1)
+
+CLR_RED='\033[0;31m'
+CLR_GREEN='\033[0;32m'
+CLR_RST='\033[0m'
+
+VERSION=$(cat "$DEUTERON_DIR/dm/dm/dm_version.dm")
+VERSION_MAJOR=$(echo "$VERSION" | cut -d'.' -f 1)
+VERSION_MINOR=$(echo "$VERSION" | cut -d'.' -f 2)
+VERSION_BUILD=$(echo "$VERSION" | cut -d'.' -f 3)
+
+inc_val=${2:-1}
+
+case "$1" in
+	major)
+		COLORED_OLD_VERSION="${CLR_RED}${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_BUILD}"
+		VERSION_MAJOR=$((VERSION_MAJOR + inc_val))
+		VERSION_MINOR=0
+		VERSION_BUILD=0
+		COLORED_NEW_VERSION="${CLR_GREEN}${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_BUILD}"
+		;;
+	minor)
+		COLORED_OLD_VERSION="${VERSION_MAJOR}.${CLR_RED}${VERSION_MINOR}.${VERSION_BUILD}"
+		VERSION_MINOR=$((VERSION_MINOR + inc_val))
+		VERSION_BUILD=0
+		COLORED_NEW_VERSION="${VERSION_MAJOR}.${CLR_GREEN}${VERSION_MINOR}.${VERSION_BUILD}"
+		;;
+
+	*)
+		COLORED_OLD_VERSION="${VERSION_MAJOR}.${VERSION_MINOR}.${CLR_RED}${VERSION_BUILD}"
+		VERSION_BUILD=$((VERSION_BUILD + inc_val))
+		COLORED_NEW_VERSION="${VERSION_MAJOR}.${VERSION_MINOR}.${CLR_GREEN}${VERSION_BUILD}"
+		;;
+esac
+
+NEW_VERSION="$VERSION_MAJOR.$VERSION_MINOR.$VERSION_BUILD"
+
+printf "Upgrade version: ${COLORED_OLD_VERSION}${CLR_RST} -> ${COLORED_NEW_VERSION}${CLR_RST}\n"
+
+echo "Continue? "
+read -r reply
+
+if [ "$reply" = "y" ] || [ "$reply" = "Y" ]
+then
+	"$SCRIPT_PATH/tag_repo.sh" "$NEW_VERSION"
+fi
+

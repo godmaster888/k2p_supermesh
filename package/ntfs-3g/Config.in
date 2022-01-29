@@ -1,0 +1,6 @@
+config BR2_PACKAGE_NTFS_3G
+	bool "ntfs-3g"
+	default y
+	depends on BR2_SUPPORT_STORAGE
+	help
+	  module for support NTFS read/write

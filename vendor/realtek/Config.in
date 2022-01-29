@@ -1,0 +1,35 @@
+menu "RLX options"
+
+if RLX_819X
+source "vendor/realtek/ConfigRLX819X.in"
+endif
+
+if BR2_rlx_9607
+config BR2_DISABLE_DOWNGRADE
+	bool "Force to disable downgrade (to prevent device corruption)"
+	default n
+
+config BR2_DOWNGRADE_EPOCH
+	int "Epoch timestamp to disable downgrade upon"
+	depends on BR2_DISABLE_DOWNGRADE
+	default 0
+
+endif
+
+if BR2_rtk_luna
+
+config BR2_LUNA_MULTI_BOOT
+	bool "Luna Multi Boot"
+	depends on BR2_rtk_luna
+	select BR2_PACKAGE_RTL_NV
+	default y
+
+endif
+
+config BR2_ALPHA_FW
+	bool "build fw for ALPHA device"
+
+config BR2_SUPPORT_DOS_FILTER
+	bool "Kernel (fastpath) DOS filter"
+
+endmenu

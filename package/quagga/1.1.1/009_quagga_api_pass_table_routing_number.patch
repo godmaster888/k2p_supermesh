@@ -1,0 +1,116 @@
+From cbf4494f7ff286fac174a385a4d7c7c4d6605513 Mon Sep 17 00:00:00 2001
+From: Dmitriy Karaman <dkaraman@dlink.ru>
+Date: Fri, 19 Jul 2019 17:07:50 +0300
+Subject: [PATCH] zebra: add new API message flag ZAPI_MESSAGE_TABLE
+
+Add a new API message flag ZAPI_MESSAGE_TABLE that allows pass number of table routing to zebra.
+---
+ lib/zclient.c | 10 ++++++++++
+ lib/zclient.h | 12 ++++++++++++
+ zebra/zserv.c | 16 ++++++++++++++++
+ 3 files changed, 38 insertions(+)
+
+diff --git a/lib/zclient.c b/lib/zclient.c
+index eb8de1a..8a473d0 100644
+--- a/lib/zclient.c
++++ b/lib/zclient.c
+@@ -593,6 +593,11 @@ zapi_ipv4_route (u_char cmd, struct zclient *zclient, struct prefix_ipv4 *p,
+   if (CHECK_FLAG (api->message, ZAPI_MESSAGE_TAG))
+     stream_putl (s, api->tag);
+ 
++#ifdef DLINK_SOFTWARE
++  if (CHECK_FLAG(api->message, ZAPI_MESSAGE_TABLE))
++    stream_putl(s, api->table);
++#endif /* DLINK_SOFTWARE */
++
+   /* Put length at the first point of the stream. */
+   stream_putw_at (s, 0, stream_get_endp (s));
+ 
+@@ -651,6 +656,11 @@ zapi_ipv6_route (u_char cmd, struct zclient *zclient, struct prefix_ipv6 *p,
+   if (CHECK_FLAG (api->message, ZAPI_MESSAGE_TAG))
+     stream_putl (s, api->tag);
+ 
++#ifdef DLINK_SOFTWARE
++  if (CHECK_FLAG(api->message, ZAPI_MESSAGE_TABLE))
++    stream_putl(s, api->table);
++#endif /* DLINK_SOFTWARE */
++
+   /* Put length at the first point of the stream. */
+   stream_putw_at (s, 0, stream_get_endp (s));
+ 
+diff --git a/lib/zclient.h b/lib/zclient.h
+index d46728d..fd0dc11 100644
+--- a/lib/zclient.h
++++ b/lib/zclient.h
+@@ -101,6 +101,10 @@ struct zclient
+ #define ZAPI_MESSAGE_MTU      0x10
+ #define ZAPI_MESSAGE_TAG      0x20
+ 
++#ifdef DLINK_SOFTWARE
++#define ZAPI_MESSAGE_TABLE    0x40
++#endif /* DLINK_SOFTWARE */
++
+ /* Zserv protocol message header */
+ struct zserv_header
+ {
+@@ -139,6 +143,10 @@ struct zapi_ipv4
+ 
+   u_int32_t mtu;
+ 
++#ifdef DLINK_SOFTWARE
++  u_int32_t table;
++#endif /* DLINK_SOFTWARE */
++
+   vrf_id_t vrf_id;
+ };
+ 
+@@ -219,6 +227,10 @@ struct zapi_ipv6
+ 
+   u_int32_t mtu;
+ 
++#ifdef DLINK_SOFTWARE
++  u_int32_t table;
++#endif /* DLINK_SOFTWARE */
++
+   vrf_id_t vrf_id;
+ };
+ 
+diff --git a/zebra/zserv.c b/zebra/zserv.c
+index f0e8d12..22f419b 100644
+--- a/zebra/zserv.c
++++ b/zebra/zserv.c
+@@ -1041,7 +1041,15 @@ zread_ipv4_add (struct zserv *client, u_short length, vrf_id_t vrf_id)
+     rib->tag = stream_getl (s);
+ 
+   /* Table */
++#ifdef DLINK_SOFTWARE
++  if (CHECK_FLAG(message, ZAPI_MESSAGE_TABLE))
++    rib->table = stream_getl (s);
++  else
++    rib->table=zebrad.rtm_table_default;
++#else
+   rib->table=zebrad.rtm_table_default;
++#endif /* DLINK_SOFTWARE */
++
+   ret = rib_add_ipv4_multipath (&p, rib, safi);
+ 
+   /* Stats */
+@@ -1289,7 +1297,15 @@ zread_ipv6_add (struct zserv *client, u_short length, vrf_id_t vrf_id)
+     rib->tag = stream_getl (s);
+ 
+   /* Table */
++#ifdef DLINK_SOFTWARE
++  if (CHECK_FLAG(message, ZAPI_MESSAGE_TABLE))
++    rib->table = stream_getl (s);
++  else
++    rib->table=zebrad.rtm_table_default;
++#else
+   rib->table=zebrad.rtm_table_default;
++#endif /* DLINK_SOFTWARE */
++
+   ret = rib_add_ipv6_multipath (&p, rib, safi);
+   /* Stats */
+   if (ret > 0)
+-- 
+2.1.4
+

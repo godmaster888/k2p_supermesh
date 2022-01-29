@@ -1,0 +1,135 @@
+menu "Legacy config options"
+
+config BR2_LEGACY
+	bool "Legacy options"
+
+config BR2_DEFAULT_BRANCH
+	string "default branch"
+
+config BR2_DEFAULT_BRANCH_WRAP
+	bool
+	default y if BR2_DEFAULT_BRANCH != ""
+	select BR2_LEGACY
+
+config BR2_SUPPORT_HOT_WIFI
+	select BR2_LEGACY
+	bool "Hot WiFi"
+	depends on BR2_PACKAGE_TINYPROXY && BR2_PACKAGE_YASSLEWS
+	default n
+
+config BR2_PORT_TRIGGERING
+	select BR2_LEGACY
+	bool "Support port triggering"
+	select BR2_PACKAGE_IPTABLES
+	default n
+	help
+	  See #4027 and http://en.wikipedia.org/wiki/Port_triggering :
+	  " Port triggering is a configuration option on a NAT-enabled router
+	    that allows a host machine to dynamically and automatically
+	    forward a specific port back to itself. Port triggering opens
+	    an incoming port when your computer is using a specified
+	    outgoing port for specific traffic."
+
+if !BR2_ralink && BR2_PORT_TRIGGERING
+	comment "!!! Port triggering is tested and adapted for Ra/MTK only !!!"
+	comment "!!! There is no guarantee for other boards !!!"
+	comment "!!! Check #4072 or use at your own risk !!!"
+endif
+
+config BR2_SUPPORT_SENDMAIL
+	select BR2_LEGACY
+	depends on CURL_SMTP && CURL_SMTPS && BR2_LIBSHARED_USE_LIBCURL && BR2_PACKAGE_WIRELESS_TOOLS_LIB
+	bool "sendmail"
+	default n
+	help
+	  Send system log and info messages to email
+
+config BR2_LAN_PORTS_COUNT
+	int "Device LAN ports count"
+	default 4
+
+config BR2_LAN_PORTS_COUNT_WRAP
+	bool
+	default y if BR2_LAN_PORTS_COUNT != 4
+	select BR2_LEGACY
+
+config BR2_SUPPORT_REMOTE_ACCESS
+	select BR2_LEGACY
+	bool "Support remote access"
+	default y
+choice
+	prompt "REMOTE ACCESS"
+	default BR2_SUPPORT_REMOTE_ACCESS_ALL_WANS
+	depends on BR2_SUPPORT_REMOTE_ACCESS
+
+config BR2_SUPPORT_REMOTE_ACCESS_WAN_IFACES
+	bool "Support remote access using setting WAN ifaces."
+
+config BR2_SUPPORT_REMOTE_ACCESS_ALL_WANS
+	bool "Support remote access for all wan interfaces."
+
+endchoice
+
+
+config BR2_SUPPORT_MVR
+	select BR2_LEGACY
+	bool "Support MVR (Multicast VLAN Registration)"
+	default n
+
+config BR2_SUPPORT_DDM
+	select BR2_LEGACY
+	bool "Support DDM (Digital Diagnostics Monitoring) for SFP"
+	default n
+	depends on BR2_FIBER
+
+menu "Legacy packages"
+
+menu "VPN servers"
+	source "package/accel-ppp/Config.in"
+endmenu
+
+source "package/darkstat/Config.in"
+source "package/igmpproxy/Config.in"
+source "package/kprofile/Config.in"
+source "package/libini/Config.in"
+source "package/nanocom/Config.in"
+source "package/openl2tp/Config.in"
+source "package/spim/Config.in"
+source "package/stockfish/Config.in"
+source "package/vlan/Config.in"
+source "package/xsupplicant/Config.in"
+source "package/yasslews/Config.in"
+
+endmenu
+
+# из package/Config_WIFI.in (Package selection -> Wireless)
+if BR2_SUPPORT_WIFI
+
+if BR2_rlx_wifi || AR7240
+config BR2_WPS_SSID
+	string "WPS ssid for Wi-Fi"
+	default "DEFAULT"
+endif
+
+if BR2_rlx_wifi
+config BR2_WIFI_PROC_LED
+	select BR2_LEGACY
+	bool "Turn on/off wifi led with kernel proc"
+	default n
+
+config BR2_ONE_LED_2G_5G
+	select BR2_LEGACY
+	bool "Device has one LED for 2.4 GHz and 5 GHz WIFI"
+	default n
+
+config BR2_SUPPORT_AVERAGE_CALIBR
+	select BR2_LEGACY
+	bool "Support checking factory calibration values"
+	default n
+	help
+		Check factory calibrations and if they are not valid, wtite average values
+endif
+
+endif
+
+endmenu

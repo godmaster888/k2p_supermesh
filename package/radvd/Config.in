@@ -1,0 +1,7 @@
+config BR2_PACKAGE_RADVD
+	bool "radvd"
+	default n
+	help
+		The Router Advertisement Daemon (radvd) is an open-source software product that implements link-local advertisements of IPv6 router addresses and IPv6 routing prefixes (RFC 2461).
+	  
+		http://www.litech.org/radvd/

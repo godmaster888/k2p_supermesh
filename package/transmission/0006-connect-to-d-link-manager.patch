@@ -1,0 +1,39 @@
+From cc63cd89aa95483a320f1c9a95b8fbfdc2d55d36 Mon Sep 17 00:00:00 2001
+From: Alexander Safonov <asafonov@dlink.ru>
+Date: Fri, 4 Oct 2019 12:43:46 +0300
+Subject: transmission: connect to D-Link manager
+
+Signed-off-by: Alexander Safonov <asafonov@dlink.ru>
+---
+ daemon/daemon.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/daemon/daemon.c b/daemon/daemon.c
+index 99958b8..f955b66 100644
+--- a/daemon/daemon.c
++++ b/daemon/daemon.c
+@@ -40,6 +40,10 @@
+  static void sd_notifyf (int status UNUSED, const char * fmt UNUSED, ...) { }
+ #endif
+ 
++#ifdef DLINK_SOFTWARE
++#include <d-link/d_service_notify.h>
++#endif
++
+ #include "daemon.h"
+ 
+ #define MY_NAME "transmission-daemon"
+@@ -703,6 +707,10 @@ tr_main (int    argc,
+         goto cleanup;
+     }
+ 
++#ifdef DLINK_SOFTWARE
++    dlink_service_connect(0);
++#endif
++
+     if (!dtr_daemon (&cb, &arg, foreground, &ret, &error))
+     {
+         char buf[256];
+-- 
+2.20.1
+

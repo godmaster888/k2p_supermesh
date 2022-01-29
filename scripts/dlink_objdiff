@@ -1,0 +1,84 @@
+#!/usr/bin/env bash
+
+ACTION="$1"
+shift
+
+SCRIPT_FILE=$(realpath "$0")
+SCRIPT_PATH=$(dirname "$SCRIPT_FILE")
+BASE_DIR=$(realpath $SCRIPT_PATH/..)
+
+D_CROSS_COMPILE=$(ls -1 $BASE_DIR/output/toolchains/bin/*-gcc | head -n 1 | sed 's/gcc$//')
+
+show_help() {
+	cat <<EOF
+Usage: $0 <command> <args>
+record        <list of object files or directories>
+diff          <commitA> <commitB>
+clean         all | <commit>
+check_commit  <path> <hash1> <hash2>
+EOF
+
+	exit 1
+}
+
+case "$ACTION" in
+	record)
+		CROSS_COMPILE=${D_CROSS_COMPILE} $BASE_DIR/scripts/objdiff record $@
+		;;
+	diff)
+		CROSS_COMPILE=${D_CROSS_COMPILE} $BASE_DIR/scripts/objdiff diff $@
+		;;
+	clean)
+		CROSS_COMPILE=${D_CROSS_COMPILE} $BASE_DIR/scripts/objdiff clean $@
+		;;
+
+	check_commit)
+		WORKDIR="$1"
+		HASH1="$2"
+		HASH2="${3:-HEAD}"
+
+		if [ -z "$HASH1" ]; then
+			show_help
+			exit 1
+		fi
+
+
+		cd "$WORKDIR" || exit 1
+
+		HASH1=$(git rev-parse --short "$HASH1")
+		HASH2=$(git rev-parse --short "$HASH2")
+
+		CURRENT_HEAD=$(git rev-parse --abbrev-ref HEAD)
+
+		if [ "$CURRENT_HEAD" = "HEAD" ]; then
+			CURRENT_HEAD=$(git rev-parse HEAD)
+		fi
+
+		echo "${HASH1}: Checkout to hash..."
+		git checkout "$HASH1" >/dev/null 2>&1 || exit 1
+
+		echo "${HASH1}: Try to build..."
+		make -j8 >/dev/null 2>&1 || exit 1
+
+		echo "${HASH1}: Save state..."
+		$SCRIPT_FILE record . || exit 1
+
+		echo "${HASH2}: Checkout to hash..."
+		git checkout "$HASH2" >/dev/null 2>&1 || exit 1
+
+		echo "${HASH2}: Try to build..."
+		make -j8 >/dev/null 2>&1 || exit 1
+
+		echo "${HASH2}: Save state..."
+		$SCRIPT_FILE record . || exit 1
+
+		echo "Restore state"
+		git checkout "$CURRENT_HEAD" >/dev/null 2>&1
+
+		$SCRIPT_FILE diff "$HASH1" "$HASH2"
+		;;
+	*)
+		show_help
+		exit 1
+		;;
+esac

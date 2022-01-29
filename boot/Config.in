@@ -1,0 +1,47 @@
+menu "Bootloaders"
+
+config BR2_BOOTLOADER_EXTERNAL_LOCATION
+	string "URL to bootloader repository"
+	default "sdk_boot/rtl/bootcode_rtl8197f" if RTL8197F
+
+config BR2_BOOTLOADER_EXTERNAL_BRANCH
+	string "Branch of bootloader repository"
+	depends on BR2_BOOTLOADER_EXTERNAL_LOCATION != ""
+
+config BR2_BOOTLOADER_CONFIG_COMMANDS
+	string "bootloader's config commands"
+
+config BR2_BOOTLOADER_INSTALL_FILE
+	string "bootloader's install file"
+
+config BR2_BOOTLOADER_UPDATE_FROM_FW
+	bool "update bootloader from fw at boot"
+
+config BR2_BOOTLOADER_HTTP_SERVER
+	bool "http server for crash mode"
+	depends on RTL9607C
+
+config BR2_BOOTLOADER_HTTP_IP_ADDR
+	depends on BR2_BOOTLOADER_HTTP_SERVER
+	string "ip address for http server in crash mode"
+	default "192.168.0.1"
+
+config BR2_DUAL_BOOT_FW
+	bool "make fw for dual boot"
+
+config BR2_BOOTLOADER_UPDATE_RAW_OOB
+	bool "update bootloader using write in raw mode with oob"
+	default n
+	depends on BR2_NAND && BR2_PACKAGE_LIBMTD
+
+config BR2_BOOTLOADER_SIGN_FW_CHECK
+	bool "check fw sign in bootloader"
+	depends on BR2_ralink
+	default n
+
+config BR2_BOOTLOADER_CONFIG_FILE
+	string "bootloader configuration file name"
+	depends on BR2_ralink
+
+endmenu
+

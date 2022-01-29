@@ -1,0 +1,9 @@
+menuconfig BR2_PACKAGE_PPTPCLIENT
+	bool "pptpclient"
+	help
+		https://git.code.sf.net/p/pptpclient/git
+
+config BR2_PACKAGE_PPTPCLIENT_VERSION
+	string "pptpclient version"
+	default "rtl"
+	depends on BR2_PACKAGE_PPTPCLIENT

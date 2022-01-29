@@ -1,0 +1,15 @@
+# vim: noexpandtab:ts=8:sw=8
+
+# VOIP
+/dev/aipc_dev		c	644	0	0	254	0
+/dev/voip		d	755	0	0	-	-	-	-	-
+/dev/voip/dtmfdet0	c	666	0	0	243	76	0	0	0
+/dev/voip/dtmfdet1	c	666	0	0	243	77	0	0	0
+/dev/voip/ivr8k		c	666	0	0	243	16	0	0	0
+/dev/voip/mgr		c	666	0	0	243	1	0	0	0
+/dev/voip/pcmrx0	c	666	0	0	243	65	0	0	0
+/dev/voip/pcmrx1	c	666	0	0	243	74	0	0	0
+/dev/voip/pcmtx0	c	666	0	0	243	64	0	0	0
+/dev/voip/pcmtx1	c	666	0	0	243	73	0	0	0
+/dev/voip/ipc		c	666	0	0	243	66	0	0	0
+/dev/voip/log_ioctl	c	666	0	0	243	40	0	0	0

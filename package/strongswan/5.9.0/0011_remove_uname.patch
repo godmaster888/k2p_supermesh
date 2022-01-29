@@ -1,0 +1,55 @@
+From 21d1cd9c31d6c5953bae8cf68b50bdbb75fa417a Mon Sep 17 00:00:00 2001
+From: Vladimir Yaichkin <vyaichkin@rzn.dlink.ru>
+Date: Mon, 31 Aug 2020 18:39:00 +0300
+Subject: strongswan: remove uname usage and hide copyright option
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+Patch-from-hash: aff0e04810cefd30f3b489990d3fb96d07619951
+Patch-repo: strongswan
+Patch-branch: master
+Patch-version: 5
+
+Убрал вывод информации через использование uname утилиты.
+Спрятал вывод copyright, т.к. она не включена в сборку для
+минимизации занимаемого места.
+
+Signed-off-by: Vladimir Yaichkin <vyaichkin@rzn.dlink.ru>
+---
+ src/ipsec/_ipsec.in | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/src/ipsec/_ipsec.in b/src/ipsec/_ipsec.in
+index c1de833..1e0d07f 100644
+--- a/src/ipsec/_ipsec.in
++++ b/src/ipsec/_ipsec.in
+@@ -22,9 +22,9 @@ export PATH
+ [ -z "$DAEMON_NAME" ] && DAEMON_NAME="charon"
+
+ # name and version of the ipsec implementation
+-OS_NAME=`uname -s`
++OS_NAME=""
+ IPSEC_NAME="@IPSEC_NAME@"
+-IPSEC_VERSION="U@IPSEC_VERSION@/K`uname -r`"
++IPSEC_VERSION="U@IPSEC_VERSION@/"
+
+ # where the private directory and the config files are
+ IPSEC_DIR="@IPSEC_DIR@"
+@@ -316,13 +316,13 @@ _updown|_imv_policy)
+	# fall through
+	;;
+ copyright|--copyright)
+-	set _copyright
++	# set _copyright
+	# fall through
+	;;
+ version|--version)
+	printf "$OS_NAME $IPSEC_NAME $IPSEC_VERSION\n"
+	printf "$IPSEC_DISTRO\n"
+-	printf "See '$IPSEC_SCRIPT --copyright' for copyright information.\n"
++	# printf "See '$IPSEC_SCRIPT --copyright' for copyright information.\n"
+	exit 0
+	;;
+ --*)
+--
+2.20.1

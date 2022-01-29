@@ -1,0 +1,8 @@
+# ProView 3GPro
+
+TargetVendor=0x20a6
+TargetProduct=0xf00e
+
+MessageContent="5553424312345678000000000001061b000000020000000000000000000000"
+
+NeedResponse=1

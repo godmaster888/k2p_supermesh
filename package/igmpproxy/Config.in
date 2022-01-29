@@ -1,0 +1,9 @@
+menuconfig BR2_PACKAGE_IGMPPROXY
+	bool "Igmp proxy"
+	default n
+	select BR2_LEGACY
+
+if BR2_PACKAGE_IGMPPROXY
+config BR2_PACKAGE_IGMPPROXY_BRANCH
+	string "igmpproxy git branch (default if empty)"
+endif

@@ -1,0 +1,276 @@
+From bf63db1efa224199eb4ebee594dbae49bcb6f453 Mon Sep 17 00:00:00 2001
+From: Vladimir Yaichkin <vyaichkin@rzn.dlink.ru>
+Date: Mon, 17 Aug 2020 10:45:53 +0300
+Subject: strongswan: add ipsec tunnel id
+Patch-from-hash: aff0e04810cefd30f3b489990d3fb96d07619951
+Patch-repo: strongswan
+Patch-branch: master
+Patch-version: 5
+
+Добавлена установка service_id для каждого ipsec-туннеля в
+в charon-демоне через stroke-утилиту. Теперь кажому туннелю
+с уникальным именем соответствует свой id.
+
+Signed-off-by: Vladimir Yaichkin <vyaichkin@rzn.dlink.ru>
+---
+ src/charon/charon.c          |  3 +
+ src/libcharon/daemon.h       |  7 +++
+ .../libcharon/plugins/stroke/stroke_control.c | 58 +++++++++++++++++++
+ .../libcharon/plugins/stroke/stroke_socket.c  |  9 +++
+ src/stroke/stroke.c          | 16 ++++-
+ src/stroke/stroke_msg.h      | 11 ++++
+ 6 files changed, 103 insertions(+), 1 deletion(-)
+
+diff --git a/src/charon/charon.c b/src/charon/charon.c
+index 2576c67..0a8394a 100644
+--- a/src/charon/charon.c
++++ b/src/charon/charon.c
+@@ -491,6 +491,9 @@ int main(int argc, char *argv[])
+	status = 0;
+
+ deinit:
++#ifdef DLINK_SOFTWARE
++	json_decref(charon->pair);
++#endif /* DLINK_SOFTWARE */
+	libcharon_deinit();
+	unlink_pidfile();
+	library_deinit();
+diff --git a/src/libcharon/daemon.h b/src/libcharon/daemon.h
+index a75064a..8ad9736 100644
+--- a/src/libcharon/daemon.h
++++ b/src/libcharon/daemon.h
+@@ -314,6 +314,13 @@ struct daemon_t {
+	 */
+	xauth_manager_t *xauth;
+
++#ifdef DLINK_SOFTWARE
++	/**
++	 * Json array to contain Name and ServiceID
++	 */
++	json_t *pair;
++#endif /* DLINK_SOFTWARE */
++
+ #ifdef ME
+	/**
+	 * Connect manager
+diff --git a/src/libcharon/plugins/stroke/stroke_control.c b/src/libcharon/plugins/stroke/stroke_control.c
+index 8d84b93..78d1e74 100644
+--- a/src/libcharon/plugins/stroke/stroke_control.c
++++ b/src/libcharon/plugins/stroke/stroke_control.c
+@@ -59,6 +59,40 @@ struct stroke_log_info_t {
+	FILE* out;
+ };
+
++#ifdef DLINK_SOFTWARE
++static void send_connect(int service_id, const char *name)
++{
++	if (!charon->pair)
++		charon->pair = json_array();
++
++	DBG1(DBG_CFG, "Set Service_ID = %d by name = %s", service_id, name);
++	json_array_append_new(charon->pair, json_pack("{s:s, s:i}", "name", name, "id", service_id));
++	dlink_service_connect(service_id);
++}
++
++static void send_disconnect(const char *name)
++{
++	if (!name || !*name)
++		return;
++
++	size_t index;
++	json_t *value;
++
++	json_array_foreach(charon->pair, index, value) {
++		const char *name_sa = json_string_value(json_object_get(value, "name"));
++
++		if (!name_sa || strcmp(name_sa, name))
++			continue;
++
++		int id = json_integer_value(json_object_get(value, "id"));
++		json_array_remove(charon->pair, index);
++		DBG1(DBG_CFG, "Get Service_ID = %d is found by name: %s. Remove array[%zu]", id, name, index);
++		dlink_service_disconnect(id);
++		break;
++	}
++}
++#endif /* DLINK_SOFTWARE */
++
+ /**
+  * logging to the stroke interface
+  */
+@@ -192,6 +226,11 @@ METHOD(stroke_control_t, initiate, void,
+			return;
+		}
+	}
++
++#ifdef DLINK_SOFTWARE
++	send_connect(msg->service_id, msg->initiate.name);
++#endif /* DLINK_SOFTWARE */
++
+	charon_initiate(this, peer_cfg, child_cfg, msg, out);
+ }
+
+@@ -352,7 +391,12 @@ METHOD(stroke_control_t, terminate, void,
+
+	if (id)
+	{
++#ifdef DLINK_SOFTWARE
++		charon_terminate(this, id, msg, out, child);
++		return send_disconnect(name);
++#else
+		return charon_terminate(this, id, msg, out, child);
++#endif /* DLINK_SOFTWARE */
+	}
+
+	ike_list = linked_list_create();
+@@ -417,6 +461,11 @@ METHOD(stroke_control_t, terminate, void,
+		DBG1(DBG_CFG, "no %s_SA named '%s' found",
+			 child ? "CHILD" : "IKE", name);
+	}
++
++#ifdef DLINK_SOFTWARE
++	send_disconnect(name);
++#endif /* DLINK_SOFTWARE */
++
+	ike_list->destroy(ike_list);
+	child_list->destroy(child_list);
+ }
+@@ -680,6 +729,11 @@ METHOD(stroke_control_t, route, void,
+			return;
+		}
+	}
++
++#ifdef DLINK_SOFTWARE
++	send_connect(msg->service_id, msg->route.name);
++#endif /* DLINK_SOFTWARE */
++
+	charon_route(peer_cfg, child_cfg, msg->route.name, out);
+	peer_cfg->destroy(peer_cfg);
+	child_cfg->destroy(child_cfg);
+@@ -700,6 +754,10 @@ METHOD(stroke_control_t, unroute, void,
+	{
+		fprintf(out, "configuration '%s' not found\n", msg->unroute.name);
+	}
++
++#ifdef DLINK_SOFTWARE
++	send_connect(msg->service_id, msg->unroute.name);
++#endif /* DLINK_SOFTWARE */
+ }
+
+ METHOD(stroke_control_t, destroy, void,
+diff --git a/src/libcharon/plugins/stroke/stroke_socket.c b/src/libcharon/plugins/stroke/stroke_socket.c
+index 1e7f210..3e0214b 100644
+--- a/src/libcharon/plugins/stroke/stroke_socket.c
++++ b/src/libcharon/plugins/stroke/stroke_socket.c
+@@ -221,6 +221,9 @@ static void stroke_add_conn(private_stroke_socket_t *this, stroke_msg_t *msg)
+	DBG_OPT("  mediated_by=%s", msg->add_conn.ikeme.mediated_by);
+	DBG_OPT("  me_peerid=%s", msg->add_conn.ikeme.peerid);
+	DBG_OPT("  keyexchange=ikev%u", msg->add_conn.version);
++#ifdef DLINK_SOFTWARE
++	DBG_OPT("  service_id=%u", msg->service_id);
++#endif /* DLINK_SOFTWARE */
+
+	this->config->add(this->config, msg);
+	this->attribute->add_dns(this->attribute, msg);
+@@ -247,6 +250,9 @@ static void stroke_initiate(private_stroke_socket_t *this, stroke_msg_t *msg, FI
+ {
+	pop_string(msg, &msg->initiate.name);
+	DBG1(DBG_CFG, "received stroke: initiate '%s'", msg->initiate.name);
++#ifdef DLINK_SOFTWARE
++	DBG1(DBG_CFG, "(initiate) Tunnel set service ID = %d", msg->service_id);
++#endif /* DLINK_SOFTWARE */
+
+	this->control->initiate(this->control, msg, out);
+ }
+@@ -258,6 +264,9 @@ static void stroke_terminate(private_stroke_socket_t *this, stroke_msg_t *msg, F
+ {
+	pop_string(msg, &msg->terminate.name);
+	DBG1(DBG_CFG, "received stroke: terminate '%s'", msg->terminate.name);
++#ifdef DLINK_SOFTWARE
++	DBG1(DBG_CFG, "(terminate) Tunnel get service ID by name '%s'", msg->terminate.name);
++#endif /* DLINK_SOFTWARE */
+
+	this->control->terminate(this->control, msg, out);
+ }
+diff --git a/src/stroke/stroke.c b/src/stroke/stroke.c
+index 8248440..285c6fc 100644
+--- a/src/stroke/stroke.c
++++ b/src/stroke/stroke.c
+@@ -33,6 +33,9 @@ struct stroke_token {
+
+ static char *daemon_name = "charon";
+ static int output_verbosity = 1; /* CONTROL */
++#ifdef DLINK_SOFTWARE
++static int service_id = 0; /* Tunnel ServiceID */
++#endif /* DLINK_SOFTWARE */
+
+ static stroke_msg_t *create_stroke_msg(int type)
+ {
+@@ -87,6 +90,9 @@ static int send_stroke_msg(stroke_msg_t *msg)
+	}
+
+	msg->output_verbosity = output_verbosity;
++#ifdef DLINK_SOFTWARE
++	msg->service_id = service_id;
++#endif /* DLINK_SOFTWARE */
+
+	uri = lib->settings->get_str(lib->settings, "%s.plugins.stroke.socket",
+								 "unix://" STROKE_SOCKET, daemon_name);
+@@ -489,10 +495,13 @@ int main(int argc, char *argv[])
+		struct option long_opts[] = {
+			{"help",		no_argument,		NULL,	'h' },
+			{"utc",			no_argument,		NULL,	'u' },
++#ifdef DLINK_SOFTWARE
++			{"service_id",	required_argument,	NULL,	's' },
++#endif /* DLINK_SOFTWARE */
+			{"daemon",		required_argument,	NULL,	'd' },
+			{0,0,0,0},
+		};
+-		switch (getopt_long(argc, argv, "hd:", long_opts, NULL))
++		switch (getopt_long(argc, argv, "hd:"IF_DLINK_SOFTWARE("s:"), long_opts, NULL))
+		{
+			case EOF:
+				break;
+@@ -501,6 +510,11 @@ int main(int argc, char *argv[])
+			case 'd':
+				daemon_name = optarg;
+				continue;
++#ifdef DLINK_SOFTWARE
++			case 's':
++				service_id = atoi(optarg);
++				continue;
++#endif /* DLINK_SOFTWARE */
+			case 'u':
+				utc = TRUE;
+				continue;
+diff --git a/src/stroke/stroke_msg.h b/src/stroke/stroke_msg.h
+index 08560d3..18dea0b 100644
+--- a/src/stroke/stroke_msg.h
++++ b/src/stroke/stroke_msg.h
+@@ -21,6 +21,12 @@
+
+ #include <library.h>
+
++#ifdef DLINK_SOFTWARE
++#define IF_DLINK_SOFTWARE(...) __VA_ARGS__
++#else /* DLINK_SOFTWARE */
++#define IF_DLINK_SOFTWARE(...)
++#endif /* DLINK_SOFTWARE */
++
+ /**
+  * Socket which is used to communicate between charon and stroke
+  */
+@@ -233,6 +239,11 @@ struct stroke_msg_t {
+	/* verbosity of output returned from charon (-from -1=silent to 4=private)*/
+	int output_verbosity;
+
++#ifdef DLINK_SOFTWARE
++	/* Tunnel ServiceID */
++	int service_id;
++#endif /* DLINK_SOFTWARE */
++
+	union {
+		/* data for STR_INITIATE, STR_ROUTE, STR_UP, STR_DOWN, ... */
+		struct {
+--
+2.20.1

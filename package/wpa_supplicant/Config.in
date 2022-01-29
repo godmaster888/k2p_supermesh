@@ -1,0 +1,11 @@
+menuconfig BR2_PACKAGE_WPA_SUPPLICANT
+	bool "wpa_supplicant"
+	depends on BR2_SUPPORT_WIFI
+	select BR2_PACKAGE_OPENSSL
+
+if BR2_PACKAGE_WPA_SUPPLICANT
+
+config BR2_WPA_SUPPLICANT_VERSION
+	string "Wpa_supplicant branch (default branch if empty)"
+
+endif

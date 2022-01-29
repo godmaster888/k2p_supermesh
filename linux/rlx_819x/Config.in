@@ -1,0 +1,24 @@
+choice
+	prompt "Realtek SDK version"
+	default BR2_RTK_SDK_RETAIL
+
+	config BR2_RTK_SDK_RETAIL
+		bool "SDK 3.4.11/3.4.14"
+
+	config BR2_RTK_SDK_TELECOM
+		bool "SDK 3.4T"
+		depends on RTL8197F
+
+endchoice
+
+choice
+	prompt "Kernel WiFi driver"
+	depends on BR2_SUPPORT_WIFI && BR2_RTK_SDK_RETAIL
+	default BR2_RTL8192CD_VER_3414B
+
+	config BR2_RTL8192CD_VER_3414B
+		bool "3.4.14B"
+		depends on RTL8197F
+
+endchoice
+

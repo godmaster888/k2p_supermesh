@@ -1,0 +1,1 @@
+"use strict";function USBModemChangeSIMCtrl($scope){$scope.cancel=function(){$scope.closeThisDialog(null)}}

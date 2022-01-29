@@ -1,0 +1,61 @@
+From d09175fc8ab5bfd3461b798ecb320201067ef992 Mon Sep 17 00:00:00 2001
+From: Vladimir Yaichkin <vyaichkin@rzn.dlink.ru>
+Date: Mon, 17 Aug 2020 12:41:59 +0300
+Subject: strongswan: add phase state changes
+Patch-from-hash: aff0e04810cefd30f3b489990d3fb96d07619951
+Patch-repo: strongswan
+Patch-branch: master
+Patch-version: 5
+
+Добавлена отправка состояний для IKE и CHILD фазы.
+
+Signed-off-by: Vladimir Yaichkin <vyaichkin@rzn.dlink.ru>
+---
+ src/libcharon/sa/child_sa.c |  9 +++++++++
+ src/libcharon/sa/ike_sa.c   | 11 +++++++++++
+ 2 files changed, 20 insertions(+)
+
+diff --git a/src/libcharon/sa/child_sa.c b/src/libcharon/sa/child_sa.c
+index 2077639..9a42daf 100644
+--- a/src/libcharon/sa/child_sa.c
++++ b/src/libcharon/sa/child_sa.c
+@@ -326,6 +326,15 @@ METHOD(child_sa_t, set_state, void,
+			 child_sa_state_names, this->state,
+			 child_sa_state_names, state);
+		charon->bus->child_state_change(charon->bus, &this->public, state);
++
++#ifdef DLINK_SOFTWARE
++	dlink_service_update(json_pack("{s:{s:s, s:i, s:i}}",
++		                           "stat",
++		                           "name", this->config->get_name(this->config),
++		                           "CHILD", state + 1,
++		                           "ID", this->unique_id));
++#endif /* DLINK_SOFTWARE */
++
+		this->state = state;
+	}
+ }
+diff --git a/src/libcharon/sa/ike_sa.c b/src/libcharon/sa/ike_sa.c
+index f1e3e8f..460fae8 100644
+--- a/src/libcharon/sa/ike_sa.c
++++ b/src/libcharon/sa/ike_sa.c
+@@ -849,6 +849,17 @@ METHOD(ike_sa_t, set_state, void,
+		 ike_sa_state_names, this->state,
+		 ike_sa_state_names, state);
+
++#ifdef DLINK_SOFTWARE
++	const char *name = get_name(this);
++
++	if (name && *name)
++		dlink_service_update(json_pack("{s:{s:s, s:i, s:i}}",
++		                               "stat",
++		                               "name", name,
++		                               "IKE", state + 1,
++		                               "ID", this->unique_id));
++#endif /* DLINK_SOFTWARE */
++
+	switch (state)
+	{
+		case IKE_ESTABLISHED:
+--
+2.20.1

@@ -1,0 +1,22 @@
+#!/bin/bash
+
+PROFILE=$(cat .last_profile)
+dmsdm=$(realpath ./output/host/usr/sbin/dmsdm)
+
+$dmsdm replace_order ./output/build/datamodel-*/buildroot-build/full_dm.json /tmp/full_dm_order.json
+
+for config_file in profiles/${PROFILE}/*config.default; do
+	$dmsdm strip_config /tmp/full_dm_order.json "$config_file" "$config_file"
+
+	if [ "$1" == "ext" ]; then
+			$dmsdm replace_order ./output/build/datamodel-*/buildroot-build/dm.json /tmp/dm_order.json
+			$dmsdm diff_set /tmp/dm_order.json "$config_file" /tmp/to_config.json
+			$dmsdm diff_get /tmp/to_config.json /tmp/dm_order.json /tmp/to_diff.json 0
+			unlink /tmp/to_config.json
+			unlink /tmp/dm_order.json
+			mv --backup /tmp/to_diff.json $(readlink -f "$config_file")
+			./scripts/sort_json_config "$config_file"
+	fi
+done
+
+unlink /tmp/full_dm_order.json

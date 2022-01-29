@@ -1,0 +1,31 @@
+From 6864a53dde5003e655dbdbb9c9103c3c7f3152fe Mon Sep 17 00:00:00 2001
+From: Maxim Zhukov <mzhukov@dlink.ru>
+Date: Fri, 10 Aug 2018 14:20:32 +0300
+Subject: [PATCH] fix build on musl toolchains
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Этот патч фиксит ошибку сборки:
+   ../include/libnetfilter_queue/libnetfilter_queue.h:80:8: error: unknown type name ‘u_int32_t’
+
+Signed-off-by: Maxim Zhukov <mzhukov@dlink.ru>
+---
+ src/nlmsg.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/src/nlmsg.c b/src/nlmsg.c
+index 6c4a139..c0b16cb 100644
+--- a/src/nlmsg.c
++++ b/src/nlmsg.c
+@@ -19,6 +19,7 @@
+ #define __aligned_le64 __le64 __attribute__((aligned(8)))
+ #endif
+ 
++#include <sys/types.h>
+ #include <linux/netfilter/nfnetlink_queue.h>
+ 
+ #include <libnetfilter_queue/libnetfilter_queue.h>
+-- 
+2.18.0
+

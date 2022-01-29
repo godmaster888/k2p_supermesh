@@ -1,0 +1,32 @@
+diff --git a/Makefile b/Makefile
+index 96dbc7c..cfa6bc4 100644
+--- a/Makefile
++++ b/Makefile
+@@ -21,9 +21,7 @@ TOPDIR=../
+ 
+ CFLAGS += -DHAVE_CONFIG_H -I. 
+ CFLAGS += $(EXTRA_CFLAGS)
+-ifeq (${RLX_9607}$(AR7240)$(RALINK_TOOLCHAIN_MT7621)$(RTL8685PB),y)
+ CFLAGS	+= -fPIC
+-endif
+ 
+ LIBFL=libfl.a
+ LIBFL_SHARED=libfl.so
+@@ -50,17 +48,10 @@ $(OBJS): %.o : %.c
+ $(OBJ): Makefile
+ 
+ shared: all
+-ifeq (${RLX_9607}$(AR7240)$(RALINK_TOOLCHAIN_MT7621)$(RTL8685PB),y)
+ 	$(CC) -shared \
+ 	    -o $(LIBFL_SHARED_FULLNAME) \
+ 	    -Wl,--whole-archive $(LIBFL) -Wl,--no-whole-archive \
+ 		-L$(TOPDIR)lib -lc -lm
+-else
+-	$(LD) $(LDFLAGS) -soname=$(LIBFL_SHARED).$(MAJOR_VERSION) \
+-		-o $(LIBFL_SHARED_FULLNAME) --whole-archive $(LIBFL) \
+-		--no-whole-archive  \
+-		-L$(TOPDIR)lib -lc -lm $(LDADD_LIBFLOAT) $(LIBGCC);
+-endif
+ 	$(INSTALL) -d $(TOPDIR)lib
+ 	$(RM) $(TOPDIR)lib/$(LIBFL_SHARED_FULLNAME) $(TOPDIR)lib/$(LIBFL_SHARED).$(MAJOR_VERSION)
+ 	$(INSTALL) -m 644 $(LIBFL_SHARED_FULLNAME) $(TOPDIR)lib

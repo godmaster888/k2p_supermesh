@@ -1,0 +1,12 @@
+menuconfig BR2_PACKAGE_TWAMP_PROTOCOL
+	bool "twamp-protocol"
+
+if BR2_PACKAGE_TWAMP_PROTOCOL
+
+config BR2_SUPPORT_TWAMP_CLIENT
+	bool "twamp-client"
+
+config BR2_SUPPORT_TWAMP_SERVER
+	bool "twamp-server"
+
+endif

@@ -1,0 +1,64 @@
+menuconfig BR2_PACKAGE_PPPD
+	bool "pppd"
+	help
+		An implementation of the Point-to-point protocol.
+
+if BR2_PACKAGE_PPPD
+	config BR2_PPPD_VERSION
+		string "Pppd branch (default branch if empty)"
+
+	config BR2_PPPOE_PASSTHROUGHT_OVER_IFACE
+		bool "Connect pppoe relay over wan iface"
+		default n
+
+	config BR2_PPPD_FILTER
+		bool "Enable pppd filter (for on-demand mode)"
+		select BR2_PACKAGE_LIBPCAP
+		default y
+
+	config BR2_PPPOE_MAX_PADI_ATTEMPTS
+		int "Max number of PADI attempts"
+		default 3
+
+	config BR2_PPPOE_PADI_TIMEOUT
+		int "PADI timeout"
+		default 5
+
+	config BR2_PPPD_DROP_OLD_SESSION
+		bool "Send PADT with old session id on start pppd"
+		default y
+		help
+			Send PADT with old session id on start pppd
+
+	menuconfig BR2_PPPD_PLUGINS
+		bool "Pppd plugins"
+		default n
+		help
+			Plugins in pppd (like pptp, pppoe, l2tp)
+	if BR2_PPPD_PLUGINS
+		config BR2_PACKAGE_PPPD_PPTP
+			depends on BR2_PACKAGE_PPPD
+			select BR2_PACKAGE_ACCEL_PPTP
+			bool "pptp"
+
+		config BR2_PACKAGE_PPPD_PPPOE
+			depends on BR2_PACKAGE_PPPD
+			bool "pppoe"
+
+		config BR2_PACKAGE_PPPD_PPPOA
+			depends on BR2_PACKAGE_PPPD
+			bool "pppoa"
+
+		config BR2_PACKAGE_PPPD_RADIUS
+			depends on BR2_PACKAGE_PPPD
+			bool "radius"
+			help
+			  Install RADIUS support for pppd
+			config BR2_PACKAGE_PPPD_L2TP
+				depends on BR2_PACKAGE_PPPD
+				bool "l2tp"
+				default n
+				help
+					Work only use openl2tpd
+	endif
+endif

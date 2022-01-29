@@ -1,0 +1,4 @@
+config BR2_PACKAGE_PURE_FTPD
+	bool "pure-ftpd"
+	default y
+	depends on BR2_SUPPORT_STORAGE

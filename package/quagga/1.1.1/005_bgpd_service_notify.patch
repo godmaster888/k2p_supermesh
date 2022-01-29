@@ -1,0 +1,77 @@
+commit 07f8f5fe73d7c049cf07ff3eba49869094e2ace2
+Author: Dmitriy Karaman <dkaraman@dlink.ru>
+Date:   Wed Feb 20 16:23:36 2019 +0300
+
+    Added dsysinit support
+
+diff --git a/bgpd/bgp_main.c b/bgpd/bgp_main.c
+index af9c030..7604686 100644
+--- a/bgpd/bgp_main.c
++++ b/bgpd/bgp_main.c
+@@ -52,6 +52,10 @@ Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
+ #include "bgpd/bgp_filter.h"
+ #include "bgpd/bgp_zebra.h"
+ 
++#ifdef DLINK_SOFTWARE
++#include <d-link/d_service_notify.h>
++#endif
++
+ /* bgpd options, we use GNU getopt library. */
+ static const struct option longopts[] = 
+ {
+@@ -71,6 +75,9 @@ static const struct option longopts[] =
+   { "version",     no_argument,       NULL, 'v'},
+   { "dryrun",      no_argument,       NULL, 'C'},
+   { "help",        no_argument,       NULL, 'h'},
++#ifdef DLINK_SOFTWARE
++  { "service_id",  required_argument, NULL, 'I'},
++#endif
+   { 0 }
+ };
+ 
+@@ -350,6 +357,10 @@ main (int argc, char **argv)
+   int tmp_port;
+   int skip_runas = 0;
+ 
++#ifdef DLINK_SOFTWARE
++  int service_id = 0;
++#endif
++
+   /* Set umask before anything for security */
+   umask (0027);
+ 
+@@ -365,7 +376,11 @@ main (int argc, char **argv)
+   /* Command line argument treatment. */
+   while (1) 
+     {
++#ifdef DLINK_SOFTWARE
++      opt = getopt_long (argc, argv, "df:i:z:hp:l:A:P:rnu:g:vCSI:", longopts, 0);
++#else
+       opt = getopt_long (argc, argv, "df:i:z:hp:l:A:P:rnu:g:vCS", longopts, 0);
++#endif
+     
+       if (opt == EOF)
+ 	break;
+@@ -436,6 +451,11 @@ main (int argc, char **argv)
+ 	case 'h':
+ 	  usage (progname, 0);
+ 	  break;
++#ifdef DLINK_SOFTWARE
++  case 'I':
++    service_id = optarg ? atoi(optarg) : 0;
++    break;
++#endif
+ 	default:
+ 	  usage (progname, 1);
+ 	  break;
+@@ -463,6 +483,10 @@ main (int argc, char **argv)
+   if(dryrun)
+     return(0);
+   
++#ifdef DLINK_SOFTWARE
++  dlink_service_connect(service_id);
++#endif
++
+   /* Turn into daemon if daemon_mode is set. */
+   if (daemon_mode && daemon (0, 0) < 0)
+     {

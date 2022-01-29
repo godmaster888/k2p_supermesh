@@ -1,0 +1,39 @@
+From ba873e40afaac98d0455550f09a7c4066ef13d92 Mon Sep 17 00:00:00 2001
+From: Maxim Zhukov <mzhukov@dlink.ru>
+Date: Tue, 17 Mar 2020 11:23:03 +0300
+Subject: [PATCH 2/2] add support D-Link software
+
+Signed-off-by: Maxim Zhukov <mzhukov@dlink.ru>
+---
+ svr-main.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/svr-main.c b/svr-main.c
+index 0a39b70..d56b505 100644
+--- a/svr-main.c
++++ b/svr-main.c
+@@ -31,6 +31,10 @@
+ #include "dbrandom.h"
+ #include "crypto_desc.h"
+ 
++#ifdef DLINK_SOFTWARE
++#include <d-link/d_service_notify.h>
++#endif /* DLINK_SOFTWARE */
++
+ static size_t listensockets(int *sock, size_t sockcount, int *maxfd);
+ static void sigchld_handler(int dummy);
+ static void sigsegv_handler(int);
+@@ -58,6 +62,10 @@ int main(int argc, char ** argv)
+ 	/* get commandline options */
+ 	svr_getopts(argc, argv);
+ 
++#ifdef DLINK_SOFTWARE
++	dlink_service_connect(0);
++#endif /* DLINK_SOFTWARE */
++
+ #if INETD_MODE
+ 	/* service program mode */
+ 	if (svr_opts.inetdmode) {
+-- 
+2.25.1
+

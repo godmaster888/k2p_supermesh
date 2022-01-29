@@ -1,0 +1,110 @@
+From b76d0474385b75df51388bba2836191d561ef8f3 Mon Sep 17 00:00:00 2001
+From: Vladimir Yaichkin <vyaichkin@rzn.dlink.ru>
+Date: Fri, 3 Apr 2020 14:13:43 +0300
+Subject: server: add support bind to device
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+Patch-from-hash: b3407d2adbb820bc00cfb54449ac323a307c8bc6
+Patch-repo: twamp-protocol
+Patch-branch: master
+Patch-version: 2
+
+Добавлена возможность биндить TWAMP-сервер на определенном
+интерфейсе.
+
+Signed-off-by: Vladimir Yaichkin <vyaichkin@rzn.dlink.ru>
+---
+ server.c | 22 ++++++++++++++++++++--
+ twamp.h  |  5 +++++
+ 2 files changed, 25 insertions(+), 2 deletion(-)
+
+diff --git a/server.c b/server.c
+index 5ca457f..be8c782 100644
+--- a/server.c
++++ b/server.c
+@@ -77,6 +77,7 @@ static int used_sockets = 0;
+ static fd_set read_fds;
+ static uint16_t servo = 0;      /* Server Octets to be sent by sender */
+ static int socket_family = AF_INET;
++static int bind_to_device = 0;
+
+ TWAMPTimestamp ZeroT = { 0, 0 };
+
+@@ -92,6 +93,13 @@ static void usage(char *progname)
+             "   -o servo        2 Octets to be reflected by Sender in Reflected Mode (<65536)\n"
+             "   -6              Use IPv6 if this option is defined. Otherwise, Ipv4 will be used.\n"
+             "   -h              Prints this help message and exits\n");
++#ifdef DLINK_SOFTWARE
++    fprintf(stderr,
++            "   -J port         TCP port of TWAMP Serve\n"
++            "   -U timeout srv  Inactivity timeout of TWAMP Server\n"
++            "   -u timeout refl Inactivity timeout of TWAMP Reflector\n"
++            "   -I ifname       Bind to interface\n");
++#endif
+     return;
+ }
+
+@@ -103,13 +111,13 @@ static int parse_options(char *progname, int argc, char *argv[])
+ #endif
+ {
+     int opt;
+-    if (argc < 1 || argc > 7) {
++    if (argc < 1 || argc > 15) {
+         fprintf(stderr, "Wrong number of arguments for %s\n", progname);
+         return 1;
+     }
+
+ #ifdef DLINK_SOFTWARE
+-    while ((opt = getopt(argc, argv, "J:U:u:a:p:o:h:6")) != -1) {
++    while ((opt = getopt(argc, argv, "J:U:u:I:a:p:o:h:6")) != -1) {
+ #else
+     while ((opt = getopt(argc, argv, "a:p:o:h:6")) != -1) {
+ #endif
+@@ -150,6 +158,10 @@ static int parse_options(char *progname, int argc, char *argv[])
+         case 'u':
+             c_opt->reflect_timeout = strtol(optarg, NULL, 10);
+             break;
++        case 'I':
++            strncpy(c_opt->ifr.ifr_name, optarg, sizeof(c_opt->ifr.ifr_name) -1);
++            bind_to_device = 1;
++            break;
+ #endif
+         default:
+             return 1;
+@@ -844,6 +856,12 @@ int main(int argc, char *argv[])
+         exit(EXIT_FAILURE);
+     }
+
++#ifdef DLINK_SOFTWARE
++    if (bind_to_device && *c_opt.ifr.ifr_name) {
++        setsockopt(listenfd, SOL_SOCKET, SO_BINDTODEVICE, &c_opt.ifr, sizeof(c_opt.ifr));
++    }
++#endif
++
+     if(socket_family == AF_INET6) {
+         /* Set Server address and bind on the TWAMP port */
+         struct sockaddr_in6 serv_addr;
+diff --git a/twamp.h b/twamp.h
+index 7d41cdf..75f02fc 100644
+--- a/twamp.h
++++ b/twamp.h
+@@ -75,11 +75,16 @@ typedef struct twamp_timestamp {
+ } TWAMPTimestamp;
+
+ #ifdef DLINK_SOFTWARE
++
++#include <net/if.h>
++#include <sys/ioctl.h>
++
+ /* Custom options */
+ typedef struct {
+     uint16_t ctrl_port;
+     time_t server_timeout;
+     time_t reflect_timeout;
++    struct ifreq ifr;
+ } custom_opt_t;
+ #endif
+
+--
+2.20.1

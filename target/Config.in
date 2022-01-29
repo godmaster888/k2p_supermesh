@@ -1,0 +1,103 @@
+config BR2_ENDIAN
+	string
+	default "LITTLE"   if mipsel || mips64el || i386 || x86_64 || arm
+	default "BIG"      if mips   || mips64 || armeb
+
+config mips
+	bool
+config mipsel
+	bool
+config mips64
+	bool
+config mips64el
+	bool
+config i386
+	bool
+config x86_64
+	bool
+config arm
+	bool
+
+config TARGET_ARCH
+	string
+	default "arm"     if arm
+	default "armeb"   if armeb
+	default "mips"    if mips
+	default "mipsel"  if mipsel
+	default "mips64"    if mips64
+	default "mips64el"  if mips64el
+	default "i386"    if i386
+	default "x86_64"    if x86_64
+
+menu "Target Options"
+choice
+	prompt "Target"
+	default BR2_ar7240
+	help
+	  Select the target architecture family to build for.
+config BR2_ar7240
+	bool "AR7240"
+config BR2_qca
+	bool "Qualcomm"
+config BR2_ralink
+	bool "Ralink"
+
+config BR2_rlx
+	bool "Realtek"
+
+config BR2_rlx_9607
+	bool "Realtek RG/Apollo"
+	select mips
+
+config BR2_i386
+	bool "X86/Virtual"
+	select i386
+
+config BR2_x86_64
+	bool "X86/64"
+	select x86_64
+
+config BR2_rtk_ms
+	bool "Realtek MSwitch"
+
+config BR2_rtk_luna
+	bool "Realtek Luna"
+
+config BR2_bcm
+	bool "Broadcom"
+
+endchoice
+
+if BR2_ar7240
+source target/ar7240/Config.in
+endif
+
+if BR2_qca
+source target/qca/Config.in
+endif
+
+if BR2_ralink
+source target/ralink/Config.in
+endif
+
+if BR2_rlx
+source target/rlx/Config.in
+endif
+
+if BR2_bcm
+source target/bcm/Config.in
+endif
+
+if BR2_rtk_ms
+source target/rtk_ms/Config.in
+endif
+
+if BR2_rtk_luna
+source target/rtk_luna/Config.in
+endif
+
+if BR2_i386 || BR2_x86_64
+source target/x86/Config.in
+endif
+
+endmenu

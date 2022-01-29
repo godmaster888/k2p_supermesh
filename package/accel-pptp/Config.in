@@ -1,0 +1,7 @@
+menuconfig BR2_PACKAGE_ACCEL_PPTP
+	bool "accel-pptp"
+
+if BR2_PACKAGE_ACCEL_PPTP
+	config BR2_ACCEL_PPTP_VERSION
+		string "Accel-pptp branch (default branch if empty)"
+endif

@@ -1,0 +1,9 @@
+# vim: noexpandtab:ts=8:sw=8
+
+# FUSE
+/dev/fuse	c	777	0	0	10	229	-	-	-
+/dev/misc	d	777	0	0	-	-	-	-	-
+/dev/misc/fuse	c	666	0	0	10	229	-	-	-
+
+# USB PRINTER
+/dev/usblp	c	666	0	0	180	0	0	1	8

@@ -1,0 +1,10 @@
+menu "Ralink"
+menuconfig BR2_VENDOR_APP
+	bool "Support Vendor Soft"
+	default y
+
+if BR2_VENDOR_APP
+	source "package/private/mediatek/rt2880_app/Config.in"
+endif
+source "package/private/mediatek/Config.in"
+endmenu

@@ -1,0 +1,564 @@
+menuconfig DRU
+	bool "D-Link Russia R&D options"
+	default n
+	help
+	  Russian stuff.
+
+if DRU
+
+config DRU_MC_FWD
+	bool "Always accept multicast"
+	default y
+	help
+	  Do not filter incoming multicast.
+	  Always accept such frames.
+	  See /proc/sys/dru/mc_fwd
+
+config DRU_NO_CONNFULL_LOG
+	bool "Disable messaging of conntrack full"
+	default y
+	help
+	  Do not log it.
+	  Hard for syslog, can be flood.
+
+menuconfig DRU_UDP_FILTER
+	bool "Early filter out part of incoming UDP"
+	select DRU_FILTERING
+	default y
+	help
+	  Use it to drop uTP.
+if DRU_UDP_FILTER
+
+config DRU_UDP_FILTER_DEF_ENABLED
+	bool "Enabled by default"
+	default y
+	help
+	  You can runtime disable filtering
+	  by echo 0 >/proc/sys/dru/udp_filter/enable
+config DRU_UDP_FILTER_ENABLE_DEFVAL
+	int
+	default 0 if !DRU_UDP_FILTER_DEF_ENABLED
+	default 1 if  DRU_UDP_FILTER_DEF_ENABLED
+
+config DRU_UDP_FILTER_STAT
+	bool "Collect filter statistic"
+	default y
+	help
+	  See in /proc/dru/udp_filter_stat
+
+config DRU_UDP_FILTER_THRESHOLD
+	int "Minimum payload size to be allowed"
+	range "1" "1480"
+	default "512"
+	help
+	  If UDP payload size is less then subj then
+	  frame will be dropped.
+	  See /proc/sys/dru/udp_filter/threshold
+
+config DRU_UDP_FILTER_CPULOAD
+	int "Minimum CPU load (percents) required to use filtering"
+	range "0" "200"
+	default "80"
+	help
+	  The filtering doesn't work if
+	  loadavg/1min is lower than subj.
+	  Zere means disable relationship.
+	  See /proc/sys/dru/udp_filter/cpuload
+
+config DRU_UDP_FILTER_IDLE
+	int "Maximum CPU idle (percents) required to use filtering"
+	range "0" "100"
+	default "60"
+	help
+	  The filtering doesn't work if
+	  idle/1sec is upper than subj.
+	  See /proc/sys/dru/udp_filter/idle
+
+config DRU_UDP_FILTER_PPPOE
+	  int "filter PPPoE content"
+	  range "0" "1"
+	  default 1
+	  help
+	    Analize PPPoE session data for
+	    IP/UDP filtering.
+	    See /proc/sys/dru/udp_filter/pppoe
+
+config DRU_UDP_FILTER_HEURISTIC_UTP
+	int "Analyze UDP payload for uTP"
+	range "0" "1"
+	default 1
+	help
+	  Modern (beg.2014) uTP frame has value of 0x01
+	  at the beginning octet of a UDP payload.
+	  If you say Y than sufficiently small
+	  frame (see DRU_UDP_FILTER_THRESHOLD) will
+	  be dropped only if the condition of 0x01
+	  is satisfied.
+	  You can runtime redefine behaviour by handling
+	  sysctl file of /proc/sys/dru/udp_filter/heuristic_utp
+	  with echo 0 or echo 1.
+
+config DRU_UDP_FILTER_ALLOW_LAN
+	int "do not filter traffic from LAN"
+	range "0" "1"
+	default 0
+	help
+	  Do not filter traffic incoming from LAN.
+	  It is usefull for World of Tanks which uses
+	  uTp-like traffic. It is hard to separate uTp
+	  from WoT. This options is ugly. Yes allows
+	  Tanks but upstream uTp also.
+	  It works only on double tagged sk_buff because
+	  uses LAN's internal vlanid.
+	  You can manage it via /proc/sys/dru/udp_filter/allow_lan
+
+endif # DRU_UDP_FILTER
+
+
+
+
+menuconfig DRU_LOAD_FILTER
+	bool "Early filter out depended on cpuload"
+	select DRU_FILTERING
+	default y
+	help
+	  Trying to hold cpuload in range by dropping of
+	  part of incoming traffic [possibly] accepted
+	  after UDP filter.
+
+if DRU_LOAD_FILTER
+
+config DRU_LOAD_FILTER_DEF_ENABLED
+	bool "Enabled by default"
+	default y
+	help
+	  You can runtime disable filtering
+	  by echo 0 >/proc/sys/dru/load_filter/enable
+config DRU_LOAD_FILTER_ENABLE_DEFVAL
+	int
+	default 0 if !DRU_LOAD_FILTER_DEF_ENABLED
+	default 1 if  DRU_LOAD_FILTER_DEF_ENABLED
+
+config DRU_LOAD_FILTER_STAT
+	bool "Collect load filter statistic"
+	default y
+	help
+	  See in /proc/dru/load_filter_stat
+
+config DRU_LOAD_FILTER_CPULOAD_MIN
+	int "Minimum CPU load (percents) required to use load filtering"
+	range "0" "1000"
+	default "80"
+	help
+	  The load filtering doesn't work if
+	  loadavg/1min is lower than subj.
+	  See /proc/sys/dru/load_filter/cpuload_min
+
+config DRU_LOAD_FILTER_CPULOAD_MAX
+	int "Maximum CPU load (percents) means kill all"
+	range "0" "1000"
+	default "120"
+	help
+	  If cpuload is greater or equal of subj than
+	  all passed frames will be dropped
+	  See /proc/sys/dru/load_filter/cpuload_max
+
+endif # DRU_LOAD_FILTER
+
+
+menuconfig DRU_IDLE_FILTER
+        bool "Early filter out depended on cpu idle"
+	select DRU_FILTERING
+        default y
+        help
+          Trying to hold cpu idle in range by dropping of
+          part of incoming traffic.
+
+if DRU_IDLE_FILTER
+
+config DRU_IDLE_FILTER_DEF_ENABLED
+        bool "Enabled by default"
+        default y
+        help
+          You can runtime disable filtering
+          by echo 0 >/proc/sys/dru/idle_filter/enable
+config DRU_IDLE_FILTER_ENABLE_DEFVAL
+        int
+        default 0 if !DRU_IDLE_FILTER_DEF_ENABLED
+        default 1 if  DRU_IDLE_FILTER_DEF_ENABLED
+
+config DRU_IDLE_FILTER_STAT
+        bool "Collect idle filter statistic"
+        default y
+        help
+          See in /proc/dru/idle_filter_stat
+
+config DRU_IDLE_FILTER_CPUIDLE_MIN
+        int "Minimum CPU idle (percents) means kill all"
+        range "0" "100"
+        default "0"
+        help
+          If cpuidle is less or equal than subj then
+          all passed frames will be dropped
+          See /proc/sys/dru/idle_filter/cpuidle_min
+
+config DRU_IDLE_FILTER_CPUIDLE_MAX
+        int "Maximum CPU idle (percents) required to use idle filtering"
+        range "0" "100"
+        default "10"
+        help
+          The idle filtering doesn't work if
+          current cpuidle is greater than subj.
+          See /proc/sys/dru/idle_filter/cpuidle_max
+
+endif # DRU_IDLE_FILTER
+
+
+config DRU_FILTERING
+	bool
+	default n
+
+#if DRU_UDP_FILTER || DRU_LOAD_FILTER || DRU_IDLE_FILTER
+
+config DRU_REACLC_AVENRUN_1SEC
+	bool "recalc loadavg any 1 instead of 5 sec"
+	default y
+
+config DRU_USE_AVENRUN_5SEC
+	bool "check loadavg for last 5 sec instead of 1 min"
+	default y
+
+#endif # FILTERS
+
+menuconfig DRU_RA_VLANS
+	bool "Ralink/Mediatek VLANS"
+	depends on RAETH || RA_HW_NAT
+	default y
+	help
+	  Contains default VLAN's for ramtk.
+	  It overrides Ralink Module settings.
+
+if DRU_RA_VLANS
+
+config DRU_RA_LAN_VID
+	int "Default VID for LAN"
+	range "1" "4095"
+	default "1"
+	help
+	  Default VID for Ralink/Mediatek LAN.
+	  Applies at booting.
+	  You can manage this via /proc/sys/dru/ra_vlans/lan_vid
+
+config DRU_RA_WAN_VID
+	int "Default VID for WAN"
+	range "1" "4095"
+	default "5"
+	help
+	  Default VID for Ralink/Mediatek WAN.
+	  Applies at booting.
+	  You can manage this via /proc/sys/dru/ra_vlans/wan_vid
+
+endif # DRU_RA_VLANS
+
+config DRU_CANCEL_SW_INIT
+	bool "Cancel switch initialization at startup"
+	depends on RALINK_MT7621
+	default n
+
+config DRU_USE_HNAT_WITHOUT_HNAPT
+	bool "Use HNAT only (HNAPT will be disabled)"
+	depends on RA_HW_NAT && HNAT_V2 && RALINK_MT7621
+	default n
+	help
+	  If DRU_USE_HNAT_WITHOUT_HNAPT option is enabled, hw_nat will create HNAT entries only,
+	  HNAPT entries will not be created.
+
+	  In case RA_HW_NAT_PPTP_L2TP option is enabled simultaneously with the above mentioned,
+	  DRU_USE_HNAT_WITHOUT_HNAPT option will be disabled when tunneling is on
+	  (if pptp_fast_path == 1 || l2tp_fast_path == 1),
+	  as long as normal tunneling requires creation of HNAPT entries.
+
+if !RT2860V2_AP && (RT2860V2_AP!=m)
+	comment "Enable Ralink WiFi AP to manage its rx/tx"
+endif
+
+menuconfig DRU_RAWIFI
+	bool "Manage RX/TX of Ralink/Mediatek WiFi"
+	depends on RT2860V2_AP || RLT_WIFI
+	default y
+	help
+	  Hacks to manage Ralink/Mediatek
+	  WiFi rx/tx queues to avoid cpu throttle
+	  and IGMP preempting
+
+if DRU_RAWIFI
+
+if !RA_NETWORK_TASKLET_BH
+	comment "You need tasklet bh to control its prio"
+endif
+
+config DRU_RAWIFI_TASKLET_HIGH
+	int "Schedule high prio tasklets"
+	range "0" "1"
+	depends on !RA_NETWORK_WORKQUEUE_BH
+	default "0"
+	help
+	  You can schedule wifi bh-tasklets
+	  with high or usual prio. Vanilla is high,
+	  D-Link default is usual (to make wifi to be
+	  preemtable by copper I/O)
+
+	  See in /proc/sys/dru/rawifi_tasklet_high
+
+config DRU_RAWIFI_THROTTLE_DELAY
+	int "Throttle WiFi I/O by event"
+	range "0" "10000"
+	default "1000"
+	help
+	  You can stop RX/TX of WiFi for a time
+	  by any event. This is delay in milliseconds.
+	  Zero means disable throttling.
+	  Max is 10000 msec (10 sec).
+
+	  See in /proc/sys/dru/rawifi_throttle_delay
+
+endif # DRU_RAWIFI
+
+config DRU_RAWIFI_AUTOCHANNEL
+	bool "Use simpler and better autochannel algo"
+	default y
+	help
+	  Original algo selects bad channels in auto mode.
+	  This one works better but doesn't depend on
+	  channels interferention.
+
+config DRU_RAWIFI_AUTOCHANNEL_TIMEOUT
+	int "Timeout (msec) to collect wave stat"
+	range "0" "3000"
+	default "600"
+	help
+	  Zero means use driver's default (400).
+	  File /proc/sys/dru/rawifi_autochannel_timeout
+
+config DRU_FORCE_UDP_HWNAT
+	bool "Force UDP HWNAT for MT7620 (!hack!)"
+	depends on RALINK_MT7620 && (RA_HW_NAT=m)
+	default y
+	help
+	  Say Y to disable original Mediatek code
+	  in PpeFillInL4Info() of hwnat which disables
+	  UDP flows binding.
+	  Ugly, unclear but workable hack.
+	  Waiting for vendor's comments.
+
+choice
+	prompt "Mediatek HWNAT ACL algo"
+	default DRU_MULTILANWAN_HWNAT
+	help
+	  You can select between original Mediatek
+	  code or D-Link Russia advanced variant which
+	  supports multi-LAN/WAN
+
+config DRU_MULTILANWAN_HWNAT
+	bool "Enable multi LAN/WAN support in HWNAT"
+	depends on (RALINK_MT7620 || RALINK_MT7621) && (RA_HW_NAT=m)
+	help
+	  It optimizes MTK HWNAT patterns/ACL rules.
+	  Now you can supply LANs and WANs at insmod
+	  using (for example)
+	  insmod hw_nat.ko lans=br0,eth11 wans=wan1,wan1_2
+	  This is back-compatible:
+	  by default lans=br0 wans=wan1
+
+config RA_HWNAT_DEFAULT_ACL
+	bool "vanilla Mediatek code"
+	help
+	  Subj. One LAN, one WAN, fixed
+	  pattern/ACL tables.
+
+endchoice
+
+config DRU_PAGE_FAULT_VERBOSE
+	bool "Be verbose on page_fault"
+	default y
+	help
+	  See internal #8466. This uncomments printk
+	  in MIPS do_page_fault. Build-time feature.
+
+config DRU_SLA_COUNTERS
+	bool "Enable SLA counters"
+	depends on RALINK_MT7620 || RALINK_MT7621
+	default n
+
+config DRU_UBOOT_CMDLINE
+	bool "Cmdline from Uboot"
+	default n
+
+comment "PPP tricks"
+
+config DRU_L2TP_FAST_HELLO_REPLY
+	bool "Fast L2TP Hello Reply"
+	depends on L2TP
+	default y
+	help
+	  When set is possible to send
+	  reply to L2TP Hello message (Keepalive)
+	  immediately on receive.
+	  Can be useful on heavily loaded devices
+	  with preemted l2tp userspace daemon.
+
+if DRU_L2TP_FAST_HELLO_REPLY
+
+config DRU_L2TP_FHR_DEFVAL
+	int "Default value of L2TP FHR"
+	range "0" "2"
+	default "2"
+	help
+	  Can be managed via /proc/sys/dru/l2tp_fhr
+	  0 - disabled
+	  1 - reply to Hello's of any L2TP protocol
+	      version (only v2 for now)
+	  2 - reply only fot L2TP v2 protocol.
+	  TODO: v3
+
+endif # DRU_L2TP_FAST_HELLO_REPLY
+
+
+config DRU_PPPOE_AVOID_PADT_ZOMBIE
+	bool "Avoid PPPoE zombies when using rp-pppoe"
+	depends on PPPOE
+	default y
+	help
+	  Linux rp-pppoe server has bug. When terminating signal
+	  received it send PADT first and then LCP Term-Req.
+	  As the result a client can't close a session properly
+	  because Term-Req's do not hit a client and a kernel
+	  session becomes "zombie".
+	  This hack allows to avoid this trouble.
+
+if DRU_PPPOE_AVOID_PADT_ZOMBIE
+
+config DRU_PPPOE_AVOID_PADT_ZOMBIE_DEFVAL
+	int "Default value of avoiding"
+	range "0" "1"
+	default "1"
+	help
+	  Can be managed via /proc/sys/dru/avoid_pppoe_zombie
+	  0 - disabled
+	  1 - enabled
+
+endif # DRU_PPPOE_AVOID_PADT_ZOMBIE
+
+config DRU_BRIDGE_NAT_LOOPBACK
+	bool "Hack to allow NAT loopback when LAN is bridge"
+	depends on BRIDGE
+	default y
+	help
+	  If a physical server and a client testing NAT loopback
+	  are placed in a same bridged LAN Linux, then we loose
+	  loopbacked packets in the bridge subsystem.
+	  We tried
+	    echo 1 >/sys/class/net/br0/brif/*/hairpin_mode
+	  but it brokes broadcast functionality.
+	  So this is the hack to forward those packets.
+
+if DRU_BRIDGE_NAT_LOOPBACK
+
+config DRU_BRIDGE_NAT_LOOPBACK_DEFVAL
+	int "Default value of bridge NAT loopbacking"
+	range "0" "1"
+	default "1"
+	help
+	  Can be managed via /proc/sys/dru/br_nat_loopback
+	  0 - disabled
+	  1 - enabled
+
+endif # DRU_BRIDGE_NAT_LOOPBACK
+
+
+config DRU_NETDEV_MARK
+	bool "Add 32-bit mark to netdev to indicate packets incame."
+	default y
+	help
+	  Incoming skb mark will be OR'ed with this one
+	  before mangle PREROUTING.
+	  Useful to mark skb's without `iptables --in-interface'
+	  Use custom ioctl SIOC[GS]DRUMARK (sockios.h) to
+	  read/set this value.
+
+config DRU_NETDEV_MARK_DEFAULTS
+	bool "Automatically set default values"
+	depends on DRU_NETDEV_MARK
+	default y
+	help
+	  Any created bridge mark as LAN.
+	  All others are WAN's.
+	  Distinguished: bridge, ppp, wireless and
+	  other ethernet-style devices.
+
+config DRU_RT_3052_ESW
+	bool "Partial functionality of RT_3052_ESW needed for DRU"
+	depends on !RT_3052_ESW && (!RALINK_MT7621 || RAETH)
+	# ra ESW must be disabled, then
+	#  1. it works always for non-7621 (via chip registers)
+	#  2. or via MII for 7621 => we need mii_mgr.c from raeth
+	default n
+	help
+	  On DAP-1620A1 we do not need Extended Bridge functionality.
+	  Moreover it brokes link on P5.
+	  But we need link change events at least.
+
+config DRU_PCIE_DELAY_WA
+	bool "Additional sleep for PCI-E init"
+	depends on PCI && RALINK_MT7620
+	default n
+	help
+	  Sometimes the PCIE'ed 5Ghz Wi-Fi cant be discovered
+	  at a boot time on a DAP-1620A1.
+	  Additional delay between off and on in the bus init
+	  subroutine helps to avoid this bug.
+
+if DRU_PCIE_DELAY_WA
+
+config DRU_PCIE_DELAY_WA_MSEC
+	int "PCI-E init delay (msec)"
+	range "1" "2000"
+	default "1600"
+	help
+	  Delay (in msec) between off an on in the bus init
+	  subroutine (init_rt2880pci()).
+
+endif # DRU_PCIE_DELAY_WA
+
+config DRU_STOP_NET_ON_REBOOT
+	bool "Close all net ifaces on reboot"
+	default n
+	help
+	  Needed for MT7612E (WiFi 5GHz) on DAP-1620A1.
+
+config DRU_DWR_921C1_BOOTSTRAP
+	bool "*** This is the kernel for a DWR-921C1 transit firmware ***"
+	default n
+	depends on RALINK_MT7620
+	help
+	  Select me ONLY if you make bootstrap(transit)
+	  firmware for D-Link DWR-921C1.
+
+config DRU_THINOUT_HWNAT
+	bool "Allow some kinds of traffic avoid MTK hwnat"
+	default y
+	help
+	  If skb has special bits set in its mark, it avoids
+	  Rx and/or Tx hooks in a MTK hwnat.
+	  Set those bits if you are sure traffic can not be
+	  speeded up, but only wastes computing resources.
+	  See dru_mark.h for the corresponding defines.
+
+config DRU_USB_ARP_CASTRATE
+	bool "usbnet transmit: cut ARP packets to 42 bytes"
+	default n
+	depends on USB_ACM
+	help
+	  With this option enabled, ARP packets >= 60 bytes
+	  will be cut to 42 (eth(14) + arp(28)) bytes in usbnet_start_xmit.
+endif # DRU

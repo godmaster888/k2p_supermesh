@@ -1,0 +1,8 @@
+config BR2_PACKAGE_LIBCRC
+	bool "libcrc"
+	help
+	  LibCRC is an MIT licensed library written in C containing various
+	  checksum algorithms. These include the most common CRC implementations
+	  but also other checksums like the NMEA checksum used by marine equipment.
+
+	  https://www.libcrc.org/

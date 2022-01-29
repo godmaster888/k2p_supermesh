@@ -1,0 +1,32 @@
+# Set TTL match and target support in kernel
+
+define TTL_ENABLE
+@$(call MESSAGE,"Enabling kernel modules for TTL support")
+@$(call KCONFIG_ENABLE_OPT,IP_NF_MANGLE,$(LINUX_CONFIG))
+@$(call KCONFIG_ENABLE_OPT,CONFIG_IP_NF_MATCH_TTL,$(LINUX_CONFIG))
+	@
+endef
+
+define TTL_DISABLE
+@$(call MESSAGE,"Disabling kernel modules for TTL support")
+@$(call KCONFIG_DISABLE_OPT,CONFIG_IP_NF_MATCH_TTL,$(LINUX_CONFIG))
+	@
+endef
+
+define TTLV6_ENABLE
+@$(call MESSAGE,"Enabling kernel modules for TTL-IPv6 support")
+@$(call KCONFIG_ENABLE_OPT,IP6_NF_MANGLE,$(LINUX_CONFIG))
+@$(call KCONFIG_ENABLE_OPT,CONFIG_IP6_NF_MATCH_HL,$(LINUX_CONFIG))
+@$(call KCONFIG_ENABLE_OPT,CONFIG_IP6_NF_TARGET_HL,$(LINUX_CONFIG))
+	@
+endef
+
+define TTLV6_DISABLE
+@$(call MESSAGE,"Enabling kernel modules for TTL-IPv6 support")
+@$(call KCONFIG_DISABLE_OPT,CONFIG_IP6_NF_MATCH_HL,$(LINUX_CONFIG))
+@$(call KCONFIG_DISABLE_OPT,CONFIG_IP6_NF_TARGET_HL,$(LINUX_CONFIG))
+	@
+endef
+
+LINUX_ADDONS += $(if $(BR2_PACKAGE_IPTABLES_TTL_IPV4),TTL_ENABLE,TTL_DISABLE)
+LINUX_ADDONS += $(if $(BR2_PACKAGE_IPTABLES_TTL_IPV6),TTLV6_ENABLE,TTLV6_DISABLE)

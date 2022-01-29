@@ -1,0 +1,4 @@
+config BR2_PACKAGE_ACCEL_PPP
+	bool "pppoe/pptp/l2tp server"
+	select BR2_LEGACY
+	select BR2_PACKAGE_OPENSSL

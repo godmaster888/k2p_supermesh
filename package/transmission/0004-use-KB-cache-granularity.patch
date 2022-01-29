@@ -1,0 +1,207 @@
+From 6853489c13c9fa044ca652571c40b6e8075c86e7 Mon Sep 17 00:00:00 2001
+From: Alexander Safonov <asafonov@dlink.ru>
+Date: Fri, 4 Oct 2019 18:13:23 +0300
+Subject: [PATCH 1/2] transmission: use KB cache granularity
+
+Signed-off-by: Alexander Safonov <asafonov@dlink.ru>
+---
+ daemon/remote.c                |  6 +++---
+ libtransmission/quark.h        |  2 +-
+ libtransmission/rpc-test.c     |  2 +-
+ libtransmission/rpcimpl.c      |  6 +++---
+ libtransmission/session.c      | 18 +++++++++---------
+ libtransmission/session.h      |  4 ++--
+ libtransmission/transmission.h |  4 ++--
+ libtransmission/utils.h        |  2 +-
+ 8 files changed, 22 insertions(+), 22 deletions(-)
+
+diff --git a/daemon/remote.c b/daemon/remote.c
+index 2b17d92..fe28ab0 100644
+--- a/daemon/remote.c
++++ b/daemon/remote.c
+@@ -1491,8 +1491,8 @@ printSession (tr_variant * top)
+         printf ("  Peer exchange allowed: %s\n", (boolVal ? "Yes" : "No"));
+       if (tr_variantDictFindStr (args,  TR_KEY_encryption, &str, NULL))
+         printf ("  Encryption: %s\n", str);
+-      if (tr_variantDictFindInt (args, TR_KEY_cache_size_mb, &i))
+-        printf ("  Maximum memory cache size: %s\n", tr_formatter_mem_MB (buf, i, sizeof (buf)));
++      if (tr_variantDictFindInt (args, TR_KEY_cache_size_kb, &i))
++        printf ("  Maximum memory cache size: %s\n", tr_formatter_mem_KB (buf, i, sizeof (buf)));
+       printf ("\n");
+ 
+         {
+@@ -2004,7 +2004,7 @@ processArgs (const char * rpcurl, int argc, const char * const * argv)
+                           break;
+                 case 'C': tr_variantDictAddBool (args, TR_KEY_incomplete_dir_enabled, false);
+                           break;
+-                case 'e': tr_variantDictAddInt (args, TR_KEY_cache_size_mb, atoi (optarg));
++                case 'e': tr_variantDictAddInt (args, TR_KEY_cache_size_kb, atoi (optarg));
+                           break;
+                 case 910: tr_variantDictAddStr (args, TR_KEY_encryption, "required");
+                           break;
+diff --git a/libtransmission/quark.h b/libtransmission/quark.h
+index 17464be..1d7a7cf 100644
+--- a/libtransmission/quark.h
++++ b/libtransmission/quark.h
+@@ -60,7 +60,7 @@ enum
+   TR_KEY_blocklist_url,
+   TR_KEY_blocks,
+   TR_KEY_bytesCompleted,
+-  TR_KEY_cache_size_mb,
++  TR_KEY_cache_size_kb,
+   TR_KEY_clientIsChoked,
+   TR_KEY_clientIsInterested,
+   TR_KEY_clientName,
+diff --git a/libtransmission/rpc-test.c b/libtransmission/rpc-test.c
+index 2f3f0b7..0f17587 100644
+--- a/libtransmission/rpc-test.c
++++ b/libtransmission/rpc-test.c
+@@ -109,7 +109,7 @@ test_session_get_and_set (void)
+   check (tr_variantDictFind (args, TR_KEY_blocklist_enabled) != NULL);
+   check (tr_variantDictFind (args, TR_KEY_blocklist_size) != NULL);
+   check (tr_variantDictFind (args, TR_KEY_blocklist_url) != NULL);
+-  check (tr_variantDictFind (args, TR_KEY_cache_size_mb) != NULL);
++  check (tr_variantDictFind (args, TR_KEY_cache_size_kb) != NULL);
+   check (tr_variantDictFind (args, TR_KEY_config_dir) != NULL);
+   check (tr_variantDictFind (args, TR_KEY_dht_enabled) != NULL);
+   check (tr_variantDictFind (args, TR_KEY_download_dir) != NULL);
+diff --git a/libtransmission/rpcimpl.c b/libtransmission/rpcimpl.c
+index 46fd319..7817e0e 100644
+--- a/libtransmission/rpcimpl.c
++++ b/libtransmission/rpcimpl.c
+@@ -1853,8 +1853,8 @@ sessionSet (tr_session               * session,
+   bool boolVal;
+   const char * str;
+ 
+-  if (tr_variantDictFindInt (args_in, TR_KEY_cache_size_mb, &i))
+-    tr_sessionSetCacheLimit_MB (session, i);
++  if (tr_variantDictFindInt (args_in, TR_KEY_cache_size_kb, &i))
++    tr_sessionSetCacheLimit_KB (session, i);
+ 
+   if (tr_variantDictFindInt (args_in, TR_KEY_alt_speed_up, &i))
+     tr_sessionSetAltSpeed_KBps (session, TR_UP, i);
+@@ -2059,7 +2059,7 @@ sessionGet (tr_session               * s,
+   tr_variantDictAddBool (d, TR_KEY_alt_speed_time_enabled, tr_sessionUsesAltSpeedTime (s));
+   tr_variantDictAddBool (d, TR_KEY_blocklist_enabled, tr_blocklistIsEnabled (s));
+   tr_variantDictAddStr  (d, TR_KEY_blocklist_url, tr_blocklistGetURL (s));
+-  tr_variantDictAddInt  (d, TR_KEY_cache_size_mb, tr_sessionGetCacheLimit_MB (s));
++  tr_variantDictAddInt  (d, TR_KEY_cache_size_kb, tr_sessionGetCacheLimit_KB (s));
+   tr_variantDictAddInt  (d, TR_KEY_blocklist_size, tr_blocklistGetRuleCount (s));
+   tr_variantDictAddStr  (d, TR_KEY_config_dir, tr_sessionGetConfigDir (s));
+   tr_variantDictAddStr  (d, TR_KEY_download_dir, tr_sessionGetDownloadDir (s));
+diff --git a/libtransmission/session.c b/libtransmission/session.c
+index bb60c23..1fd3049 100644
+--- a/libtransmission/session.c
++++ b/libtransmission/session.c
+@@ -62,10 +62,10 @@
+ enum
+ {
+ #ifdef TR_LIGHTWEIGHT
+-  DEFAULT_CACHE_SIZE_MB = 2,
++  DEFAULT_CACHE_SIZE_KB = 2048,
+   DEFAULT_PREFETCH_ENABLED = false,
+ #else
+-  DEFAULT_CACHE_SIZE_MB = 4,
++  DEFAULT_CACHE_SIZE_KB = 4096,
+   DEFAULT_PREFETCH_ENABLED = true,
+ #endif
+   SAVE_INTERVAL_SECS = 360
+@@ -320,7 +320,7 @@ tr_sessionGetDefaultSettings (tr_variant * d)
+   tr_variantDictReserve (d, 63);
+   tr_variantDictAddBool (d, TR_KEY_blocklist_enabled,               false);
+   tr_variantDictAddStr  (d, TR_KEY_blocklist_url,                   "http://www.example.com/blocklist");
+-  tr_variantDictAddInt  (d, TR_KEY_cache_size_mb,                   DEFAULT_CACHE_SIZE_MB);
++  tr_variantDictAddInt  (d, TR_KEY_cache_size_kb,                   DEFAULT_CACHE_SIZE_KB);
+   tr_variantDictAddBool (d, TR_KEY_dht_enabled,                     true);
+   tr_variantDictAddBool (d, TR_KEY_utp_enabled,                     true);
+   tr_variantDictAddBool (d, TR_KEY_lpd_enabled,                     false);
+@@ -393,7 +393,7 @@ tr_sessionGetSettings (tr_session * s, tr_variant * d)
+   tr_variantDictReserve (d, 63);
+   tr_variantDictAddBool (d, TR_KEY_blocklist_enabled,            tr_blocklistIsEnabled (s));
+   tr_variantDictAddStr  (d, TR_KEY_blocklist_url,                tr_blocklistGetURL (s));
+-  tr_variantDictAddInt  (d, TR_KEY_cache_size_mb,                tr_sessionGetCacheLimit_MB (s));
++  tr_variantDictAddInt  (d, TR_KEY_cache_size_kb,                tr_sessionGetCacheLimit_KB (s));
+   tr_variantDictAddBool (d, TR_KEY_dht_enabled,                  s->isDHTEnabled);
+   tr_variantDictAddBool (d, TR_KEY_utp_enabled,                  s->isUTPEnabled);
+   tr_variantDictAddBool (d, TR_KEY_lpd_enabled,                  s->isLPDEnabled);
+@@ -785,8 +785,8 @@ sessionSetImpl (void * vdata)
+ #endif
+ 
+   /* misc features */
+-  if (tr_variantDictFindInt (settings, TR_KEY_cache_size_mb, &i))
+-    tr_sessionSetCacheLimit_MB (session, i);
++  if (tr_variantDictFindInt (settings, TR_KEY_cache_size_kb, &i))
++    tr_sessionSetCacheLimit_KB (session, i);
+   if (tr_variantDictFindInt (settings, TR_KEY_peer_limit_per_torrent, &i))
+     tr_sessionSetPeerLimitPerTorrent (session, i);
+   if (tr_variantDictFindBool (settings, TR_KEY_pex_enabled, &boolVal))
+@@ -2204,7 +2204,7 @@ tr_sessionAllowsLPD (const tr_session * session)
+ ***/
+ 
+ void
+-tr_sessionSetCacheLimit_MB (tr_session * session, int max_bytes)
++tr_sessionSetCacheLimit_KB (tr_session * session, int max_bytes)
+ {
+   assert (tr_isSession (session));
+ 
+@@ -2212,11 +2212,11 @@ tr_sessionSetCacheLimit_MB (tr_session * session, int max_bytes)
+ }
+ 
+ int
+-tr_sessionGetCacheLimit_MB (const tr_session * session)
++tr_sessionGetCacheLimit_KB (const tr_session * session)
+ {
+   assert (tr_isSession (session));
+ 
+-  return toMemMB (tr_cacheGetLimit (session->cache));
++  return toMemKB (tr_cacheGetLimit (session->cache));
+ }
+ 
+ /***
+diff --git a/libtransmission/session.h b/libtransmission/session.h
+index 41dfa20..19d1a65 100644
+--- a/libtransmission/session.h
++++ b/libtransmission/session.h
+@@ -301,9 +301,9 @@ static inline double
+ toSpeedKBps (unsigned int Bps)  { return Bps / (double)tr_speed_K; }
+ 
+ static inline uint64_t
+-toMemBytes (unsigned int MB) { uint64_t B = tr_mem_K * tr_mem_K; B *= MB; return B; }
++toMemBytes (unsigned int KB) { uint64_t B = tr_mem_K; B *= KB; return B; }
+ static inline int
+-toMemMB  (uint64_t B)      { return B / (tr_mem_K * tr_mem_K); }
++toMemKB  (uint64_t B)      { return B / tr_mem_K; }
+ 
+ /**
+ **/
+diff --git a/libtransmission/transmission.h b/libtransmission/transmission.h
+index 804bf6d..1222b09 100644
+--- a/libtransmission/transmission.h
++++ b/libtransmission/transmission.h
+@@ -506,8 +506,8 @@ void  tr_sessionSetUTPEnabled (tr_session * session, bool);
+ bool  tr_sessionIsLPDEnabled (const tr_session * session);
+ void  tr_sessionSetLPDEnabled (tr_session * session, bool enabled);
+ 
+-void  tr_sessionSetCacheLimit_MB (tr_session * session, int mb);
+-int   tr_sessionGetCacheLimit_MB (const tr_session * session);
++void  tr_sessionSetCacheLimit_KB (tr_session * session, int mb);
++int   tr_sessionGetCacheLimit_KB (const tr_session * session);
+ 
+ tr_encryption_mode tr_sessionGetEncryption (tr_session * session);
+ void               tr_sessionSetEncryption (tr_session * session,
+diff --git a/libtransmission/utils.h b/libtransmission/utils.h
+index 13b34dc..ac064f4 100644
+--- a/libtransmission/utils.h
++++ b/libtransmission/utils.h
+@@ -494,7 +494,7 @@ char* tr_formatter_speed_KBps (char * buf, double KBps, size_t buflen);
+ char* tr_formatter_mem_B (char * buf, int64_t bytes, size_t buflen);
+ 
+ /* format a memory size from MB into a user-readable string. */
+-static inline char* tr_formatter_mem_MB (char * buf, double MBps, size_t buflen) { return tr_formatter_mem_B (buf, MBps * tr_mem_K * tr_mem_K, buflen); }
++static inline char* tr_formatter_mem_KB (char * buf, double MBps, size_t buflen) { return tr_formatter_mem_B (buf, MBps * tr_mem_K * tr_mem_K, buflen); }
+ 
+ /* format a file size from bytes into a user-readable string. */
+ char* tr_formatter_size_B (char * buf, int64_t bytes, size_t buflen);
+-- 
+2.20.1
+

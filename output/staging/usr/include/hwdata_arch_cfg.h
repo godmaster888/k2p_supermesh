@@ -1,0 +1,24 @@
+#ifndef __ARCH_CFG_H__
+#define __ARCH_CFG_H__
+
+#define HWDATA_DEVNAME "Factory" //всегда /dev/mtd3
+
+enum {
+	D_ARCH_MAC_OFFSET      = 0x00000004,
+	D_ARCH_WIFI_PIN_OFFSET = 0x0000041a,
+	D_ARCH_SN_OFFSET       = 0x0000042e,
+	D_ARCH_HWREV_OFFSET    = 0x00000442,
+	D_ARCH_CC_OFFSET       = 0x00000456,
+	D_ARCH_PCBA_SN_OFFSET  = 0x00000460,
+	D_ARCH_WPA_PSK_OFFSET  = 0x00000481,
+	D_ARCH_WIFI_SSID_OFFSET = 0x000004c1,
+	D_ARCH_WIFI_5G_SSID_OFFSET = 0x000004e5,
+	D_ARCH_MAC_5G_OFFSET   = 0x00008004, // Cмещение мак-адреса для 5 GHz. Мак должен быть в обоих экземплярах калибровок.
+	D_ARCH_GMAC2_OFFSET    = 0x0000E006,
+	D_ARCH_BARCODE_OFFSET  = 0x0000E00C,
+
+	DMS_CHINA_FACTORY_BACKUP_OFFSET = 0xf000,	/* of 0x10000 => 4K */
+};
+
+
+#endif

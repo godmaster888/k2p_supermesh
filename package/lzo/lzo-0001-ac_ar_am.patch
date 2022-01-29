@@ -1,0 +1,29 @@
+--- a/configure.ac	2017-05-17 16:47:57.813876642 +0300
++++ b/configure.ac	2017-05-17 16:47:44.489876517 +0300
+@@ -36,7 +36,7 @@
+ This configure script may be copied, distributed and modified under the
+ terms of the GNU General Public License; see COPYING for more details.])
+ 
+-AC_PREREQ(2.69)
++AC_PREREQ(2.65)
+ AC_INIT([LZO],[2.09],[markus@oberhumer.com],[lzo],[http://www.oberhumer.com/opensource/lzo/])
+ AC_MSG_NOTICE([Configuring LZO $PACKAGE_VERSION])
+ AC_CONFIG_SRCDIR(src/lzo_init.c)
+@@ -60,7 +60,7 @@
+ 
+ AC_PROG_CC
+ AM_PROG_CC_C_O
+-AM_PROG_AR
++m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
+ AM_PROG_AS
+ AC_PROG_CPP
+ mfx_PROG_CPPFLAGS
+@@ -68,7 +68,7 @@
+ mfx_LZO_CHECK_ENDIAN
+ AC_SYS_LARGEFILE
+ 
+-AM_INIT_AUTOMAKE([1.15 gnu subdir-objects -Wall -Werror])
++AM_INIT_AUTOMAKE([1.11 gnu subdir-objects -Wall -Werror])
+ AM_SILENT_RULES([yes])
+ AC_CONFIG_HEADERS([config.h:config.hin])
+ AH_TOP([#ifndef __LZO_AUTOCONF_CONFIG_H_INCLUDED

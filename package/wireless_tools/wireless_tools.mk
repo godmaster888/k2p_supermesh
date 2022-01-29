@@ -1,0 +1,55 @@
+#############################################################
+#
+# wireless_tools
+#
+#############################################################
+
+WIRELESS_TOOLS_VERSION = 29
+WIRELESS_TOOLS_SITE = $(DLINK_GIT_STORAGE)/wireless_tools
+WIRELESS_TOOLS_LICENSE = GPL-2.0-or-later
+WIRELESS_TOOLS_LICENSE_FILES = COPYING
+WIRELESS_TOOLS_INSTALL_STAGING = YES
+
+WIRELESS_TOOLS_BUILD_TARGETS = iwmulticall
+WIRELESS_TOOLS_INSTALL_TARGETS = install-iwmulticall
+
+ifeq ($(BR2_PACKAGE_WIRELESS_TOOLS_LIB),y)
+	WIRELESS_TOOLS_BUILD_TARGETS += libiw.so.$(WIRELESS_TOOLS_VERSION)
+	WIRELESS_TOOLS_INSTALL_TARGETS += install-dynamic
+
+define WIRELESS_TOOLS_INSTALL_STAGING_CMDS
+	$(MAKE) -C $(@D) PREFIX="$(STAGING_DIR)" install-dynamic
+	$(MAKE) -C $(@D) PREFIX="$(STAGING_DIR)/usr" install-hdr
+endef
+
+endif
+
+WIRELESS_TOOLS_CFLAGS = $(TARGET_CFLAGS)
+
+ifeq ($(RALINK_MTK_WIFI_5GHZ_MT7613AEN),y)
+	WIRELESS_TOOLS_CFLAGS += -DEXTENDED_IOCTL_BUFFER
+	# For correct iwconfig output
+	WIRELESS_TOOLS_CFLAGS += -DWE_ESSENTIAL=y
+endif
+
+define WIRELESS_TOOLS_BUILD_CMDS
+	$(TARGET_MAKE_ENV) $(MAKE) -C $(@D) CC="$(TARGET_CC)" CFLAGS="$(WIRELESS_TOOLS_CFLAGS)" \
+		$(WIRELESS_TOOLS_BUILD_TARGETS)
+endef
+
+
+
+define WIRELESS_TOOLS_CLEAN_CMDS
+	$(MAKE) -C $(@D) realclean
+endef
+
+define WIRELESS_TOOLS_INSTALL_TARGET_CMDS
+	$(MAKE) -C $(@D) PREFIX="$(TARGET_DIR)" $(WIRELESS_TOOLS_INSTALL_TARGETS)
+	$(MAKE) -C $(@D) INSTALL_MAN="$(TARGET_DIR)/usr/share/man" install-man
+endef
+
+define WIRELESS_TOOLS_UNINSTALL_TARGET_CMDS
+	$(MAKE) -C $(@D) PREFIX="$(TARGET_DIR)" uninstall
+endef
+
+$(eval $(call GENTARGETS))

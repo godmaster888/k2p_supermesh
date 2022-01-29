@@ -1,0 +1,263 @@
+#!/usr/bin/env python
+
+# Copyright (C) 2014 by Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+# Copyright (C) 2016 by Konstantin Vasin <kvasin@dlink.ru>
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+
+import sys
+import os
+import os.path
+import argparse
+import csv
+import collections
+import shutil
+import subprocess
+import fnmatch
+
+try:
+    import matplotlib
+    matplotlib.use('Agg')
+    import matplotlib.font_manager as fm
+    import matplotlib.pyplot as plt
+except ImportError:
+    sys.stderr.write("You need python-matplotlib to generate the size graph\n")
+    exit(1)
+
+colors = ['#e60004', '#009836', '#2e1d86', '#ffed00',
+          '#0068b5', '#f28e00', '#940084', '#97c000']
+
+def backup_target(builddir):
+    src = os.path.join(builddir, "target")
+    dst = os.path.join(builddir, "target_backup")
+    if os.path.exists(dst):
+        shutil.rmtree(dst)
+    shutil.copytree(src, dst, symlinks=True)
+
+def calc_total(builddir):
+    sqpath = os.path.join(builddir, "host", "usr", "bin", "mksquashfs")
+    origpath = os.path.join(builddir, "target")
+    sqname = os.path.join(builddir, "target.sqsh")
+    cmd = " ".join((sqpath, origpath, sqname, "-comp", "lzma"))
+
+    with open(os.devnull, 'w') as devnull:
+        p = subprocess.Popen(cmd, shell=True, stdout=devnull, stderr=devnull)
+        p.wait()
+
+    total = os.path.getsize(sqname)
+    os.remove(sqname)
+    return total
+
+def add_file(pkgdict, abspath, pkg):
+    if not os.path.exists(abspath):
+        return
+    if os.path.islink(abspath):
+        return
+    if not (pkg in pkgdict):
+        pkgdict[pkg] = set()
+    pkgdict[pkg].add(abspath)
+
+def build_package_dict(builddir):
+    pkgdict = {}
+    with open(os.path.join(builddir, "build", "packages-file-list.txt")) as filelistf:
+        for l in filelistf.readlines():
+            pkg, fpath = l.split(",", 1)
+            # remove the initial './' in each file path
+            fpath = fpath.strip()[2:]
+            fullpath = os.path.join(builddir, "target", fpath)
+            add_file(pkgdict, fullpath, pkg)
+    return pkgdict
+
+def build_package_size(filesdict, builddir, total):
+    pkgsize = collections.defaultdict(int)
+
+    sqpath = os.path.join(builddir, "host", "usr", "bin", "mksquashfs")
+    sqname = os.path.join(builddir, "target.sqsh")
+    tpath = os.path.join(builddir, "target")
+    tback = os.path.join(builddir, "target_backup")
+    cmd = " ".join((sqpath, tpath, sqname, "-comp", "lzma"))
+
+    # cycle over packages
+    for (pkg, files) in pkgdict.items():
+        # remove old target
+        if os.path.exists(tpath):
+            shutil.rmtree(tpath)
+
+        # copy target from backup
+        shutil.copytree(tback, tpath, symlinks=True)
+
+        # remove specific files from target
+        for fpath in files:
+            if os.path.exists(fpath):
+                os.remove(fpath)
+
+        # compress
+        with open(os.devnull, 'w') as devnull:
+            p = subprocess.Popen(cmd, shell=True, stdout=devnull, stderr=devnull)
+            p.wait()
+
+        current = os.path.getsize(sqname)
+        os.remove(sqname)
+        size = total - current
+        pkgsize[pkg] = size
+        print("%s %d Kb" % (pkg, (size / 1024)))
+
+    return pkgsize
+
+def get_kernel_modules_size(builddir, total):
+
+    sqpath = os.path.join(builddir, "host", "usr", "bin", "mksquashfs")
+    sqname = os.path.join(builddir, "target.sqsh")
+    tpath = os.path.join(builddir, "target")
+    tback = os.path.join(builddir, "target_backup")
+    cmd = " ".join((sqpath, tpath, sqname, "-comp", "lzma"))
+    modpath = os.path.join(builddir, "target", "lib", "modules")
+
+    if not os.path.exists(modpath):
+        return 0
+
+    # remove old target
+    if os.path.exists(tpath):
+        shutil.rmtree(tpath)
+
+    # copy target from backup
+    shutil.copytree(tback, tpath, symlinks=True)
+
+    # remove kernel modules
+    shutil.rmtree(modpath)
+
+    # compress
+    with open(os.devnull, 'w') as devnull:
+        p = subprocess.Popen(cmd, shell=True, stdout=devnull, stderr=devnull)
+        p.wait()
+
+    current = os.path.getsize(sqname)
+    os.remove(sqname)
+    size = total - current
+
+    return size
+
+def get_kernel_size(builddir):
+
+    size = 0
+    binpath = os.path.join(builddir, "images")
+    for f in os.listdir(binpath):
+        if not (fnmatch.fnmatch(f, 'vmlinu*') or fnmatch.fnmatch(f, '*Image')):
+            continue
+        kpath = os.path.join(binpath, f)
+        if os.path.islink(kpath):
+            continue
+
+        size = os.path.getsize(kpath)
+
+    print("kernel %d Kb" % (size / 1024))
+    return size
+
+def gen_packages_csv(pkgsizes, total, outputf):
+    with open(outputf, 'w') as csvfile:
+        wr = csv.writer(csvfile, delimiter=',', quoting=csv.QUOTE_MINIMAL)
+        wr.writerow(["Package name", "Package size", "Package size in system (%)"])
+        for (pkg, size) in pkgsizes.items():
+            wr.writerow([pkg, size, "%.1f" % (float(size) / total * 100)])
+
+def draw_graph(pkgsize, total, outputf):
+    known_total = sum(pkgsize.values())
+    labels = []
+    values = []
+    other_value = 0
+    for (p, sz) in pkgsize.items():
+        if sz < (total * 0.01):
+            other_value += sz
+        else:
+            labels.append("%s (%d kB)" % (p, sz / 1024.))
+            values.append(sz)
+    labels.append("Other packages (%d kB)" % (other_value / 1024.))
+    values.append(other_value)
+
+    unknown_value = total - known_total
+    labels.append("Unknown (%d kB)" % (unknown_value / 1024.))
+    values.append(unknown_value)
+
+    plt.figure()
+    patches, texts, autotexts = plt.pie(values, labels=labels,
+                                        autopct='%1.1f%%', shadow=True,
+                                        colors=colors)
+    # Reduce text size
+    proptease = fm.FontProperties()
+    proptease.set_size('xx-small')
+    plt.setp(autotexts, fontproperties=proptease)
+    plt.setp(texts, fontproperties=proptease)
+
+    plt.suptitle("Filesystem size per package", fontsize=18, y=.97)
+    plt.title("Total filesystem size: %d kB" % (total / 1024.), fontsize=10, y=.96)
+    plt.savefig(outputf)
+
+
+
+def restore_target(builddir):
+    dst = os.path.join(builddir, "target")
+    src = os.path.join(builddir, "target_backup")
+    if os.path.exists(dst):
+        shutil.rmtree(dst)
+    shutil.copytree(src, dst, symlinks=True)
+    shutil.rmtree(src)
+
+parser = argparse.ArgumentParser(description='Draw size statistics graphs')
+
+parser.add_argument("--builddir", '-i', metavar="BUILDDIR", required=True,
+                    help="Buildroot output directory")
+parser.add_argument("--graph", '-g', metavar="GRAPH",
+                    help="Graph output file (.pdf or .png extension)")
+parser.add_argument("--package-size-csv", '-p', metavar="PKG_SIZE_CSV",
+                    help="CSV output file with package size statistics")
+parser.add_argument("--with-kernel", help="Also calculare kernel size",
+                    action="store_true")
+args = parser.parse_args()
+
+# Backup target directory
+backup_target(args.builddir)
+
+# Calculate the total squashfs size
+total = calc_total(args.builddir)
+
+# Find out which package installed what files
+pkgdict = build_package_dict(args.builddir)
+
+# Collect the size installed by each package
+pkgsize = build_package_size(pkgdict, args.builddir, total)
+
+# kernel modules
+kmsize = get_kernel_modules_size(args.builddir, total)
+if 'gpio_module' in pkgsize:
+    kmsize = kmsize - pkgsize.get('gpio_module')
+print("kernel_modules %d Kb" % (kmsize / 1024))
+pkgsize["kernel_modules"] = kmsize
+
+# kernel
+if args.with_kernel:
+    ksize = get_kernel_size(args.builddir)
+    total += ksize
+    pkgsize["kernel"] = ksize
+
+if args.graph:
+    draw_graph(pkgsize, total, args.graph)
+if args.package_size_csv:
+    gen_packages_csv(pkgsize, total, args.package_size_csv)
+
+# Restore original target directory
+restore_target(args.builddir)
+
+
+

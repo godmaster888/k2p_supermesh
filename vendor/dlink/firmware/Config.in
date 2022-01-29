@@ -1,0 +1,76 @@
+menu "Firmware"
+menuconfig BR2_PRIVATE_KEY
+	bool "private key"
+	default n
+
+if BR2_PRIVATE_KEY
+config BR2_FW_UUID
+	string "UUID signature (len 32)"
+
+config BR2_FW_MAGIC_VERSION
+	hex "Magic version for signature firmware (len 2)"
+
+config BR2_DUAL_SIGN_FW
+	bool "Dual sign firmware"
+	select BR2_BOOTLOADER_SIGN_FW_CHECK if BR2_ralink
+
+if BR2_DUAL_SIGN_FW
+config BR2_FW_UUID_SEC
+	string "Second UUID signature (len 32)"
+endif
+
+config BR2_OBFUSCATE_FW
+	bool "Obfuscate firmware"
+	select BR2_PACKAGE_OBF_IMAGE
+endif
+
+config BR2_FIXUP_MIN_DATAMODEL_VERSION
+	string "Minimal datamodel version"
+	default ""
+	help
+	  This option defines the minimal datamodel version after which
+	  fixups will apply
+
+if DLINK_DEVICEID=DAP_1620A1_MT7620A || DLINK_DEVICEID=DAP_1620B_MT7621AT || DLINK_DEVICEID=DWR_921 || DLINK_DEVICEID=DWR_953A1
+menu "Bootstrap"
+config BR2_DRU_BOOTSTRAP
+	bool "***** Make transit(bootstrap) image *****"
+	help
+	  Make special image to transit from original firmware to DRU one.
+	  Can be used for DAP-1620A1 and DIR_632 (one algo). But it was not
+	  advancedly modified for DIR-632, therefore it is for DAP-1620A1 only.
+	  Update: also for DWR-921C1 (see #13801)
+	  Update: also for DWR-953A1 (see #16813)
+
+choice
+	prompt "Bootstrap stage"
+	depends on BR2_DRU_BOOTSTRAP
+	depends on DLINK_DEVICEID=DAP_1620B_MT7621AT || DLINK_DEVICEID=DWR_921 || DLINK_DEVICEID=DWR_953A1
+	default BR2_DRU_BOOTSTRAP_STAGE2
+	help
+	  Stage1 means build the firmware which can be
+	  uploaded onto original (chineese) one and
+	  contains stage2 inside itself.
+	  You have to supply path to the stage2 fw image.
+
+	  Stage2 - target firmware which able to finish
+	  bootstrap process and makes a device ready.
+
+config BR2_DRU_BOOTSTRAP_STAGE1
+	bool "STAGE1"
+
+config BR2_DRU_BOOTSTRAP_STAGE2
+	bool "STAGE2"
+
+endchoice
+
+config BR2_DRU_BOOTSTRAP_STAGE2_IMAGE
+	string "Filename of firmware to deploy on (mandatory!)"
+	depends on BR2_DRU_BOOTSTRAP_STAGE1
+	default "FILL_ME_WITH_THE_CORRECT_PATH"
+	help
+	  Firmware to put into the transit update file to upgrade
+	  DWR-921C1/DWR-953A1 flash for DRU functionality.
+endmenu
+endif
+endmenu

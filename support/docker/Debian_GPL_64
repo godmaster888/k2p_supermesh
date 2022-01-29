@@ -1,0 +1,53 @@
+FROM debian:stretch-slim
+
+ARG BUILDER_NAME
+ARG BUILDER_UID
+ARG BUILDER_GID
+
+ENV LANG en_US.UTF-8
+
+ARG DEBIAN_FRONTEND=noninteractive
+
+RUN dpkg --add-architecture i386 && \
+	apt-get update && \
+	apt-get install -y \
+		autoconf \
+		automake \
+		autopoint \
+		bc \
+		bison \
+		flex \
+		g++ \
+		gawk \
+		gcc-multilib \
+		gettext \
+		git \
+		libtool \
+		make \
+		pkg-config \
+		procps \
+		python \
+		texinfo \
+		wget \
+		zlib1g-dev \
+		libz1:i386 \
+	&& rm -rf /var/lib/apt/lists/*
+
+RUN groupadd -g $BUILDER_GID $BUILDER_NAME; \
+	useradd -d /home/$BUILDER_NAME -m -g $BUILDER_GID -u $BUILDER_UID -s /bin/bash $BUILDER_NAME
+
+RUN localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
+
+# mkdir and touch are needed to fix buster-slim build:
+#  Removing 'diversion of /bin/sh to /bin/sh.distrib by dash'
+#  Adding 'diversion of /bin/sh to /bin/sh.distrib by bash'
+#  Removing 'diversion of /usr/share/man/man1/sh.1.gz to /usr/share/man/man1/sh.distrib.1.gz by dash'
+#  Adding 'diversion of /usr/share/man/man1/sh.1.gz to /usr/share/man/man1/sh.distrib.1.gz by bash'
+#  ln: failed to create symbolic link '/usr/share/man/man1/sh.1.gz.tmp': No such file or directory
+RUN mkdir -p /usr/share/man/man1/ && \
+		touch /usr/share/man/man1/sh.distrib.1.gz && \
+		echo "dash dash/sh boolean false" | debconf-set-selections && \
+		dpkg-reconfigure dash
+
+USER $BUILDER_UID:$BUILDER_GID
+WORKDIR /home/$BUILDER_NAME/sdk

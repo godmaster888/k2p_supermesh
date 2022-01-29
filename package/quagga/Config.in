@@ -1,0 +1,88 @@
+config BR2_PACKAGE_QUAGGA
+	bool "quagga"
+	help
+	  Routing software suite, providing implementations of
+	  OSPFv2, OSPFv3 (IPv6), RIP v1 and v2, RIPng (IPv6) and BGPv4+.
+
+	  http://www.quagga.net/
+
+if BR2_PACKAGE_QUAGGA
+
+	config BR2_QUAGGA_VERSION
+		string "branch (1.1.1 if empty)"
+
+	config BR2_QUAGGA_USER
+		string "Username for quagga software launches"
+		default "quagga"
+
+	config BR2_PACKAGE_QUAGGA_ZEBRA
+		bool
+		default y
+		help
+		  Build zebra daemon.
+
+	config BR2_PACKAGE_QUAGGA_RIPD
+		bool "RIPv2/v3 protocol"
+		help
+		  Build ripd daemon.
+
+	config BR2_PACKAGE_QUAGGA_RIPNGD
+		bool "RIPng (IPv6) protocol"
+		depends on BR2_INET_IPV6
+		help
+		  Build ripngd daemon.
+
+	config BR2_PACKAGE_QUAGGA_OSPFD
+		bool "OSPF protocol"
+		default n
+		help
+		  Build ospfd daemon.
+
+	config BR2_PACKAGE_QUAGGA_OSPF6D
+		bool "OSPF6 protocol"
+		depends on BR2_INET_IPV6
+		default n
+		help
+		  Build ospf6d daemon.
+
+	config BR2_PACKAGE_QUAGGA_LDPD
+		bool "LDP protocol"
+		default n
+		help
+		  Build ldpd daemon.
+	if BR2_PACKAGE_QUAGGA_LDPD
+		config BR2_PACKAGE_QUAGGA_LDPD_MPLS_IP_ENCAP_TABLE
+			int "Route table to store MPLS-encap IP routes"
+			default 13
+			range 1 251
+			help
+			  This table will be used to store routes like
+			    9.9.9.9  encap mpls  1001 via 10.90.8.100 dev eth3 proto zebra
+			  which is used for data transporting. Whereas we should preserve
+			  OSPF "clean L3" routes like
+			    9.9.9.9 via 10.90.8.100 dev eth3 proto zebra metric 11
+			  in the RT_TABLE_MAIN to use it for tLDP (direct connect w/o
+			  any MPLS transport).
+
+		config BR2_PACKAGE_QUAGGA_LDPD_NFMARK_BIT
+			int "Bit in nfmark to tag output LDP frames"
+			default 13
+			range 0 31
+			help
+			  This bit should be set in nfmark of outgoiung LDP frames
+			  by onboard management software. It is necessary to help
+			  the frames bypass MPLS encap IP routes.
+			  LDP is a serivice protocol and should communicate via L3 only.
+	endif # BR2_PACKAGE_QUAGGA_LDPD
+
+	config BR2_PACKAGE_QUAGGA_BGPD
+		bool "BGPv4 protocol"
+		help
+		  Build bgpd daemon.
+
+	config BR2_PACKAGE_QUAGGA_ISISD
+		bool "IS-IS protocol"
+		default n
+		help
+		  Build isisd daemon.
+endif

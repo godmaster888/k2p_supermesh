@@ -1,0 +1,142 @@
+menu "Toolchain"
+choice
+	prompt "Toolchain type"
+	help
+		Select whether to use the toolchain provided by buildroot
+		or an external toolchain.
+
+		Some vendors provide toolchains in binary form, some in
+		source form.
+
+config BR2_TOOLCHAIN_EXTERNAL
+	bool "External toolchain"
+endchoice
+
+#18758
+choice
+	prompt "Libc type"
+	default BR2_TOOLCHAIN_USES_UCLIBC
+
+config BR2_TOOLCHAIN_USES_GLIBC
+	bool "glibc"
+	select BR2_USE_WCHAR
+	select BR2_TOOLCHAIN_HAS_THREADS
+	select BR2_TOOLCHAIN_HAS_THREADS_NPTL
+	select BR2_TOOLCHAIN_HAS_THREADS_DEBUG
+	#depends on BR2_TOOLCHAIN_EXTERNAL ???
+
+config BR2_TOOLCHAIN_USES_UCLIBC
+	bool "uClibc"
+	#depends on BR2_TOOLCHAIN_EXTERNAL ???
+
+config BR2_TOOLCHAIN_USES_MUSL
+	bool "musl"
+	select BR2_USE_WCHAR
+	select BR2_TOOLCHAIN_HAS_THREADS
+	select BR2_TOOLCHAIN_HAS_THREADS_NPTL
+	select BR2_TOOLCHAIN_HAS_THREADS_DEBUG
+	#depends on BR2_TOOLCHAIN_EXTERNAL ???
+	help
+		Set to y if this toolchain is built
+		with musl libc: https://www.musl-libc.org/
+endchoice
+
+config BR2_TOOLCHAIN_EXTERNAL_VERSION
+	string "Toolchain branch (master if empty)"
+	depends on BR2_TOOLCHAIN_EXTERNAL
+
+config BR2_TOOLCHAIN_EXTERNAL_LOCATION
+	string "URL of toolchains tarball"
+	depends on BR2_TOOLCHAIN_EXTERNAL
+
+config BR2_USRINC_PATH
+	string "Path to usr/include"
+	depends on BR2_TOOLCHAIN_EXTERNAL
+
+config BR2_LIB_PATH
+	string "Path to libs in /lib"
+	depends on BR2_TOOLCHAIN_EXTERNAL
+
+config BR2_USRLIB_PATH
+	string "Path to libs in /usr/lib"
+	depends on BR2_TOOLCHAIN_EXTERNAL
+
+config BR2_USRBIN_HACK
+	bool "Use usr/bin instead of bin in toolchain path"
+
+config BR2_SYSROOT
+	bool "Add --sysroot=STAGING_DIR option to gcc "
+
+config BR2_TOOLCHAIN_EXTERNAL_PATH
+	string "External toolchain path to sysroot"
+	help
+		Path to where the external toolchain is installed.
+		mips-dlink-linux-uclibc/sys-root
+
+config BR2_TOOLCHAIN_EXTERNAL_PREFIX
+	string "External toolchain prefix"
+	default "$(ARCH)-linux"
+	help
+		This the the external toolchain prefix. For example:
+		armeb-unknown-linux-gnu, mipsel-unknown-linux-gnu, etc.
+
+config BR2_USE_WCHAR
+	bool "Toolchain has wchar support"
+
+config BR2_ENABLE_LOCALE
+	bool "Toolchain has locale support"
+
+config BR2_INSTALL_LIBSTDCPP
+	bool "Toolchain has C++ support"
+
+config BR2_TOOLCHAIN_HAS_THREADS
+	bool "Toolchain has threads"
+
+config BR2_TOOLCHAIN_HAS_THREADS_NPTL
+	bool "Toolchain has NPTL threads"
+	depends on BR2_TOOLCHAIN_HAS_THREADS
+
+config BR2_TOOLCHAIN_HAS_THREADS_DEBUG
+	bool "Toolchain has debugging threads"
+	select BR2_TOOLCHAIN_HAS_THREADS_DEBUG_IF_NEEDED
+	bool
+
+config BR2_TOOLCHAIN_HAS_THREADS_DEBUG_IF_NEEDED
+	default y if !BR2_TOOLCHAIN_HAS_THREADS
+	bool
+
+config BR2_TOOLCHAIN_EXTRA_LIBS
+	string "Extra toolchain libraries to be copied to target"
+	depends on !BR2_STATIC_LIBS
+	help
+	  If your toolchain provides extra libraries that need to be
+	  copied to the target filesystem, enter them here, separated
+	  by spaces. The library should not include a suffix or any
+	  type of pre/post wildcard.
+
+	  Examples where this can be useful is for adding debug
+	  libraries to the target like the GCC libsanitizer.
+	  e.g. "libasan liblsan libtsan libubsan"
+
+config BR2_USE_MMU
+	bool "Enable MMU support"
+	default y
+	help
+		If your target has a MMU, you should say Y here.  If you
+		are unsure, just say Y.
+
+  config BR2_LARGEFILE
+	  bool "Enable large file (files > 2 GB) support?"
+	  default y
+	  help
+		  If you are building your own toolchain and you want to
+		  support files larger than 2GB then enable this option.
+		  If you have an external binary toolchain that has been
+		  built with large file support (files > 2GB) then enable
+		  this option.
+
+source "toolchain/gdb/Config.in"
+
+endmenu
+
+

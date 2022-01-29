@@ -1,0 +1,26 @@
+From dd4f888036537cb88ee7b30c9c146c995f06432d Mon Sep 17 00:00:00 2001
+From: Alexandr Ivanov <alivanov@dlink.ru>
+Date: Fri, 25 Oct 2019 12:52:24 +0300
+Subject: [PATCH] Fix uint redefinition.
+
+---
+ third-party/libutp/utypes.h | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/third-party/libutp/utypes.h b/third-party/libutp/utypes.h
+index 79bafcd..f3fc9d4 100644
+--- a/third-party/libutp/utypes.h
++++ b/third-party/libutp/utypes.h
+@@ -7,7 +7,9 @@ typedef unsigned char uint8;
+ typedef signed char int8;
+ typedef unsigned short uint16;
+ typedef signed short int16;
++#ifndef __USE_MISC
+ typedef unsigned int uint;
++#endif
+ typedef unsigned int uint32;
+ typedef signed int int32;
+ 
+-- 
+2.20.1
+

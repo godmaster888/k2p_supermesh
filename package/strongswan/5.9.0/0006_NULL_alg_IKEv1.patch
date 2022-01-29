@@ -1,0 +1,39 @@
+From 3b953308c891a8c00c0adc0b00c4ada0ed7c2dbf Mon Sep 17 00:00:00 2001
+From: Vladimir Yaichkin <vyaichkin@rzn.dlink.ru>
+Date: Mon, 17 Aug 2020 11:30:39 +0300
+Subject: strongswan: add NULL algorithm for IKEv1 proposal substruct
+Patch-from-hash: aff0e04810cefd30f3b489990d3fb96d07619951
+Patch-repo: strongswan
+Patch-branch: master
+Patch-version: 5
+
+Добавил возможность использовать NULL-алгоритм в IKE_SA для
+версии IKEv1.
+
+Signed-off-by: Vladimir Yaichkin <vyaichkin@rzn.dlink.ru>
+---
+ .../src/libcharon/encoding/payloads/proposal_substructure.c     | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/src/libcharon/encoding/payloads/proposal_substructure.c b/src/libcharon/encoding/payloads/proposal_substructure.c
+index 127689e..b6bbfd0 100644
+--- a/src/libcharon/encoding/payloads/proposal_substructure.c
++++ b/src/libcharon/encoding/payloads/proposal_substructure.c
+@@ -171,6 +171,7 @@ typedef enum {
+	IKEV1_ENCR_CAST_CBC = 6,
+	IKEV1_ENCR_AES_CBC = 7,
+	IKEV1_ENCR_CAMELLIA_CBC = 8,
++	IKEV1_ENCR_NULL = 11,
+	/* FreeS/WAN proprietary */
+	IKEV1_ENCR_SERPENT_CBC = 65004,
+	IKEV1_ENCR_TWOFISH_CBC = 65005,
+@@ -591,6 +592,7 @@ static algo_map_t map_encr[] = {
+	{ IKEV1_ENCR_CAST_CBC,		ENCR_CAST },
+	{ IKEV1_ENCR_AES_CBC,		ENCR_AES_CBC },
+	{ IKEV1_ENCR_CAMELLIA_CBC,	ENCR_CAMELLIA_CBC },
++	{ IKEV1_ENCR_NULL,			ENCR_NULL },
+	{ IKEV1_ENCR_SERPENT_CBC,	ENCR_SERPENT_CBC },
+	{ IKEV1_ENCR_TWOFISH_CBC,	ENCR_TWOFISH_CBC },
+ };
+--
+2.20.1

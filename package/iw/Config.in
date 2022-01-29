@@ -1,0 +1,12 @@
+config BR2_PACKAGE_IW
+	bool "iw"
+	select BR2_PACKAGE_LIBNL_TINY
+
+if BR2_PACKAGE_IW
+
+config BR2_IW_VERSION
+	string "iw branch (3.6 if empty)"
+	default "4.9" if BR2_qca
+	default "3.6"
+
+endif

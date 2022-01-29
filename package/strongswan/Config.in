@@ -1,0 +1,1628 @@
+#comment "strongswan needs a toolchain w/ threads, dynamic library"
+#	depends on BR2_USE_MMU
+
+
+menuconfig BR2_PACKAGE_STRONGSWAN
+	bool "strongswan"
+#	depends on BR2_USE_MMU # fork()
+	depends on !BR2_STATIC_LIBS
+	help
+	  strongSwan is an OpenSource IPsec implementation for the
+	  Linux operating system. It is based on the discontinued
+	  FreeS/WAN project and the X.509 patch.
+
+	  The focus is on:
+	     - simplicity of configuration
+	     - strong encryption and authentication methods
+	     - powerful IPsec policies supporting large and complex VPN networks
+
+	  StrongSwan provide many plugins.
+
+	  http://www.strongswan.org/
+
+if BR2_PACKAGE_STRONGSWAN
+
+choice
+	prompt "StrongSwan version package"
+	default BR2_PACKAGE_STRONGSWAN_VERSION_5_5_1
+
+config BR2_PACKAGE_STRONGSWAN_VERSION_5_5_1
+	bool "5.5.1"
+	help
+	  Stronswan version 5.5.1.
+
+config BR2_PACKAGE_STRONGSWAN_VERSION_5_9_0
+	bool "5.9.0"
+	select BR2_PACKAGE_GPERF
+	help
+	  Stronswan version 5.9.0.
+endchoice # StrongSwan version
+
+config BR2_PACKAGE_STRONGSWAN_VERSION
+	string
+	default "5.5.1" if BR2_PACKAGE_STRONGSWAN_VERSION_5_5_1
+	default "5.9.0" if BR2_PACKAGE_STRONGSWAN_VERSION_5_9_0
+	help
+	  Can build version '5.5.1', '5.9.0'.
+	  default: '5.5.1'.
+
+config BR2_PACKAGE_STRONGSWAN_USE_STORAGE
+	bool
+	default y if BR2_PACKAGE_STRONGSWAN_VERSION_5_9_0
+	help
+	  Use storage to get strongswan package.
+
+config BR2_PACKAGE_STRONGSWAN_WITH_HOST_GPERF
+	bool
+	default y if BR2_PACKAGE_STRONGSWAN_VERSION_5_9_0
+	help
+	  Build strongswan with host-grepf package.
+
+choice
+	prompt "StrongSwan build"
+	default BR2_PACKAGE_STRONGSWAN_BUILD_DEFAULT
+
+config BR2_PACKAGE_STRONGSWAN_BUILD_MINIMAL
+	bool "minimal"
+	help
+	  Build StrongSwan to minimum size.
+
+config BR2_PACKAGE_STRONGSWAN_BUILD_DEFAULT
+	bool "default"
+	help
+	  Build StrongSwan with default modules.
+
+config BR2_PACKAGE_STRONGSWAN_BUILD_ADVANCED
+	bool "advanced"
+	help
+	  Build StrongSwan with select modules.
+
+config BR2_PACKAGE_STRONGSWAN_BUILD_FULL
+	bool "full"
+	help
+	  Build StrongSwan with maximum enabled modules.
+
+endchoice # StrongSwan build
+
+
+if BR2_PACKAGE_STRONGSWAN_BUILD_ADVANCED
+
+menu "Utilits/Scripts"
+comment "Utility"
+config BR2_PACKAGE_STRONGSWAN_CHARON
+	bool "charon"
+	default y
+	help
+	  Enable the IKEv1/IKEv2 keying daemon charon.
+
+if BR2_PACKAGE_STRONGSWAN_CHARON
+config BR2_PACKAGE_STRONGSWAN_IKEV1
+	bool "ikev1"
+	default y
+	help
+	  Enable IKEv1 protocol support in charon.
+
+config BR2_PACKAGE_STRONGSWAN_IKEV2
+	bool "ikev2"
+	default y
+	help
+	  Enable IKEv2 protocol support in charon.
+endif #BR2_PACKAGE_STRONGSWAN_CHARON
+
+config BR2_PACKAGE_STRONGSWAN_CMD
+	bool "cmd"
+	default n
+	help
+	  Enable the command line IKE client charon-cmd.
+
+config BR2_PACKAGE_STRONGSWAN_NM
+	bool "nm"
+	default n
+	help
+	  Enable NetworkManager backend.
+
+config BR2_PACKAGE_STRONGSWAN_SYSTEMD
+	bool "systemd"
+	default n
+	help
+	  Enable systemd specific IKE daemon charon-systemd.
+
+config BR2_PACKAGE_STRONGSWAN_INTEGRITY_TEST
+	bool "integrity-test"
+	default n
+	help
+	  Enable integrity testing of libstrongswan and plugins.
+	  Utility 'checksum' to generate checksums of built executables and libraries.
+
+config BR2_PACKAGE_STRONGSWAN_CONFTEST
+	bool "conftest"
+	default n
+	help
+	  Enable Suite B conformance test framework.
+
+config BR2_PACKAGE_STRONGSWAN_MANAGER
+	bool "manager"
+	default n
+	help
+	  Enable web management console (proof of concept).
+	  A deprecated graphical management application for charon based on libfast.
+
+config BR2_PACKAGE_STRONGSWAN_SCEPCLIENT
+	bool "scepclient"
+	default n
+	help
+	  Enable SCEP client tool.
+
+config BR2_PACKAGE_STRONGSWAN_STROKE
+	bool "stroke"
+	default y
+	help
+	  Enable charons stroke configuration backend.
+	  Legacy command line utility to control charon via the stroke protocol.
+
+config BR2_PACKAGE_STRONGSWAN_SWANCTL
+	bool "swanctl"
+	default n
+	help
+	  Enable swanctl configuration and control tool.
+	  Configuration and control utility 'swanctl' that communicates via vici interface.
+
+comment "Scripts"
+config BR2_PACKAGE_STRONGSWAN_EXT_AUTH
+	bool "ext-auth"
+	default n
+	help
+	  Enable plugin calling an external authorization script.
+
+config BR2_PACKAGE_STRONGSWAN_UPDOWN
+	bool "updown"
+	default n
+	help
+	  Enable updown firewall script plugin.
+
+config BR2_PACKAGE_STRONGSWAN_FUZZING
+	bool "fuzzing"
+	default n
+	help
+	  Enable fuzzing scripts (found in directory fuzz).
+
+config BR2_PACKAGE_STRONGSWAN_SCRIPTS
+	bool "scripts"
+	default n
+	help
+	  Enable additional utilities (found in directory scripts).
+endmenu
+
+menu "Directories"
+comment "PREFIX: --prefix='/', EPREFIX: --exec-prefix='/usr' by default"
+
+config BR2_PACKAGE_STRONGSWAN_BINDIR
+	string "BINDIR: User executables files"
+	default ""
+	help
+	  Change user executables directory for bin files:
+	  'pki', 'aikgen', 'pt-tls-client', 'tpm_extendpcr', 'charon-svc'.
+	  Default: [EPREFIX/bin]. So usually set '/usr/bin'.
+
+config BR2_PACKAGE_STRONGSWAN_SBINDIR
+	string "SBINDIR: System admin executables files"
+	default ""
+	help
+	  Change system admin executables directory for bin files:
+	  'ipsec'-script, 'swanctl', 'charon-systemd', 'sec-updater',
+	  'charon-cmd', 'sw-collector'.
+	  Default: [EPREFIX/sbin]. So usually set '/usr/sbin'.
+
+config BR2_PACKAGE_STRONGSWAN_LIBEXECDIR
+	string "LIBEXECDIR: Program executables"
+	default ""
+	help
+	  This directory will contain the "ipsec" directory (by default)
+	  with bin files: 'charon', 'starter', 'stroke', 'xfrmi', 'updown', etc.
+	  Default: [EPREFIX/libexec]. So usually set '/usr/libexec'.
+
+config BR2_PACKAGE_STRONGSWAN_SYSCONFDIR
+	string "SYSCONFDIR: Read-only single-machine data"
+	default "/etc"
+	help
+	  This directory will contain files with settings for ipsec tunnels and
+	  strongswan programs configurations: 'ipsec.conf', 'strongswan.conf',
+	  'ipsec.secrets', 'strongswan.d', 'ipsec.d', etc.
+	  Default: [PREFIX/etc]. So usually set '/etc'.
+
+config BR2_PACKAGE_STRONGSWAN_LIBDIR
+	string "LIBDIR: Object code libraries"
+	default ""
+	help
+	  Directory where a subdirectory named 'ipsec' will be created
+	  and where installed libraries: 'libcharon', 'libstrongswan',
+	  'libradius', 'libtpmtss', 'libipsec', 'libfast', 'libtls',
+	  'libsimaka', 'libtnccs', 'libimcv', 'libpttls'.
+	  Plugins will also be installed in this directory
+	  if enabled modular building [BR2_PACKAGE_STRONGSWAN_MONILITIC is disabled].
+	  Default: [EPREFIX/lib]. So usually set '/usr/lib/'.
+
+config BR2_PACKAGE_STRONGSWAN_SHAREDSTATEDIR
+	string "SHAREDSTATEDIR: Modifiable architecture-independent data"
+	default ""
+	help
+	  Directory for modifiable architecture-independent data.
+	  Default: [PREFIX/com]. Usually set '/var/lib'.
+
+config BR2_PACKAGE_STRONGSWAN_LOCALSTATEDIR
+	string "LOCALSTATEDIR: Modifiable single-machine data"
+	default ""
+	help
+	  Directory for modifiable single-machine data.
+	  Default: [PREFIX/var]. Usually set '/var' or '/usr/local/var'.
+
+config BR2_PACKAGE_STRONGSWAN_RUNSTATEDIR
+	string "RUNSTATEDIR: Modifiable single-machine data"
+	default ""
+	help
+	  Directory for modifiable single-machine data.
+	  Default: [LOCALSTATEDIR/run]. Usually set '/var/run' or '/usr/local/var/run'.
+
+config BR2_PACKAGE_STRONGSWAN_INCLUDEDIR
+	string "INCLUDEDIR: C header files"
+	default ""
+	help
+	  Directory whit C header files.
+	  Default: [PREFIX/include]. Usually set '/include'.
+
+config BR2_PACKAGE_STRONGSWAN_OLDINCLUDEDIR
+	string "OLDINCLUDEDIR: C header files for non-gcc"
+	default ""
+	help
+	  Directory whit C header files for non-gcc.
+	  Default: [EPREFIX/include]. Usually set '/usr/include'.
+
+config BR2_PACKAGE_STRONGSWAN_DATAROOTDIR
+	string "DATAROOTDIR: Read-only arch-independent data root"
+	default ""
+	help
+	  Directory with read-only arch-independent data root which contains:
+	  'man', 'template', 'conf', 'example', etc.
+	  Default: [PREFIX/share]. Usually set '/share' or '/usr/share'.
+
+config BR2_PACKAGE_STRONGSWAN_DATADIR
+	string "DATADIR: Read-only arch-independent data"
+	default ""
+	help
+	  Directory with read-only arch-independent data which contains:
+	  'man', 'template', 'conf', 'example', etc.
+	  Default: [DATAROOTDIR]. Usually set '/share' or '/usr/share'.
+endmenu #Directories
+
+
+menu "Build with"
+config BR2_PACKAGE_STRONGSWAN_WITH_RANDOM_DEVICE
+	string "RANDOM_DEVICE: set the device to read real random data from"
+	default ""
+	help
+	  Default: [/dev/random].
+
+config BR2_PACKAGE_STRONGSWAN_WITH_URANDOM_DEVICE
+	string "URANDOM_DEVICE: set the device to read real random data from"
+	default ""
+	help
+	  Default: [/dev/urandom].
+
+config BR2_PACKAGE_STRONGSWAN_WITH_STRONGSWAN_CONF
+	string "STRONGSWAN_CONF: set the strongswan.conf file location"
+	default ""
+	help
+	  Default: [SYSCONFDIR/strongswan.conf] = '/etc/strongswan.conf'
+
+config BR2_PACKAGE_STRONGSWAN_WITH_RESOLV_CONF
+	string "RESOLV_CONF: set the file to use in DNS handler plugin"
+	default ""
+	help
+	  Default: [SYSCONFDIR/resolv.conf] = '/etc/resolv.conf'.
+
+config BR2_PACKAGE_STRONGSWAN_WITH_PIDDIR
+	string "PIDDIR: set path for PID and UNIX socket files"
+	default ""
+	help
+	  Default: [RUNSTATEDIR] = '/var/run'.
+
+config BR2_PACKAGE_STRONGSWAN_WITH_IPSECDIR
+	string "IPSECDIR: set installation path for ipsec tools"
+	default ""
+	help
+	  Default: [LIBEXECDIR/ipsec] = '/usr/libexec/ipsec'.
+
+config BR2_PACKAGE_STRONGSWAN_WITH_IPSECLIBDIR
+	string "IPSECLIBDIR: set installation path for ipsec libraries"
+	default ""
+	help
+	  Default: [LIBDIR/ipsec] = '/usr/lib/ipsec'.
+
+config BR2_PACKAGE_STRONGSWAN_WITH_PLUGINDIR
+	string "PLUGINDIR: set the installation path of plugins"
+	default ""
+	help
+	  Default: [IPSECLIBDIR/plugins] = '/usr/lib/ipsec/plugins'.
+
+config BR2_PACKAGE_STRONGSWAN_WITH_IMCVDIR
+	string "IMCVDIR: set the installation path of IMC and IMV dynamic libraries"
+	default ""
+	help
+	  Default: [IPSECLIBDIR/imcvs] = '/usr/lib/ipsec/imcvs'.
+
+config BR2_PACKAGE_STRONGSWAN_WITH_NM_CA_DIR
+	string "NM_CA_DIR: directory the NM backend uses to look up trusted root certificates"
+	default ""
+	help
+	  Default: [/usr/share/ca-certificates] = '/usr/share/ca-certificates'.
+
+config BR2_PACKAGE_STRONGSWAN_WITH_SWANCTLDIR
+	string "SWANCTLDIR: base directory for swanctl configuration files and credentials"
+	default ""
+	help
+	  Default: [SYSCONFDIR/swanctl] = '/etc/swanctl'.
+
+config BR2_PACKAGE_STRONGSWAN_WITH_LINUX_HEADERS
+	string "LINUX_HEADERS: set directory of linux header files to use"
+	default ""
+	help
+	  Default: [${top_srcdir}/src/include].
+
+config BR2_PACKAGE_STRONGSWAN_WITH_ROUTING_TABLE
+	string "ROUTING_TABLE: set routing table to use for IPsec routes"
+	default ""
+	help
+	  Default: [220].
+
+config BR2_PACKAGE_STRONGSWAN_WITH_ROUTING_TABLE_PRIO
+	string "ROUTING_TABLE_PRIO: set priority for IPsec routing table"
+	default ""
+	help
+	  Default: [220].
+
+config BR2_PACKAGE_STRONGSWAN_WITH_IPSEC_SCRIPT
+	string "IPSEC_SCRIPT: change the name of the ipsec script"
+	default ""
+	help
+	  Default: [ipsec].
+
+config BR2_PACKAGE_STRONGSWAN_WITH_FIPS_MODE
+	string "FIPS_MODE: set openssl FIPS mode"
+	default ""
+	help
+	  0 - disabled, 1 - enabled, 2 - suite B enabled"
+	  Default: [0].
+
+config BR2_PACKAGE_STRONGSWAN_WITH_LIBFUZZER
+	string "LIBFUZZER: -fsanitize=fuzzer or path to libFuzzer.a, a local driver is used if not specified"
+	default ""
+	help
+	  Default: "".
+
+config BR2_PACKAGE_STRONGSWAN_WITH_CAPABILITIES
+	string "CAPABILITIES: set capability dropping library. Currently supported values are 'libcap' and 'native'"
+	default ""
+	help
+	  Default: [no].
+
+config BR2_PACKAGE_STRONGSWAN_WITH_MPZ_POWM_SEC
+	string "MPZ_POWM_SEC: use the more side-channel resistant mpz_powm_sec in libgmp, if available"
+	default ""
+	help
+	  Default: [yes].
+
+config BR2_PACKAGE_STRONGSWAN_WITH_DEV_HEADERS
+	string "DEV_HEADERS: install strongSwan development headers to directory"
+	default ""
+	help
+	  Default: [no].
+
+config BR2_PACKAGE_STRONGSWAN_WITH_PRINTF_HOOKS
+	string "PRINTF_HOOKS: force the use of a specific printf hook implementation"
+	default ""
+	help
+	  Values: auto, builtin, glibc, vstr
+	  Default: [auto].
+
+config BR2_PACKAGE_STRONGSWAN_WITH_RUBYGEMDIR
+	string "RUBYGEMDIR: path to install ruby gems to"
+	default ""
+	help
+	  Default: [gemdir].
+
+config BR2_PACKAGE_STRONGSWAN_WITH_PYTHONEGGDIR
+	string "PYTHONEGGDIR: path to install python eggs to"
+	default ""
+	help
+	  Default: [main site-packages directory].
+
+config BR2_PACKAGE_STRONGSWAN_WITH_SYSTEMDSYSTEMUNITDIR
+	string "SYSTEMDSYSTEMUNITDIR: directory for systemd service files"
+	default ""
+	help
+	  Default: [$systemdsystemunitdir_default].
+
+config BR2_PACKAGE_STRONGSWAN_WITH_DBUSPOLICYDIR
+	string "DBUSPOLICYDIR: directory for D-Bus policies"
+	default ""
+	help
+	  Default: [${dbusdatadir|datarootdir}/dbus-1/system.d].
+
+config BR2_PACKAGE_STRONGSWAN_WITH_USER
+	string "USER: change user of the daemons to 'user' after startup"
+	default ""
+	help
+	  Default: [root].
+
+config BR2_PACKAGE_STRONGSWAN_WITH_GROUP
+	string "GROUP: change user of the daemons to 'group' after startup"
+	default ""
+	help
+	  Default: [root].
+
+config BR2_PACKAGE_STRONGSWAN_WITH_CHARON_UDP_PORT
+	string "CHARON_UDP_PORT: UDP port used by charon locally."
+	default ""
+	help
+	  Set to 0 to allocate randomly.
+	  Default: [500].
+
+config BR2_PACKAGE_STRONGSWAN_WITH_CHARON_NATT_PORT
+	string "CHARON_NATT_PORT: UDP port used by charon locally in case a NAT is detected."
+	default ""
+	help
+	  Set to 0 to allocate randomly. Must be different from CHARON_UDP_PORT."
+	  Default: [4500].
+
+config BR2_PACKAGE_STRONGSWAN_WITH_LIB_PREFIX
+	string "LIB_PREFIX: search for libraries in DIR/include and DIR/lib."
+	default ""
+
+config BR2_PACKAGE_STRONGSWAN_WITH_GNU_LD
+	string "GNU_LD: assume the C compiler uses GNU ld."
+	default ""
+	help
+	  Default: [no].
+
+config BR2_PACKAGE_STRONGSWAN_WITH_SYSROOT
+	string "SYSROOT: Search for dependent libraries within DIR or the compiler's sysroot if not specified."
+	default ""
+
+config BR2_PACKAGE_STRONGSWAN_PROGRAM_PREFIX
+	string "PROGRAM_PREFIX: prepend PREFIX to installed program names."
+	default ""
+
+config BR2_PACKAGE_STRONGSWAN_PROGRAM_SUFFIX
+	string "PROGRAM_SUFFIX: append SUFFIX to installed program names."
+	default ""
+
+config BR2_PACKAGE_STRONGSWAN_PROGRAM_TRANSFORM_NAME
+	string "PROGRAM_TRANSFORM_NAME: run sed PROGRAM on installed program names."
+	default ""
+
+endmenu
+
+
+menu "Arch/Vendor Features"
+
+menu "Apple"
+comment "libstrongswan plugins"
+config BR2_PACKAGE_STRONGSWAN_KEYCHAIN
+	bool "keychain"
+	default n
+	help
+	  Enable Mac OS X Keychain Services credential set.
+comment "libcharon plugins"
+config BR2_PACKAGE_STRONGSWAN_OSX_ATTR
+	bool "osx-attr"
+	default n
+	help
+	  Enable MAC OS X SystemConfiguration attribute handler.
+endmenu
+
+menu "Cisco"
+comment "libcharon plugins"
+config BR2_PACKAGE_STRONGSWAN_UNITY
+	bool "unity"
+	default n
+	help
+	  Enable Cisco Unity extension plugin.
+endmenu
+
+menu "Intel"
+comment "libstrongswan plugins"
+config BR2_PACKAGE_STRONGSWAN_AESNI
+	bool "aesni"
+	default n
+	help
+	  Enable Intel AES-NI crypto plugin.
+
+config BR2_PACKAGE_STRONGSWAN_RDRAND
+	bool "rdrand"
+	default n
+	help
+	  Enable Intel RDRAND random generator plugin.
+	  High quality / high performance random source using the Intel rdrand instruction found on Ivy Bridge processors.
+endmenu
+
+menu "Microsoft"
+comment "libstrongswan plugins"
+config BR2_PACKAGE_STRONGSWAN_WINHTTP
+	bool "winhttp"
+	default n
+	help
+	  Enable WinHTTP based HTTP/HTTPS fetcher for Windows platform.
+
+comment "libcharon plugins"
+config BR2_PACKAGE_STRONGSWAN_KERNEL_IPH
+	bool "kernel-iph"
+	default n
+	help
+	  Enable the Windows IP Helper based networking backend.
+
+config BR2_PACKAGE_STRONGSWAN_KERNEL_WFP
+	bool "kernel-wfp"
+	default n
+	help
+	  Enable IPsec backend for the Windows platform, using the Windows Filtering Platform.
+
+config BR2_PACKAGE_STRONGSWAN_SOCKET_WIN
+	bool "socket-win"
+	default n
+	help
+	  Enable Socket implementation for IKE messages on Windows, based on Winsock2 APIs.
+
+config BR2_PACKAGE_STRONGSWAN_SVC
+	bool "svc"
+	default n
+	help
+	  Enable enable charon Windows service.
+endmenu
+
+menu "OpenWRT"
+comment "libcharon plugins"
+config BR2_PACKAGE_STRONGSWAN_UCI
+	bool "uci"
+	default n
+	help
+	  Enable OpenWRT UCI configuration plugin.
+endmenu
+
+endmenu
+
+
+menu "Crypto"
+
+choice
+	prompt "Cryptographic backend"
+	default BR2_PACKAGE_STRONGSWAN_OPENSSL
+
+comment "libstrongswan plugins"
+
+config BR2_PACKAGE_STRONGSWAN_OPENSSL
+	bool "OpenSSL"
+	select BR2_PACKAGE_OPENSSL
+	help
+	  Enable the openssl plugin.
+	  Crypto backend based on OpenSSL, provides RSA/ECDSA/DH/ECDH/ciphers/hashers/HMAC/X.509/CRL/RNG
+
+config BR2_PACKAGE_STRONGSWAN_GCRYPT
+	bool "libgcrypt"
+	select BR2_PACKAGE_LIBGCRYPT
+	# Not tested
+	help
+	  Enable the libgcrypt plugin.
+	  Crypto backend based on libgcrypt, provides RSA/DH/ciphers/hashers/rng.
+
+config BR2_PACKAGE_STRONGSWAN_GMP
+	bool "GNU MP (libgmp)"
+	select BR2_PACKAGE_GMP
+	# Not tested
+	help
+	  Enable GNU MP crypto implementation plugin: RSA/DH crypto backend based on libgmp.
+
+config BR2_PACKAGE_STRONGSWAN_BOTAN
+	bool "Botan"
+	select BR2_PACKAGE_BOTAN
+	# Not tested
+	help
+	  Enable the Botan crypto plugin.
+	  Crypto backend based on Botan, provides RSA/ECDSA/DH/ECDH/X25519/ciphers/hashers/HMAC/RNG.
+
+config BR2_PACKAGE_STRONGSWAN_WOLFSSL
+	bool "wolfssl"
+	select BR2_PACKAGE_WOLFSSL
+	# Not tested
+	help
+	  Enables the wolfSSL crypto plugin.
+	  Crypto backend based on wolfSSL, provides RSA/ECDSA/DH/ECDH/X25519/Ed25519/ciphers/hashers/HMAC/RNG.
+
+config BR2_PACKAGE_STRONGSWAN_PADLOCK
+	bool "padlock"
+	# Not tested
+	help
+	  Enable VIA Padlock crypto plugin backend (PadLock engine), provides AES128/SHA1.
+
+endchoice #Cryptographic backend
+
+comment "libstrongswan plugins"
+config BR2_PACKAGE_STRONGSWAN_AES
+	bool "aes"
+	default n
+	help
+	  Enable AES software implementation plugin: AES-128/192/256.
+
+config BR2_PACKAGE_STRONGSWAN_AF_ALG
+	bool "af_alg"
+	default n
+	help
+	  Enable AF_ALG crypto interface to Linux Crypto API.
+	  Provides ciphers/hashers/hmac/xcbc.
+
+config BR2_PACKAGE_STRONGSWAN_BLISS
+	bool "bliss"
+	default n
+	help
+	  Enable BLISS software implementation plugin.
+	  Bimodal Lattice Signature Scheme (BLISS) post-quantum computer signature scheme.
+
+config BR2_PACKAGE_STRONGSWAN_BLOWFISH
+	bool "blowfish"
+	default n
+	help
+	  Enable Blowfish software implementation plugin.
+
+config BR2_PACKAGE_STRONGSWAN_CCM
+	bool "ccm"
+	default n
+	help
+	  Enable the CCM AEAD wrapper mode crypto plugin.
+
+config BR2_PACKAGE_STRONGSWAN_CHAPOLY
+	bool "chapoly"
+	default n
+	help
+	  Enable the ChaCha20/Poly1305 AEAD and ChaCha20 XOF plugin.
+
+config BR2_PACKAGE_STRONGSWAN_CMAC
+	bool "cmac"
+	default n
+	help
+	  Enable CMAC crypto mode wrapper implementation plugin.
+
+config BR2_PACKAGE_STRONGSWAN_CTR
+	bool "ctr"
+	default n
+	help
+	  Enable the Counter mode wrapper crypto plugin.
+
+config BR2_PACKAGE_STRONGSWAN_CURVE25519
+	bool "curve25519"
+	default n
+	help
+	  Enable Curve25519 Diffie-Hellman plugin: X25519 DH group and Ed25519 public key authentication
+
+config BR2_PACKAGE_STRONGSWAN_DES
+	bool "des"
+	default n
+	help
+	  Enable DES/3DES software implementation plugin.
+
+config BR2_PACKAGE_STRONGSWAN_DRBG
+	bool "drbg"
+	default n
+	help
+	  Enable the NIST Deterministic Random Bit Generator based on AES-CTR and SHA2-HMAC modes. Required by the gmp and ntru plugins.
+
+config BR2_PACKAGE_STRONGSWAN_GCM
+	bool "gcm"
+	default n
+	help
+	  Enable the GCM AEAD mode wrapper crypto plugin.
+
+config BR2_PACKAGE_STRONGSWAN_HMAC
+	bool "hmac"
+	default n
+	help
+	  Enable HMAC wrapper (using various hashers) crypto implementation plugin.
+
+config BR2_PACKAGE_STRONGSWAN_MD4
+	bool "md4"
+	default n
+	help
+	  Enable MD4 hasher software implementation plugin.
+
+config BR2_PACKAGE_STRONGSWAN_MD5
+	bool "md5"
+	default n
+	help
+	  Enable MD5 hasher software implementation plugin.
+
+config BR2_PACKAGE_STRONGSWAN_MGF1
+	bool "mgf1"
+	default n
+	help
+	  Enable the MGF1 (mask generation function) software implementation plugin.
+
+config BR2_PACKAGE_STRONGSWAN_NEWHOPE
+	bool "newhope"
+	default n
+	#depends sha3 & chapoly
+	help
+	  Enable New Hope crypto plugin.
+	  Key exchange based on post-quantum computer New Hope algorithm.
+
+config BR2_PACKAGE_STRONGSWAN_NONCE
+	bool "nonce"
+	default y
+	help
+	  Enable nonce generation plugin.
+
+config BR2_PACKAGE_STRONGSWAN_NTRU
+	bool "ntru"
+	default n
+	help
+	  Enable the NTRU crypto plugin.
+	  Key exchange based on post-quantum computer NTRU encryption.
+
+config BR2_PACKAGE_STRONGSWAN_RANDOM
+	bool "random"
+	default y
+	help
+	  Enable RNG implementation on top of /dev/[u]random.
+
+config BR2_PACKAGE_STRONGSWAN_RC2
+	bool "rc2"
+	default n
+	help
+	  Enable RC2 software implementation plugin.
+
+config BR2_PACKAGE_STRONGSWAN_SHA1
+	bool "sha1"
+	default n
+	help
+	  Enable SHA1 software implementation plugin.
+
+config BR2_PACKAGE_STRONGSWAN_SHA2
+	bool "sha2"
+	default n
+	help
+	  Enable SHA256/SHA384/SHA512 software implementation plugin.
+
+config BR2_PACKAGE_STRONGSWAN_SHA3
+	bool "sha3"
+	default n
+	help
+	  Enable SHA3_224/SHA3_256/SHA3_384/SHA3_512 and SHAKE128/SHAKE256 XOF software implementation plugin.
+
+config BR2_PACKAGE_STRONGSWAN_XCBC
+	bool "xcbc"
+	default n
+	help
+	  Enable xcbc wrapper using various ciphers crypto implementation plugin.
+
+endmenu
+
+
+menu "PKI"
+comment "Utility"
+config BR2_PACKAGE_STRONGSWAN_PKI
+	bool "pki"
+	default n
+	help
+	  Enable PKI certificate utility: a simple public key infrastructure.
+	  Generate RSA and ECDSA public key pairs.
+
+config BR2_PACKAGE_STRONGSWAN_TKM
+	bool "tkm"
+	default n
+	help
+	  Enable Trusted Key Manager support.
+
+comment "libstrongswan plugins"
+config BR2_PACKAGE_STRONGSWAN_ACERT
+	bool "acert"
+	default n
+	help
+	  Enable X509 attribute certificate checking plugin.
+
+config BR2_PACKAGE_STRONGSWAN_AGENT
+	bool "agent"
+	default n
+	help
+	  Enable the ssh-agent signing plugin. RSA/ECDSA private key backend connecting to SSH-Agent.
+
+config BR2_PACKAGE_STRONGSWAN_CONSTRAINTS
+	bool "constraints"
+	default n
+	help
+	  Enable advanced X509 constraint checking plugin [pathLen/name/policy Constraint RFC 5280].
+
+config BR2_PACKAGE_STRONGSWAN_DNSKEY
+	bool "dnskey"
+	default n
+	help
+	  Enable DNS RR key decoding plugin. Parse RFC 4034 public keys.
+
+config BR2_PACKAGE_STRONGSWAN_PEM
+	bool "pem"
+	default n
+	help
+	  Enable PEM encoding/decoding plugin.
+
+config BR2_PACKAGE_STRONGSWAN_PGP
+	bool "pgp"
+	default n
+	help
+	  Enable PGP key encoding/decoding plugin.
+
+config BR2_PACKAGE_STRONGSWAN_PKCS1
+	bool "pkcs1"
+	default n
+	help
+	  Enable PKCS1 key encoding/decoding routines plugin.
+
+config BR2_PACKAGE_STRONGSWAN_PKCS7
+	bool "pkcs7"
+	default n
+	help
+	  Enable PKCS7 container support plugin.
+
+config BR2_PACKAGE_STRONGSWAN_PKCS8
+	bool "pkcs8"
+	default n
+	help
+	  Enable PKCS8 private key encoding/decoding plugin.
+
+config BR2_PACKAGE_STRONGSWAN_PKCS11
+	bool "pkcs11"
+	default n
+	help
+	  Enable PKCS11 token support plugin (smartcard backend).
+
+config BR2_PACKAGE_STRONGSWAN_PKCS12
+	bool "pkcs12"
+	default n
+	help
+	  Enable PKCS12 container support plugin.
+
+config BR2_PACKAGE_STRONGSWAN_REVOCATION
+	bool "revocation"
+	default n
+	help
+	  Enable X509 CRL/OCSP revocation check plugin.
+
+config BR2_PACKAGE_STRONGSWAN_PUBKEY
+	bool "pubkey"
+	default n
+	help
+	  Enable RAW public key support plugin.
+	  Wrapper to handle raw public keys as trusted certificates.
+
+config BR2_PACKAGE_STRONGSWAN_SSHKEY
+	bool "sshkey"
+	default n
+	help
+	  Enable SSH key decoding plugin.
+
+config BR2_PACKAGE_STRONGSWAN_X509
+	bool "x509"
+	default n
+	help
+	  Enable X509 certificate implementation plugin.
+	  Advanced X.509 plugin for parsing/generating X.509 certificates/CRLs and OCSP messages.
+
+comment "libcharon plugins"
+config BR2_PACKAGE_STRONGSWAN_ADDRBLOCK
+	bool "addrblock"
+	default n
+	help
+	  Enable RFC 3779 address block constraint support.
+	  Narrow traffic selectors to RFC 3779 address blocks in X.509 certificates.
+
+config BR2_PACKAGE_STRONGSWAN_CERTEXPIRE
+	bool "certexpire"
+	default n
+	help
+	  Enable CSV export of expiration dates of used certificates.
+
+config BR2_PACKAGE_STRONGSWAN_COUPLING
+	bool "coupling"
+	default n
+	help
+	  Enable IKEv2 plugin to couple peer certificates permanently to authentication.
+
+config BR2_PACKAGE_STRONGSWAN_DNSCERT
+	bool "dnscert"
+	default n
+	help
+	  Enable DNSCERT authentication plugin.
+
+config BR2_PACKAGE_STRONGSWAN_SYSTIME_FIX
+	bool "systime-fix"
+	default n
+	help
+	  Enable Handle invalid system time when checking certificates.
+
+comment "libtpmtss plugins"
+config BR2_PACKAGE_STRONGSWAN_TPM
+	bool "tpm"
+	default n
+	help
+	  Enable handle invalid system time when checking certificates.
+
+config BR2_PACKAGE_STRONGSWAN_AIKGEN
+	bool "aikgen"
+	default n
+	help
+	  Enable handle invalid system time when checking certificates.
+endmenu
+
+
+menu "EAP/802.1x"
+comment "libstrongswan plugins"
+config BR2_PACKAGE_STRONGSWAN_FIPS_PRF
+	bool "fips-prf"
+	default n
+	help
+	  Enable FIPS PRF software implementation plugin.
+	  Used by EAP-SIM/AKA algorithms.
+
+comment "libcharon plugins"
+config BR2_PACKAGE_STRONGSWAN_EAP_SIM
+	bool "eap-sim"
+	default n
+	help
+	Enable SIM authentication module for EAP.
+	Generic EAP-SIM protocol handler using different backends.
+
+config BR2_PACKAGE_STRONGSWAN_EAP_SIM_FILE
+	bool "eap-sim-file"
+	default n
+	help
+	  Enable EAP-SIM backend based on a triplet file.
+
+config BR2_PACKAGE_STRONGSWAN_EAP_SIM_PCSC
+	bool "eap-sim-pcsc"
+	default n
+	help
+	  Enable EAP-SIM backend based on a smartcard reader. Requires libpcsclite.
+
+config BR2_PACKAGE_STRONGSWAN_EAP_AKA
+	bool "eap-aka"
+	default n
+	help
+	  Enable EAP AKA authentication module.
+
+config BR2_PACKAGE_STRONGSWAN_EAP_AKA_3GPP
+	bool "eap-aka-3gpp"
+	default n
+	help
+	  Enable EAP AKA backend implementing 3GPP MILENAGE algorithms in software.
+
+config BR2_PACKAGE_STRONGSWAN_EAP_AKA_3GPP2
+	bool "eap-aka-3gpp2"
+	default n
+	help
+	  Enable EAP AKA backend implementing 3GPP2 algorithms in software. Requires libgmp.
+
+config BR2_PACKAGE_STRONGSWAN_EAP_SIMAKA_SQL
+	bool "eap-simaka-sql"
+	default n
+	help
+	  Enable EAP-SIM/AKA backend based on a triplet/quintuplet SQL database.
+
+config BR2_PACKAGE_STRONGSWAN_EAP_SIMAKA_PSEUDONYM
+	bool "eap-simaka-pseudonym"
+	default n
+	help
+	  Enable EAP-SIM/AKA pseudonym storage plugin.
+
+config BR2_PACKAGE_STRONGSWAN_EAP_SIMAKA_REAUTH
+	bool "eap-simaka-reauth"
+	default n
+	help
+	  Enable EAP-SIM/AKA reauthentication data storage plugin.
+
+config BR2_PACKAGE_STRONGSWAN_EAP_IDENTITY
+	bool "eap-identity"
+	default n
+	help
+	  Enable EAP module providing EAP-Identity helper.
+
+config BR2_PACKAGE_STRONGSWAN_EAP_MD5
+	bool "eap-md5"
+	default n
+	help
+	  Enable EAP MD5 (CHAP) authentication module.
+
+config BR2_PACKAGE_STRONGSWAN_EAP_GTC
+	bool "eap-gtc"
+	default n
+	help
+	  Enable EAP GTC authentication module.
+
+config BR2_PACKAGE_STRONGSWAN_EAP_MSCHAPV2
+	bool "eap-mschapv2"
+	default n
+	help
+	  Enable EAP MS-CHAPv2 authentication module.
+
+config BR2_PACKAGE_STRONGSWAN_EAP_TLS
+	bool "eap-tls"
+	default n
+	help
+	  Enable EAP TLS authentication module.
+
+config BR2_PACKAGE_STRONGSWAN_EAP_TTLS
+	bool "eap-ttls"
+	default n
+	help
+	  Enable EAP TTLS authentication module.
+
+config BR2_PACKAGE_STRONGSWAN_EAP_PEAP
+	bool "eap-peap"
+	default n
+	help
+	  Enable EAP PEAP authentication module.
+
+config BR2_PACKAGE_STRONGSWAN_EAP_TNC
+	bool "eap-tnc"
+	default n
+	help
+	  Enable EAP TNC trusted network connect module.
+
+config BR2_PACKAGE_STRONGSWAN_EAP_DYNAMIC
+	bool "eap-dynamic"
+	default n
+	help
+	  Enable dynamic EAP proxy module.
+
+config BR2_PACKAGE_STRONGSWAN_EAP_RADIUS
+	bool "eap-radius"
+	default n
+	help
+	  Enable RADIUS proxy authentication module.
+
+config BR2_PACKAGE_STRONGSWAN_XAUth_EAP
+	bool "xauth-eap"
+	default n
+	help
+	  Enable XAuth backend using EAP methods to verify passwords.
+endmenu
+
+
+menu "TNC/IMC/IMV"
+comment "libcharon plugins"
+config BR2_PACKAGE_STRONGSWAN_TNC_IFMAP
+	bool "tnc-ifmap"
+	default n
+	help
+	  Enable Trusted Network Connect IF-MAP 2.0 client. Requires libxml.
+
+config BR2_PACKAGE_STRONGSWAN_TNC_PDP
+	bool "tnc-pdp"
+	default n
+	help
+	  Enable Trusted Network Connect Policy Decision Point with RADIUS server interface.
+
+comment "libtnccs plugins"
+config BR2_PACKAGE_STRONGSWAN_TNC_IMC
+	bool "tnc-imc"
+	default n
+	help
+	  Enable TNC IMC module.
+
+config BR2_PACKAGE_STRONGSWAN_TNC_IMV
+	bool "tnc-imv"
+	default n
+	help
+	  Enable TNC IMV module.
+
+config BR2_PACKAGE_STRONGSWAN_TNCCS_11
+	bool "tnccs-11"
+	default n
+	help
+	  Enable TNCCS 1.1 protocol module. Requires libxml.
+
+config BR2_PACKAGE_STRONGSWAN_TNCCS_20
+	bool "tnccs-20"
+	default n
+	help
+	  Enable TNCCS 2.0 protocol module.
+
+config BR2_PACKAGE_STRONGSWAN_TNCCS_DYNAMIC
+	bool "tnccs-dynamic"
+	default n
+	help
+	  Enable dynamic TNCCS protocol discovery module.
+
+config BR2_PACKAGE_STRONGSWAN_IMC_TEST
+	bool "imc-test"
+	default n
+	help
+	  Enable IMC test module.
+
+config BR2_PACKAGE_STRONGSWAN_IMV_TEST
+	bool "imv-test"
+	default n
+	help
+	  Enable IMV test module.
+
+config BR2_PACKAGE_STRONGSWAN_IMC_SCANNER
+	bool "imc-scanner"
+	default n
+	help
+	  Enable IMC port scanner module.
+
+config BR2_PACKAGE_STRONGSWAN_IMV_SCANNER
+	bool "imv-scanner"
+	default n
+	help
+	  Enable IMV port scanner module.
+
+config BR2_PACKAGE_STRONGSWAN_IMC_OS
+	bool "imc-os"
+	default n
+	help
+	  Enable IMC operating system module.
+
+config BR2_PACKAGE_STRONGSWAN_IMV_OS
+	bool "imv-os"
+	default n
+	help
+	  Enable IMV operating system module.
+
+config BR2_PACKAGE_STRONGSWAN_IMC_ATTESTATION
+	bool "imc-attestation"
+	default n
+	help
+	  Enable IMC attestation module.
+
+config BR2_PACKAGE_STRONGSWAN_IMV_ATTESTATION
+	bool "imv-attestation"
+	default n
+	help
+	  Enable IMV attestation module.
+
+config BR2_PACKAGE_STRONGSWAN_IMC_SWIMA
+	bool "imc-swima"
+	default n
+	help
+	  Enable IMC swima module.
+
+config BR2_PACKAGE_STRONGSWAN_IMV_SWIMA
+	bool "imv-swima"
+	default n
+	help
+	  Enable IMV swima module.
+
+config BR2_PACKAGE_STRONGSWAN_IMC_HCD
+	bool "imc-hcd"
+	default n
+	help
+	  Enable IMC hcd module.
+
+config BR2_PACKAGE_STRONGSWAN_IMV_HCD
+	bool "imv-hcd"
+	default n
+	help
+	  Enable IMV hcd module.
+endmenu
+
+menu "Other"
+comment "libstrongswan plugins"
+config BR2_PACKAGE_STRONGSWAN_CURL
+	bool "curl"
+	default n
+	help
+	  Enable CURL HTTP/FTP fetcher plugin to fetch files via libcurl. Requires libcurl.
+
+config BR2_PACKAGE_STRONGSWAN_FILES
+	bool "files"
+	default n
+	help
+	  Enable simple local file://URIs fetcher.
+
+config BR2_PACKAGE_STRONGSWAN_LDAP
+	bool "ldap"
+	default n
+	help
+	  Enable LDAP fetching plugin to fetch files via libldap. Requires openLDAP.
+
+config BR2_PACKAGE_STRONGSWAN_SOUP
+	bool "soup"
+	default n
+	help
+	  Enable soup fetcher plugin to fetch from HTTP via libsoup. Requires libsoup.
+
+config BR2_PACKAGE_STRONGSWAN_UNBOUND
+	bool "unbound"
+	default n
+	help
+	  Enable UNBOUND resolver plugin to perform DNS/DNSSEC queries via libunbound. Requires libldns and libunbound.
+
+comment "libcharon plugins"
+config BR2_PACKAGE_STRONGSWAN_ANDROID_DNS
+	bool "android-dns"
+	default n
+	help
+	  Enable Android specific DNS handler.
+
+config BR2_PACKAGE_STRONGSWAN_ANDROID_LOG
+	bool "android-log"
+	default n
+	help
+	  Enable Android specific logger plugin.
+
+config BR2_PACKAGE_STRONGSWAN_ATTR
+	bool "attr"
+	default y
+	help
+	  Enable strongswan.conf based configuration attribute plugin.
+
+config BR2_PACKAGE_STRONGSWAN_ATTR_SQL
+	bool "attr-sql"
+	default n
+	help
+	  Enable SQL based configuration attribute plugin.
+
+config BR2_PACKAGE_STRONGSWAN_BYPASS_LAN
+	bool "bypass-lan"
+	default n
+	help
+	  Enable plugin to install bypass policies for local subnets.
+
+config BR2_PACKAGE_STRONGSWAN_COUNTERS
+	bool "counters"
+	default n
+	help
+	  Enable plugin that collects several performance counters (queryable via swanctl/vici or ipsec/stroke).
+
+config BR2_PACKAGE_STRONGSWAN_DHCP
+	bool "dhcp"
+	default n
+	help
+	  Enable DHCP based attribute provider plugin.
+	  Request virtual IP address from a DHCP server.
+
+config BR2_PACKAGE_STRONGSWAN_CONNMARK
+	bool "connmark"
+	default n
+	help
+	  Enable connmark plugin using conntrack based marks to select return path SA.
+	  The connmark plugin uses Linux Netfilter conntrack marks on transport mode connections to separate flows between clients (requires iptables dev headers).
+
+config BR2_PACKAGE_STRONGSWAN_DUPLICHECK
+	bool "duplicheck"
+	default n
+	help
+	  Enable advanced duplicate checking plugin using liveness checks.
+
+config BR2_PACKAGE_STRONGSWAN_ERROR_NOTIFY
+	bool "error-notify"
+	default n
+	help
+	  Enable notification about errors via UNIX socket.
+
+config BR2_PACKAGE_STRONGSWAN_FARP
+	bool "farp"
+	default n
+	help
+	  Enable fakes ARP responses for requests to a virtual IP address assigned to a peer.
+	  With the plugin enabled the IKEv2 daemon responds to ARP requests for IP addresses in the remote traffic selectors (e.g. virtual IP addresses that were handed out to clients, but could be complete subnets) with its own MAC address.
+
+config BR2_PACKAGE_STRONGSWAN_FORECAST
+	bool "forecast"
+	default n
+	help
+	  Enable forecast plugin forwarding broadcast/multicast messages.
+	  Uses Linux Netfilter marks to allow identical IPsec policies having multicast or broadcast selectors.
+
+config BR2_PACKAGE_STRONGSWAN_HA
+	bool "ha"
+	default n
+	help
+	  Enable high availability cluster plugin.
+
+config BR2_PACKAGE_STRONGSWAN_IPSECKEY
+	bool "ipseckey"
+	default n
+	help
+	  Enable IPSECKEY authentication plugin. Provides authentication via IPSECKEY RRs protected by DNSSEC.
+
+config BR2_PACKAGE_STRONGSWAN_KERNEL_LIBIPSEC
+	bool "kernel-libipsec"
+	default n
+	help
+	  Enable the libipsec kernel interface in user-space (using libipsec).
+
+config BR2_PACKAGE_STRONGSWAN_KERNEL_NETLINK
+	bool "kernel-netlink"
+	default y
+	help
+	  Enable IPsec/Networking kernel interface using Linux Netlink.
+
+config BR2_PACKAGE_STRONGSWAN_KERNEL_PFKEY
+	bool "kernel-pfkey"
+	default n
+	help
+	  Enable IPsec PF_KEY kernel interface.
+
+config BR2_PACKAGE_STRONGSWAN_KERNEL_PFROUTE
+	bool "kernel-pfroute"
+	default n
+	help
+	  Enable IPsec PF_ROUTE kernel interface.
+
+config BR2_PACKAGE_STRONGSWAN_LED
+	bool "led"
+	default n
+	help
+	  Enable plugin to control LEDs on IKEv2 activity using the Linux kernel LED subsystem.
+
+config BR2_PACKAGE_STRONGSWAN_LOOKIP
+	bool "lookip"
+	default n
+	help
+	  Enable fast virtual IP lookup and notification plugin (using a UNIX socket).
+
+config BR2_PACKAGE_STRONGSWAN_LOAD_TESTER
+	bool "load-tester"
+	default n
+	help
+	  Enable load testing plugin for IKEv2 daemon.
+
+config BR2_PACKAGE_STRONGSWAN_LOAD_TESTER
+	bool "load-tester"
+	default n
+	help
+	  Enable load testing plugin for IKEv2 daemon.
+
+config BR2_PACKAGE_STRONGSWAN_MEDIATION
+	bool "mediation"
+	default n
+	help
+	  Enable IKEv2 Mediation Extension.
+
+config BR2_PACKAGE_STRONGSWAN_MEDCLI
+	bool "medcli"
+	default n
+	help
+	  Enable mediation client configuration plugin.
+
+config BR2_PACKAGE_STRONGSWAN_MEDSRV
+	bool "medsrv"
+	default n
+	help
+	  Enable mediation server configuration plugin.
+
+config BR2_PACKAGE_STRONGSWAN_MYSQL
+	bool "mysql"
+	default n
+	help
+	  Enable MySQL database support. Requires libmysqlclient_r.
+
+config BR2_PACKAGE_STRONGSWAN_P_CSCF
+	bool "p-cscf"
+	default n
+	help
+	  Enable plugin to request P-CSCF server addresses from an ePDG.
+
+config BR2_PACKAGE_STRONGSWAN_RADATTR
+	bool "radattr"
+	default n
+	help
+	  Enable plugin to inject and process custom RADIUS attributes as IKEv2 client.
+
+config BR2_PACKAGE_STRONGSWAN_RESOLVE
+	bool "resolve"
+	default y
+	help
+	  Enable resolve DNS handler plugin: writes name servers received via IKE to a resolv.conf file or installs them via resolvconf.
+
+config BR2_PACKAGE_STRONGSWAN_SAVE_KEYS
+	bool "save-keys"
+	default n
+	help
+	  Enable development/debugging plugin that saves IKE and ESP keys in Wireshark format.
+
+config BR2_PACKAGE_STRONGSWAN_SMP
+	bool "smp"
+	default n
+	help
+	  Enable SMP configuration and control interface. Requires libxml.
+
+config BR2_PACKAGE_STRONGSWAN_SOCKET_DEFAULT
+	bool "socket-default"
+	default y
+	help
+	  Enable default socket implementation for charon.
+
+config BR2_PACKAGE_STRONGSWAN_SOCKET_DYNAMIC
+	bool "socket-dynamic"
+	default n
+	help
+	  Enable default socket implementation for charon. Capable of sending IKE messages on any port.
+
+config BR2_PACKAGE_STRONGSWAN_SQL
+	bool "sql"
+	default n
+	help
+	  Enable SQL configuration backend reading configurations/credentials from a database.
+
+config BR2_PACKAGE_STRONGSWAN_SQLITE
+	bool "sqlite"
+	default n
+	help
+	  Enable SQLite database support. Requires libsqlite3.
+
+config BR2_PACKAGE_STRONGSWAN_VICI
+	bool "vici"
+	default n
+	help
+	  Enable strongSwan IKE generic IPC interface plugin (Versatile IKE Configuration Interface).
+
+config BR2_PACKAGE_STRONGSWAN_WHITELIST
+	bool "whitelist"
+	default n
+	help
+	  Enable peer identity whitelisting plugin: check authenticated identities against a whitelist.
+
+config BR2_PACKAGE_STRONGSWAN_XAUTH_GENERIC
+	bool "xauth-generic"
+	default y
+	help
+	  Enable generic XAuth backend. That provides passwords from ipsec.secrets and other credential sets.
+
+config BR2_PACKAGE_STRONGSWAN_XAUTH_noauth
+	bool "xauth-noauth"
+	default n
+	help
+	  Enable XAuth pseudo-backend that does not actually verify or even request any credentials.
+
+config BR2_PACKAGE_STRONGSWAN_XAUTH_PAM
+	bool "xauth-pam"
+	default n
+	help
+	  Enable XAuth backend that uses PAM modules to verify passwords.
+
+
+comment "Tests/Debug"
+config BR2_PACKAGE_STRONGSWAN_BFD_BACKTRACES
+	bool "bfd-backtraces"
+	default n
+	help
+	  Enable to use binutils libbfd to resolve backtraces for memory leaks and segfaults.
+
+config BR2_PACKAGE_STRONGSWAN_COVERAGE
+	bool "coverage"
+	default n
+	help
+	  Enable lcov coverage report report generation.
+	  This disables any optimization, so it should not be enabled when building production releases.
+
+config BR2_PACKAGE_STRONGSWAN_DBGHELP_BACKTRACES
+	bool "dbghelp-backtraces"
+	default n
+	help
+	  Enable to use dbghlp.dll on Windows to create and print backtraces for memory leaks and segfaults.
+
+config BR2_PACKAGE_STRONGSWAN_DEPENDENCY_TRACKING
+	bool "dependency-tracking"
+	default n
+	help
+	  Enable to use dbghlp.dll on Windows to create and print backtraces for memory leaks and segfaults.
+
+config BR2_PACKAGE_STRONGSWAN_GIT_VERSION
+	bool "git-version"
+	default n
+	help
+	  Enable to use output of 'git describe' as version information in executables.
+
+config BR2_PACKAGE_STRONGSWAN_LEAK_DETECTIVE
+	bool "leak-detective"
+	default n
+	help
+	  Enable malloc hooks to find memory leaks.
+
+config BR2_PACKAGE_STRONGSWAN_LOAD_WARNING
+	bool "load-warning"
+	default n
+	help
+	  Enable the charon plugin load option warning in starter.
+
+config BR2_PACKAGE_STRONGSWAN_LOCK_PROFILER
+	bool "lock-profiler"
+	default n
+	help
+	  Enable lock/mutex profiling code.
+
+config BR2_PACKAGE_STRONGSWAN_LOG_THREAD_IDS
+	bool "log-thread-ids"
+	default n
+	help
+	  Enable to use thread ID, if available, instead of an incremented value starting from 1, to identify threads.
+
+config BR2_PACKAGE_STRONGSWAN_TEST_VECTORS
+	bool "test-vectors"
+	default n
+	help
+	  Enable plugin providing crypto test vectors.
+
+config BR2_PACKAGE_STRONGSWAN_UNWIND_BACKTRACES
+	bool "unwind-backtraces"
+	default n
+	help
+	  Enable to use libunwind to create backtraces for memory leaks and segfaults.
+
+comment "Others libs"
+config BR2_PACKAGE_STRONGSWAN_FAST
+	bool "fast"
+	default n
+	help
+	  Enable to build libfast (FastCGI Application Server w/ templates).
+
+config BR2_PACKAGE_STRONGSWAN_LIBIPSEC
+	bool "libipsec"
+	default n
+	help
+	  Enable user space IPsec implementation.
+
+config BR2_PACKAGE_STRONGSWAN_RUBY_GEMS
+	bool "ruby-gems"
+	default n
+	help
+	  Enable build of provided ruby gems.
+
+config BR2_PACKAGE_STRONGSWAN_RUBY_GEMS_INSTALL
+	bool "ruby-gems-install"
+	default n
+	help
+	  Enable installation of provided ruby gems.
+
+config BR2_PACKAGE_STRONGSWAN_PYTHON_EGGS
+	bool "python-eggs"
+	default n
+	help
+	  Enable build of provided python eggs.
+
+config BR2_PACKAGE_STRONGSWAN_PYTHON_EGGS_INSTALL
+	bool "python-eggs-install"
+	default n
+	help
+	  Enable installation of provided python eggs.
+
+config BR2_PACKAGE_STRONGSWAN_PERL_CPAN
+	bool "perl-cpan"
+	default n
+	help
+	  Enable build of provided perl CPAN module.
+
+config BR2_PACKAGE_STRONGSWAN_PERL_CPAN_INSTALL
+	bool "perl-cpan-install"
+	default n
+	help
+	  Enable installation of provided perl CPAN module.
+
+config BR2_PACKAGE_STRONGSWAN_TSS_TROUSERS
+	bool "tss-trousers"
+	default n
+	help
+	  Enable the use of the TrouSerS Trusted Software Stack.
+
+config BR2_PACKAGE_STRONGSWAN_TSS_TSS2
+	bool "tss-tss2"
+	default n
+	help
+	  Enable the use of the TSS 2.0 Trusted Software Stack.
+
+config BR2_PACKAGE_STRONGSWAN_MONOLITHIC
+	bool "monolithic"
+	default y
+	help
+	  Enable to build monolithic version of libstrongswan that includes all enabled plugins. Similarly, the plugins of charon are assembled in libcharon.
+endmenu
+
+endif #BR2_PACKAGE_STRONGSWAN_BUILD_ADVANCED
+endif #BR2_PACKAGE_STRONGSWAN

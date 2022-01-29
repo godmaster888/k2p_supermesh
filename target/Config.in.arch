@@ -1,0 +1,234 @@
+config BR2_ARCH_IS_64
+       bool
+
+choice
+	prompt "Target Architecture"
+	default BR2_mips
+	help
+	  Select the target architecture family to build for.
+
+config BR2_arm
+	bool "arm"
+config BR2_armeb
+	bool "armeb"
+config BR2_mips
+	bool "mips"
+config BR2_mipsel
+	bool "mipsel"
+endchoice
+
+#
+# Keep the variants separate, there's no need to clutter everything else.
+# sh is fairly "special" in this regard, as virtually everyone else has
+# things kept down to a _sensible_ number of target variants. No such
+# luck for sh..
+#
+choice
+	prompt "Target Architecture Variant"
+	depends on BR2_arm || BR2_armeb
+	default BR2_generic_arm
+	help
+	  Specific CPU variant to use
+
+config BR2_generic_arm
+	bool "generic_arm"
+config BR2_arm7tdmi
+	bool "arm7tdmi"
+config BR2_arm610
+	bool "arm610"
+config BR2_arm710
+	bool "arm710"
+config BR2_arm720t
+	bool "arm720t"
+config BR2_arm920t
+	bool "arm920t"
+config BR2_arm922t
+	bool "arm922t"
+config BR2_arm926t
+	bool "arm926t"
+config BR2_arm10t
+	bool "arm10t"
+config BR2_arm1136jf_s
+	bool "arm1136jf_s"
+config BR2_arm1176jz_s
+	bool "arm1176jz-s"
+config BR2_arm1176jzf_s
+	bool "arm1176jzf-s"
+comment "cortex-A8/A9 needs gcc >= 4.4.x"
+config BR2_cortex_a8
+	bool "cortex-A8"
+config BR2_cortex_a9
+	bool "cortex-A9"
+config BR2_sa110
+	bool "sa110"
+config BR2_sa1100
+	bool "sa1100"
+config BR2_xscale
+	bool "xscale"
+config BR2_iwmmxt
+	bool "iwmmxt"
+endchoice
+
+config BR2_ARM_TYPE
+	string
+	default GENERIC_ARM	if BR2_generic_arm
+	default ARM610		if BR2_arm610
+	default ARM710		if BR2_arm710
+	default ARM7TDMI	if BR2_arm7tdmi
+	default ARM720T		if BR2_arm720t
+	default ARM920T		if BR2_arm920t
+	default ARM922T		if BR2_arm922t
+	default ARM926T		if BR2_arm926t
+	default ARM10T		if BR2_arm10t
+	default ARM1136JF_S	if BR2_arm1136jf_s
+	default ARM1176JZ_S	if BR2_arm1176jz_s
+	default ARM1176JZF_S	if BR2_arm1176jzf_s
+	default ARM_SA110	if BR2_sa110
+	default ARM_SA1100	if BR2_sa1100
+	default ARM_XSCALE	if BR2_xscale
+	default ARM_IWMMXT	if BR2_iwmmxt
+	default ARM_CORTEXA8	if BR2_cortex_a8
+	default ARM_CORTEXA9	if BR2_cortex_a9
+
+choice
+	prompt "Target ABI"
+	depends on BR2_arm || BR2_armeb
+	default BR2_ARM_EABI
+	help
+	  Application Binary Interface to use
+
+	  Note:
+	    Using OABI is discouraged.
+
+config BR2_ARM_EABI
+	bool "EABI"
+config BR2_ARM_OABI
+	bool "OABI"
+endchoice
+
+choice
+	prompt "Target Architecture Variant"
+	depends on BR2_mips || BR2_mipsel
+	default BR2_mips_3 if BR2_mips
+	default BR2_mips_1 if BR2_mipsel
+	help
+	  Specific CPU variant to use
+	
+	  64bit cabable: 3, 4, 64, 64r2
+	  non-64bit capable: 1, 2, 32, 32r2
+
+config BR2_mips_1
+	bool "mips I (generic)"
+config BR2_mips_2
+	bool "mips II"
+config BR2_mips_3
+	bool "mips III"
+config BR2_mips_4
+	bool "mips IV"
+config BR2_mips_32
+	bool "mips 32"
+config BR2_mips_32r2
+	bool "mips 32r2"
+config BR2_mips_64
+	bool "mips 64"
+config BR2_mips_64r2
+	bool "mips 64r2"
+config BR2_mips_16
+	bool "mips 16"
+endchoice
+
+
+choice
+	prompt "Target ABI"
+	depends on BR2_mips || BR2_mipsel
+	default BR2_MIPS_OABI32 if BR_mips_32 || BR_mips_32r2
+	default BR2_MIPS_ABI32 if BR_mips_64 || BR_mips_64r2
+	help
+	  Application Binary Interface to use
+
+config BR2_MIPS_OABI32
+	bool "o32"
+config BR2_MIPS_ABI32
+	bool "n32"
+	depends on BR2_mips_3 || BR2_mips_4 || BR2_mips_64 || BR2_mips_64r2 || BR2_mips_16
+config BR2_MIPS_EABI
+	bool "eabi"
+	depends on BR2_mips_3 || BR2_mips_4 || BR2_mips_64 || BR2_mips_64r2 || BR2_mips_16
+config BR2_MIPS_ABI64
+	bool "n64"
+	depends on BR2_mips_3 || BR2_mips_4 || BR2_mips_64 || BR2_mips_64r2 || BR2_mips_16
+config BR2_MIPS_OABI64
+	bool "o64"
+	depends on BR2_mips_3 || BR2_mips_4 || BR2_mips_64 || BR2_mips_64r2 || BR2_mips_16
+config BR2_MIPS_ABI_none
+	bool "unspecified"
+	depends on BR2_mips_16
+	help
+	  Unspecified ABI leaves ABI selection blank.
+endchoice
+
+config BR2_ARCH
+	string
+	default "arm"		if BR2_arm
+	default "armeb"		if BR2_armeb
+	default "mips"		if BR2_mips
+	default "mipsel"	if BR2_mipsel
+	
+config BR2_ENDIAN
+	string
+	default "LITTLE" if BR2_arm || BR2_mipsel 
+			    
+	default "BIG"    if BR2_armeb || BR2_mips 
+
+config BR2_GCC_TARGET_TUNE
+	string
+	default arm600		if BR2_arm600
+	default arm610		if BR2_arm610
+	default arm620		if BR2_arm620
+	default arm7tdmi	if BR2_arm7tdmi
+	default arm7tdmi	if BR2_arm720t
+	default arm7tdmi	if BR2_arm740t
+	default arm920		if BR2_arm920
+	default arm920t		if BR2_arm920t
+	default arm922t		if BR2_arm922t
+	default arm926ej-s	if BR2_arm926t
+	default arm1136j-s	if BR2_arm1136j_s
+	default arm1136jf-s	if BR2_arm1136jf_s
+	default arm1176jz-s	if BR2_arm1176jz_s
+	default arm1176jzf-s	if BR2_arm1176jzf_s
+	default mips1		if BR2_mips_1
+	default mips2		if BR2_mips_2
+	default mips3		if BR2_mips_3
+	default mips4		if BR2_mips_4
+	default mips32		if BR2_mips_32
+	default mips32r2	if BR2_mips_32r2
+	default mips64		if BR2_mips_64
+	default mips64r2	if BR2_mips_64r2
+	default mips16		if BR2_mips_16
+
+
+config BR2_GCC_TARGET_ARCH
+	string
+	default armv4t		if BR2_arm7tdmi
+	default armv3		if BR2_arm610
+	default armv3		if BR2_arm710
+	default armv4t		if BR2_arm720t
+	default armv4t		if BR2_arm920t
+	default armv4t		if BR2_arm922t
+	default armv5te		if BR2_arm926t
+	default armv5t		if BR2_arm10t
+	default armv6j		if BR2_arm1136jf_s
+	default armv6zk		if BR2_arm1176jz_s
+	default armv6zk		if BR2_arm1176jzf_s
+
+config BR2_GCC_TARGET_ABI
+	string
+	default apcs-gnu	if BR2_ARM_OABI
+	default atpcs		if BR2_arm_dunno
+	default aapcs		if BR2_arm_dunno
+	default aapcs-linux	if BR2_ARM_EABI
+	default 32		if BR2_MIPS_OABI32
+	default n32		if BR2_MIPS_ABI32
+	default eabi		if BR2_MIPS_EABI
+	default o64		if BR2_MIPS_OABI64
+	default n64		if BR2_MIPS_ABI64

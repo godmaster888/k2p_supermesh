@@ -1,0 +1,110 @@
+menuconfig BR2_PACKAGE_EBTABLES
+	bool "ebtables"
+	help
+	  Ethernet bridge frame table administration
+
+	  http://ebtables.sourceforge.net
+if BR2_PACKAGE_EBTABLES
+config BR2_EBTABLES_BRANCH
+	string "ebtables branch (default if empty)"
+endif
+
+config BR2_EBTABLES_CUSTOMIZE
+	bool "Check modules manually"
+	depends on BR2_PACKAGE_EBTABLES
+	default n
+	help
+	  Check ebtables modules to build/install.
+	  If unset then all will be built/installed.
+
+if BR2_EBTABLES_CUSTOMIZE
+
+comment "tables"
+
+config BR2_EBTABLES_TABLE_BROUTE
+	bool "broute"
+	default n
+
+config BR2_EBTABLES_TABLE_FILTER
+	bool "filter"
+	default y
+
+config BR2_EBTABLES_TABLE_NAT
+	bool "nat"
+	default n
+
+comment "modules"
+
+config BR2_EBTABLES_MOD_802_3
+	bool "802_3"
+	default n
+
+config BR2_EBTABLES_MOD_AMONG
+	bool "among"
+	default n
+
+config BR2_EBTABLES_MOD_ARP
+	bool "arp"
+	default y
+
+config BR2_EBTABLES_MOD_ARPREPLY
+	bool "arpreply"
+	default n
+
+config BR2_EBTABLES_MOD_IP6
+	bool "ip6"
+	default n
+
+config BR2_EBTABLES_MOD_IP
+	bool "ip"
+	default n
+
+config BR2_EBTABLES_MOD_LIMIT
+	bool "limit"
+	default n
+
+config BR2_EBTABLES_MOD_LOG
+	bool "log"
+	default n
+
+config BR2_EBTABLES_MOD_MARK
+	bool "mark"
+	default n
+
+config BR2_EBTABLES_MOD_MARK_M
+	bool "mark_m"
+	default n
+
+config BR2_EBTABLES_MOD_NAT
+	bool "nat"
+	default n
+
+config BR2_EBTABLES_MOD_NFLOG
+	bool "nflog"
+	default n
+
+config BR2_EBTABLES_MOD_PKTTYPE
+	bool "pkttype"
+	default n
+
+config BR2_EBTABLES_MOD_REDIRECT
+	bool "redirect"
+	default n
+
+config BR2_EBTABLES_MOD_STANDARD
+	bool "standard"
+	default y
+
+config BR2_EBTABLES_MOD_STP
+	bool "stp"
+	default n
+
+config BR2_EBTABLES_MOD_ULOG
+	bool "ulog"
+	default n
+
+config BR2_EBTABLES_MOD_VLAN
+	bool "vlan"
+	default n
+
+endif

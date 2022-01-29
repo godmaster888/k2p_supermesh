@@ -1,0 +1,10 @@
+menuconfig BR2_PACKAGE_XSUPPLICANT
+	bool "xsupplicant"
+	select BR2_LEGACY
+
+if BR2_PACKAGE_XSUPPLICANT
+
+config BR2_XSUPPLICANT_VERSION
+	string "Xsupplicant branch (default branch if empty)"
+
+endif

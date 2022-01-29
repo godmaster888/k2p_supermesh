@@ -1,0 +1,47 @@
+From 5b470499982ae4dbd04b7204a210f25df7a62d9f Mon Sep 17 00:00:00 2001
+From: Vladimir Yaichkin <vyaichkin@rzn.dlink.ru>
+Date: Mon, 17 Aug 2020 11:15:25 +0300
+Subject: strongswan: add destroying IKE SA when delete tunnel
+Patch-from-hash: aff0e04810cefd30f3b489990d3fb96d07619951
+Patch-repo: strongswan
+Patch-branch: master
+Patch-version: 5
+
+Добавлено удаление IKE_SA, если остановлен ipsec-туннель.
+
+Signed-off-by: Vladimir Yaichkin <vyaichkin@rzn.dlink.ru>
+---
+ src/libcharon/control/controller.c | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
+
+diff --git a/src/libcharon/control/controller.c b/src/libcharon/control/controller.c
+index 0c86275..9a73faf 100644
+--- a/src/libcharon/control/controller.c
++++ b/src/libcharon/control/controller.c
+@@ -569,6 +569,16 @@ METHOD(job_t, terminate_ike_execute, job_requeue_t,
+	listener->ike_sa = ike_sa;
+	listener->lock->unlock(listener->lock);
+
++#ifdef DLINK_SOFTWARE
++	ike_sa->delete(ike_sa, listener->options.force);
++
++	if (!listener->logger.callback)
++	{
++		listener->status = SUCCESS;
++	}
++	charon->ike_sa_manager->checkin_and_destroy(charon->ike_sa_manager, ike_sa);
++#else
++
+	if (ike_sa->delete(ike_sa, listener->options.force) != DESTROY_ME)
+	{	/* delete queued */
+		listener->status = FAILED;
+@@ -583,6 +593,7 @@ METHOD(job_t, terminate_ike_execute, job_requeue_t,
+		charon->ike_sa_manager->checkin_and_destroy(charon->ike_sa_manager,
+													ike_sa);
+	}
++#endif /* DLINK_SOFTWARE */
+	return JOB_REQUEUE_NONE;
+ }
+
+--
+2.20.1
